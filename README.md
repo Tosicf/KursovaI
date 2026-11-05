@@ -69,13 +69,16 @@ KursovaI.sln
 │
 ├── tests/StroyControl.Core.Tests # xUnit-тесты бизнес-логики
 ├── database/schema.sql           # ручной скрипт создания БД (опционально)
-└── docs/architecture.md          # описание архитектуры, ER-модели и алгоритмов
+├── docs/architecture.md          # описание архитектуры, ER-модели и алгоритмов
+├── Directory.Build.props         # общие свойства сборки (C# 12, nullable, RollForward)
+└── Directory.Packages.props      # единый список версий NuGet (Central Package Management)
 ```
 
 ## 5. Быстрый старт
 
 ### Требования
-- Windows 10/11, .NET SDK 8.0
+- Windows 10/11, **.NET SDK 8.0** (сборка возможна и более новым SDK — 9.x/10.x, если установлен targeting pack .NET 8)
+- **.NET Desktop Runtime 8.0** для запуска (если его нет, приложение стартует на более новом рантайме благодаря `<RollForward>Major</RollForward>`)
 - MySQL Server 8.0 (локально или в сети)
 
 ### 1) Подготовить базу (один раз)
@@ -171,7 +174,35 @@ dotnet ef database update --project src/StroyControl.Data --startup-project src/
 | Сотрудники | CRUD учётных записей, роли, блокировка, сброс пароля |
 | Настройки | проверка подключения к MySQL, сведения о БД, права текущей роли |
 
-## 9. Ограничения наброска и направления развития
+## 9. Версии пакетов и совместимость
+
+Все версии NuGet зафиксированы в одном файле — `Directory.Packages.props` (Central Package Management). В `.csproj` версий нет: изменить версию можно только в этом файле, поэтому «случайно обновлённый» пакет в одном проекте не рассинхронизирует решение.
+
+| Пакет | Версия | Почему именно она |
+|---|---|---|
+| `Microsoft.EntityFrameworkCore` (+ `.InMemory`, `.Design`, `.Tools`) | 8.0.10 | ветка EF Core 8 — единственная, совместимая с `net8.0` |
+| `Pomelo.EntityFrameworkCore.MySql` | 8.0.2 | провайдер MySQL для EF Core 8 (с EF 9/10 несовместим) |
+| `Microsoft.Extensions.*` | 8.0.x | инфраструктура .NET 8 (DI, конфигурация) |
+| `CommunityToolkit.Mvvm` | 8.2.2 | генераторы `[ObservableProperty]`, `[RelayCommand]` |
+| `xunit` / `Microsoft.NET.Test.Sdk` | 2.9.0 / 17.11.1 | модульные тесты |
+
+> **Не обновляйте EF Core до 9.x/10.x и Pomelo до 9.x/10.x.** Эти пакеты требуют `net9.0`/`net10.0`, и сборка падает с ошибкой
+> «Пакет Microsoft.EntityFrameworkCore 10.0.14 несовместим с net8.0 (.NETCoreApp,Version=v8.0)».
+> Если нужно перейти на EF Core 9/10 — сначала поднимите `TargetFramework` всех проектов (и `net8.0-windows` → `net9.0-windows`/`net10.0-windows` в `StroyControl.App`), затем обновите Pomelo.
+
+### Если ошибка про несовместимый EF Core уже появилась
+
+1. Проверьте, что в `.csproj` **нет** атрибутов `Version` у `PackageReference` (версии живут только в `Directory.Packages.props`).
+2. Удалите следы прежнего восстановления и кэш пакетов:
+   ```bash
+   dotnet nuget locals all --clear
+   rm -rf src/*/bin src/*/obj tests/*/bin tests/*/obj
+   dotnet restore
+   dotnet build
+   ```
+3. В Visual Studio: «Сервис → Параметры → NuGet…» не должно быть источника с предустановленной версией EF, а в «Управление пакетами NuGet» для решения не должно быть обновлений EF Core выше 8.0.x. Если IDE успела вписать `Version="10.0.14"` в `.csproj` — просто удалите этот атрибут, версия возьмётся из `Directory.Packages.props`.
+
+## 10. Ограничения наброска и направления развития
 
 - Отчёты строятся по текущим данным без исторических срезов и версий смет.
 - Нет импорта смет из Excel и интеграции с 1С/бухгалтерией.
