@@ -34,11 +34,12 @@ public partial class App : Application
         }
         catch (Exception ex)
         {
+            var error = ex.GetBaseException();   // ← достаём настоящую причину
             MessageBox.Show(
-                $"Не удалось запустить приложение «СтройКонтроль».\n\n{ex.Message}",
+                $"Не удалось запустить приложение «СтройКонтроль».\n\n" +
+                $"{error.GetType().Name}: {error.Message}\n\n{error.StackTrace}",
                 "Ошибка запуска",
-                MessageBoxButton.OK,
-                MessageBoxImage.Error);
+                MessageBoxButton.OK, MessageBoxImage.Error);
             Shutdown(-1);
         }
     }
