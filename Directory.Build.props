@@ -7,5 +7,11 @@
     <Product>СтройКонтроль</Product>
     <Company>Кафедра информационных технологий</Company>
     <Version>1.0.0</Version>
+    <!--
+      Целевая платформа — .NET 8. Если на машине установлен только более новый
+      рантайм (.NET 9/10 Desktop Runtime), приложение всё равно запустится:
+      Major разрешает переход на ближайшую старшую версию, когда 8.x отсутствует.
+    -->
+    <RollForward>Major</RollForward>
   </PropertyGroup>
 </Project>
