@@ -1,3 +1,5 @@
+using StroyControl.Core.Enums;
+
 namespace StroyControl.Core.Entities;
 
 /// <summary>Фактическое списание материала на объект (акт расхода).</summary>

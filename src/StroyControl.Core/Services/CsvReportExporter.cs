@@ -43,7 +43,7 @@ public sealed class CsvReportExporter
     public async Task ExportDeviationReportAsync(DeviationReport report, string filePath, CancellationToken cancellationToken = default)
     {
         var csv = BuildDeviationCsv(report);
-        await File.WriteAllTextAsync(filePath, csv, new UTF8Encoding(encoderShouldEmitUTF8Identifier: true), cancellationToken);
+        await System.IO.File.WriteAllTextAsync(filePath, csv, new UTF8Encoding(encoderShouldEmitUTF8Identifier: true), cancellationToken);
     }
 
     public string DefaultFileName(DeviationReport report) =>
@@ -60,7 +60,7 @@ public sealed class CsvReportExporter
 
     private static string Sanitize(string value)
     {
-        var invalid = Path.GetInvalidFileNameChars();
+        var invalid = System.IO.Path.GetInvalidFileNameChars();
         return new string(value.Select(c => invalid.Contains(c) ? '_' : c).ToArray());
     }
 }

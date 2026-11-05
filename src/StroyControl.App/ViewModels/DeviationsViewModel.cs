@@ -212,7 +212,7 @@ public sealed partial class DeviationsViewModel : ViewModelBase
             "Не удалось сохранить отчёт.");
 
         if (ok)
-            _toasts.Success("Отчёт сохранён", Path.GetFileName(path));
+            _toasts.Success("Отчёт сохранён", System.IO.Path.GetFileName(path));
         else if (ErrorMessage is not null)
             _toasts.Error("Экспорт", ErrorMessage);
     }
