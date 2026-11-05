@@ -202,6 +202,15 @@ dotnet ef database update --project src/StroyControl.Data --startup-project src/
    ```
 3. В Visual Studio: «Сервис → Параметры → NuGet…» не должно быть источника с предустановленной версией EF, а в «Управление пакетами NuGet» для решения не должно быть обновлений EF Core выше 8.0.x. Если IDE успела вписать `Version="10.0.14"` в `.csproj` — просто удалите этот атрибут, версия возьмётся из `Directory.Packages.props`.
 
+### Частые ошибки сборки и их причина
+
+| Ошибка | Причина | Решение |
+|---|---|---|
+| `CS1061: "UnitOfMeasure" не содержит определения "ToDisplayName"` | `ToDisplayName()` — метод расширения из `StroyControl.Core.Enums`, в файле не подключено пространство имён | `using StroyControl.Core.Enums;` в начале файла (уже сделано в `EstimateItem.cs`, `MaterialUsage.cs`) |
+| `CS0103: Имя "Path" не существует в текущем контексте` | зависимость от неявного `using System.IO` / конфликт с `System.Windows.Shapes.Path` | в коде используется полное имя `System.IO.Path` (и `System.IO.File`) |
+| `NU1605: Обнаружено понижение версии пакета Microsoft.Extensions.DependencyInjection.Abstractions` | EF Core 8.0.10 → `Caching.Memory 8.0.1` требует `Abstractions >= 8.0.2` | версия зафиксирована `8.0.2` в `Directory.Packages.props` |
+| `NU1008: Projects that use central package version management should not define the version` | в `.csproj` остался `Version` у `PackageReference` | удалить атрибут `Version` — версии задаются в `Directory.Packages.props` |
+
 ## 10. Ограничения наброска и направления развития
 
 - Отчёты строятся по текущим данным без исторических срезов и версий смет.

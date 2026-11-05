@@ -1,3 +1,5 @@
+using StroyControl.Core.Enums;
+
 namespace StroyControl.Core.Entities;
 
 /// <summary>Позиция сметы: плановое количество и цена материала.</summary>
