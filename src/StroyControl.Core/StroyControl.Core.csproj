@@ -1,0 +1,9 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <RootNamespace>StroyControl.Core</RootNamespace>
+    <Description>Доменная модель, контракты и бизнес-правила сетевого средства управления строительными материалами.</Description>
+  </PropertyGroup>
+
+</Project>

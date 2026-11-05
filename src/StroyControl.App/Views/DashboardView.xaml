@@ -1,0 +1,255 @@
+<UserControl x:Class="StroyControl.App.Views.DashboardView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:controls="clr-namespace:StroyControl.App.Controls">
+
+    <Grid>
+        <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+            <StackPanel Margin="24,20,24,30">
+
+                <!-- Приветствие и сводка -->
+                <Grid Margin="0,0,0,18">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+
+                    <StackPanel>
+                        <TextBlock Text="{Binding Greeting}" FontSize="21" FontWeight="SemiBold" />
+                        <TextBlock Style="{StaticResource Caption}" Margin="0,5,0,0">
+                            <Run Text="{Binding TodayDisplay}" />
+                            <Run Text="  ·  " Foreground="{StaticResource TextMutedBrush}" />
+                            <Run Text="{Binding MaterialsSummary}" />
+                        </TextBlock>
+                    </StackPanel>
+
+                    <Border Grid.Column="1" Style="{StaticResource Badge}" Background="{StaticResource AccentSoftBrush}" Padding="12,7" VerticalAlignment="Center">
+                        <StackPanel Orientation="Horizontal">
+                            <Path Data="{StaticResource IconChart}" Stroke="{StaticResource AccentBrush}" StrokeThickness="1.7"
+                                  Width="15" Height="15" Stretch="Uniform" VerticalAlignment="Center" StrokeStartLineCap="Round" />
+                            <TextBlock Text="{Binding Data.DeviationPercent, StringFormat=Отклонение по сметам: {0:N1} %}"
+                                       Foreground="{StaticResource AccentBrush}" FontWeight="SemiBold" Margin="8,0,0,0" FontSize="12" />
+                        </StackPanel>
+                    </Border>
+                </Grid>
+
+                <!-- KPI -->
+                <WrapPanel Margin="0,0,0,4">
+                    <controls:KpiCard Title="Объекты в работе" Value="{Binding Data.ActiveProjects}"
+                                      Caption="{Binding Data.ProjectBudgets.Count, StringFormat=объектов в портфеле: {0}}"
+                                      Icon="{StaticResource IconProjects}"
+                                      Accent="{StaticResource AccentBrush}" IconBackground="{StaticResource AccentSoftBrush}"
+                                      Margin="0,0,14,14" MinWidth="238" />
+
+                    <controls:KpiCard Title="Стоимость запасов" Value="{Binding Data.StockValue, Converter={StaticResource Money}}"
+                                      Caption="{Binding LowStockCaption}"
+                                      Icon="{StaticResource IconBox}"
+                                      Accent="{StaticResource InfoBrush}" IconBackground="{StaticResource InfoSoftBrush}"
+                                      Margin="0,0,14,14" MinWidth="238" />
+
+                    <controls:KpiCard Title="План по сметам" Value="{Binding Data.PlannedCost, Converter={StaticResource Money}}"
+                                      Caption="{Binding PlannedCaption}"
+                                      Icon="{StaticResource IconEstimates}"
+                                      Accent="{StaticResource PurpleBrush}" IconBackground="{StaticResource PurpleSoftBrush}"
+                                      Margin="0,0,14,14" MinWidth="238" />
+
+                    <controls:KpiCard Title="Фактические затраты" Value="{Binding Data.ActualCost, Converter={StaticResource Money}}"
+                                      Caption="{Binding ActualCaption}"
+                                      Icon="{StaticResource IconWallet}"
+                                      Accent="{StaticResource WarningBrush}" IconBackground="{StaticResource WarningSoftBrush}"
+                                      Margin="0,0,14,14" MinWidth="238" />
+                </WrapPanel>
+
+                <!-- Исполнение смет и остатки -->
+                <Grid Margin="0,4,0,0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="1.55*" />
+                        <ColumnDefinition Width="1*" />
+                    </Grid.ColumnDefinitions>
+
+                    <Border Grid.Column="0" Style="{StaticResource Card}" Margin="0,0,16,16">
+                        <StackPanel>
+                            <Grid Margin="0,0,0,16">
+                                <TextBlock Text="Исполнение смет по объектам" Style="{StaticResource SectionTitle}" />
+                                <TextBlock Text="план / факт, BYN" Style="{StaticResource Caption}" HorizontalAlignment="Right" VerticalAlignment="Center" />
+                            </Grid>
+
+                            <ItemsControl ItemsSource="{Binding Data.ProjectBudgets}">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <StackPanel Margin="0,0,0,16">
+                                            <Grid>
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="*" />
+                                                    <ColumnDefinition Width="Auto" />
+                                                </Grid.ColumnDefinitions>
+                                                <TextBlock Text="{Binding Name}" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" />
+                                                <Border Grid.Column="1" Style="{StaticResource Badge}" Background="{StaticResource SurfaceAltBrush}">
+                                                    <TextBlock Text="{Binding StatusDisplay}" FontSize="10.5" Foreground="{StaticResource TextSecondaryBrush}" />
+                                                </Border>
+                                            </Grid>
+
+                                            <Grid Margin="0,7,0,0">
+                                                <TextBlock Style="{StaticResource Caption}">
+                                                    <Run Text="план " />
+                                                    <Run Text="{Binding PlannedCost, Converter={StaticResource Money}}" Foreground="{StaticResource TextPrimaryBrush}" />
+                                                    <Run Text="   ·   факт " />
+                                                    <Run Text="{Binding ActualCost, Converter={StaticResource Money}}" Foreground="{StaticResource TextPrimaryBrush}" />
+                                                </TextBlock>
+                                            </Grid>
+
+                                            <Grid Margin="0,8,0,0" Height="8">
+                                                <Border x:Name="Track" Background="{StaticResource SurfaceAltBrush}" CornerRadius="4" />
+                                                <Border CornerRadius="4" HorizontalAlignment="Left"
+                                                        Background="{Binding IsOverrun, Converter={StaticResource BoolToBrush}, ConverterParameter=DangerBrush|AccentBrush}">
+                                                    <Border.Width>
+                                                        <MultiBinding Converter="{StaticResource PercentOfWidth}">
+                                                            <Binding Path="ProgressPercent" />
+                                                            <Binding ElementName="Track" Path="ActualWidth" />
+                                                        </MultiBinding>
+                                                    </Border.Width>
+                                                </Border>
+                                            </Grid>
+
+                                            <TextBlock Margin="0,6,0,0" FontSize="11.5"
+                                                       Foreground="{Binding IsOverrun, Converter={StaticResource BoolToBrush}, ConverterParameter=DangerBrush|SuccessBrush}">
+                                                <Run Text="{Binding DeviationPercent, StringFormat={}{0:+0.0;-0.0;0} %}" />
+                                                <Run Text="  ·  " Foreground="{StaticResource TextMutedBrush}" />
+                                                <Run Text="{Binding Deviation, Converter={StaticResource Money}}" />
+                                            </TextBlock>
+                                        </StackPanel>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </StackPanel>
+                    </Border>
+
+                    <Border Grid.Column="1" Style="{StaticResource Card}" Margin="0,0,0,16">
+                        <StackPanel>
+                            <Grid Margin="0,0,0,14">
+                                <TextBlock Text="Требуют закупки" Style="{StaticResource SectionTitle}" />
+                                <Border HorizontalAlignment="Right" Style="{StaticResource Badge}" Background="{StaticResource DangerSoftBrush}">
+                                    <TextBlock Text="{Binding Data.LowStockCount}" Foreground="{StaticResource DangerBrush}"
+                                               FontSize="11" FontWeight="SemiBold" />
+                                </Border>
+                            </Grid>
+
+                            <ItemsControl ItemsSource="{Binding Data.StockAlerts}">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Grid Margin="0,0,0,12">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*" />
+                                                <ColumnDefinition Width="Auto" />
+                                            </Grid.ColumnDefinitions>
+                                            <StackPanel>
+                                                <TextBlock Text="{Binding Name}" FontSize="12.5" TextTrimming="CharacterEllipsis" />
+                                                <TextBlock Style="{StaticResource Caption}" FontSize="11" Margin="0,2,0,0">
+                                                    <Run Text="остаток " />
+                                                    <Run Text="{Binding StockDisplay}" Foreground="{StaticResource DangerBrush}" />
+                                                    <Run Text=" / мин. " />
+                                                    <Run Text="{Binding MinStock, StringFormat={}{0:N0}}" />
+                                                </TextBlock>
+                                            </StackPanel>
+                                            <Path Grid.Column="1" Data="{StaticResource IconAlert}" Stroke="{StaticResource DangerBrush}"
+                                                  StrokeThickness="1.6" Width="16" Height="16" Stretch="Uniform" VerticalAlignment="Center" />
+                                        </Grid>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+
+                            <TextBlock Text="Все материалы обеспечены запасом" Style="{StaticResource Caption}"
+                                       Visibility="{Binding HasStockAlerts, Converter={StaticResource BoolToVisibility}, ConverterParameter=invert}" />
+                        </StackPanel>
+                    </Border>
+                </Grid>
+
+                <!-- Диаграмма и лента операций -->
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="1.55*" />
+                        <ColumnDefinition Width="1*" />
+                    </Grid.ColumnDefinitions>
+
+                    <Border Grid.Column="0" Style="{StaticResource Card}" Margin="0,0,16,0">
+                        <StackPanel>
+                            <Grid Margin="0,0,0,14">
+                                <TextBlock Text="Затраты на материалы по месяцам" Style="{StaticResource SectionTitle}" />
+                                <TextBlock Text="план — среднемесячный" Style="{StaticResource Caption}" HorizontalAlignment="Right" VerticalAlignment="Center" />
+                            </Grid>
+
+                            <ItemsControl ItemsSource="{Binding Data.MonthlyCosts}">
+                                <ItemsControl.ItemsPanel>
+                                    <ItemsPanelTemplate>
+                                        <StackPanel Orientation="Horizontal" />
+                                    </ItemsPanelTemplate>
+                                </ItemsControl.ItemsPanel>
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <StackPanel Width="64" Margin="0,0,10,0">
+                                            <Grid Height="128">
+                                                <Border Width="26" CornerRadius="7" Background="{StaticResource SurfaceAltBrush}" VerticalAlignment="Bottom" />
+                                                <Border Width="26" CornerRadius="7" Background="{StaticResource AccentGradientBrush}" VerticalAlignment="Bottom">
+                                                    <Border.Height>
+                                                        <Binding Path="ActualPercent" Converter="{StaticResource ScaleToWidth}" ConverterParameter="128" />
+                                                    </Border.Height>
+                                                </Border>
+                                            </Grid>
+                                            <TextBlock Text="{Binding MonthDisplay}" HorizontalAlignment="Center" Style="{StaticResource Caption}" Margin="0,8,0,0" />
+                                            <TextBlock Text="{Binding ActualCost, StringFormat={}{0:N0}}" HorizontalAlignment="Center"
+                                                       FontSize="10.5" Foreground="{StaticResource TextMutedBrush}" />
+                                        </StackPanel>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </StackPanel>
+                    </Border>
+
+                    <Border Grid.Column="1" Style="{StaticResource Card}">
+                        <StackPanel>
+                            <TextBlock Text="Последние операции" Style="{StaticResource SectionTitle}" Margin="0,0,0,14" />
+
+                            <ItemsControl ItemsSource="{Binding Data.RecentActivity}">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Grid Margin="0,0,0,12">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="Auto" />
+                                                <ColumnDefinition Width="*" />
+                                                <ColumnDefinition Width="Auto" />
+                                            </Grid.ColumnDefinitions>
+
+                                            <Border x:Name="ActivityBadge" Width="32" Height="32" CornerRadius="10" Background="{StaticResource SuccessSoftBrush}">
+                                                <Path x:Name="ActivityIcon" Data="{StaticResource IconIncoming}" Stroke="{StaticResource SuccessBrush}"
+                                                      StrokeThickness="1.6" Width="15" Height="15" Stretch="Uniform"
+                                                      StrokeStartLineCap="Round" StrokeLineJoin="Round" />
+                                            </Border>
+
+                                            <StackPanel Grid.Column="1" Margin="10,0,8,0" VerticalAlignment="Center">
+                                                <TextBlock Text="{Binding Title}" FontSize="12.5" TextTrimming="CharacterEllipsis" />
+                                                <TextBlock Text="{Binding Subtitle}" Style="{StaticResource Caption}" FontSize="11"
+                                                           TextTrimming="CharacterEllipsis" Margin="0,2,0,0" />
+                                            </StackPanel>
+
+                                            <TextBlock Grid.Column="2" Text="{Binding DateDisplay}" Style="{StaticResource Caption}"
+                                                       FontSize="11" VerticalAlignment="Center" />
+                                        </Grid>
+                                        <DataTemplate.Triggers>
+                                            <DataTrigger Binding="{Binding Kind}" Value="usage">
+                                                <Setter TargetName="ActivityBadge" Property="Background" Value="{StaticResource WarningSoftBrush}" />
+                                                <Setter TargetName="ActivityIcon" Property="Stroke" Value="{StaticResource WarningBrush}" />
+                                                <Setter TargetName="ActivityIcon" Property="Data" Value="{StaticResource IconOutgoing}" />
+                                            </DataTrigger>
+                                        </DataTemplate.Triggers>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </StackPanel>
+                    </Border>
+                </Grid>
+            </StackPanel>
+        </ScrollViewer>
+
+        <controls:LoadingOverlay IsBusy="{Binding IsBusy}" Margin="24" />
+    </Grid>
+</UserControl>

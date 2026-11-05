@@ -1,0 +1,38 @@
+<UserControl x:Class="StroyControl.App.Controls.ToastHost"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:models="clr-namespace:StroyControl.App.Models"
+             x:Name="Root">
+    <ItemsControl ItemsSource="{Binding ItemsSource, ElementName=Root}" HorizontalAlignment="Right" VerticalAlignment="Bottom">
+        <ItemsControl.ItemTemplate>
+            <DataTemplate DataType="{x:Type models:ToastMessage}">
+                <Border Background="{StaticResource SurfaceBrush}" CornerRadius="12" Margin="0,8,0,0" Padding="14,12"
+                        MinWidth="300" MaxWidth="400" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1">
+                    <Border.Effect>
+                        <DropShadowEffect BlurRadius="20" ShadowDepth="4" Opacity="0.12" Color="#0F172A" />
+                    </Border.Effect>
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="4" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <Border x:Name="AccentBar" Background="{StaticResource SuccessBrush}" CornerRadius="2" />
+                        <StackPanel Grid.Column="1" Margin="12,0,0,0">
+                            <TextBlock Text="{Binding Title}" FontWeight="SemiBold" />
+                            <TextBlock Text="{Binding Message}" Foreground="{StaticResource TextSecondaryBrush}"
+                                       TextWrapping="Wrap" Margin="0,2,0,0" FontSize="12" />
+                        </StackPanel>
+                    </Grid>
+                </Border>
+                <DataTemplate.Triggers>
+                    <DataTrigger Binding="{Binding Kind}" Value="Error">
+                        <Setter TargetName="AccentBar" Property="Background" Value="{StaticResource DangerBrush}" />
+                    </DataTrigger>
+                    <DataTrigger Binding="{Binding Kind}" Value="Info">
+                        <Setter TargetName="AccentBar" Property="Background" Value="{StaticResource InfoBrush}" />
+                    </DataTrigger>
+                </DataTemplate.Triggers>
+            </DataTemplate>
+        </ItemsControl.ItemTemplate>
+    </ItemsControl>
+</UserControl>
