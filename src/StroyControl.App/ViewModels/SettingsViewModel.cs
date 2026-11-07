@@ -3,6 +3,7 @@ using CommunityToolkit.Mvvm.Input;
 using StroyControl.App.Services;
 using StroyControl.App.Startup;
 using StroyControl.Core.Enums;
+using RoleKind = StroyControl.Core.Enums.UserRole;
 using StroyControl.Core.Interfaces;
 
 namespace StroyControl.App.ViewModels;
@@ -53,11 +54,11 @@ public sealed partial class SettingsViewModel : ViewModelBase
 
     public string RoleDescription => Session.CurrentUser?.Role switch
     {
-        UserRole.Admin => "Полный доступ: справочники, документы, сотрудники и настройки.",
-        UserRole.Engineer => "Сметы, анализ отклонений, справочники и документы.",
-        UserRole.SupplyManager => "Материалы, поставщики и поступления.",
-        UserRole.Foreman => "Списания материалов и контроль остатков по объекту.",
-        UserRole.Accountant => "Просмотр данных и отчётов без изменения документов.",
+        RoleKind.Admin => "Полный доступ: справочники, документы, сотрудники и настройки.",
+        RoleKind.Engineer => "Сметы, анализ отклонений, справочники и документы.",
+        RoleKind.SupplyManager => "Материалы, поставщики и поступления.",
+        RoleKind.Foreman => "Списания материалов и контроль остатков по объекту.",
+        RoleKind.Accountant => "Просмотр данных и отчётов без изменения документов.",
         _ => "Роль не определена."
     };
 
