@@ -214,6 +214,8 @@ dotnet ef database update --project src/StroyControl.Data --startup-project src/
 | `CS0246: Не удалось найти тип или имя пространства имён "ServiceCollection"` (и подобные) | ошибка восстановления пакетов (например, `NU1010`/`NU1605`) — ссылки на пакеты не разрешились | сначала устранить ошибку `NU*`, затем `dotnet restore` |
 | `FileNotFoundException: Could not load file or assembly "Microsoft.EntityFrameworkCore.Relational"` | `Design`/`Tools` подключены приватно (`PrivateAssets=all`), поэтому их зависимость `Relational` не копируется в выход приложения | публичная ссылка `<PackageReference Include="Microsoft.EntityFrameworkCore.Relational" />` в `StroyControl.Data` + версия в `Directory.Packages.props` |
 | `CS1061: "string" не содержит определения "Admin"` (и других ролей) | свойство `UserRole` в `SettingsViewModel` затеняет тип-перечисление `UserRole` | в `SettingsViewModel` используется псевдоним `using RoleKind = StroyControl.Core.Enums.UserRole;` |
+| `CS1537: Псевдоним using "RoleKind" ранее встречался в этом пространстве имён` | строка `using RoleKind = ...` попала в файл дважды (ручная правка + merge из `main`) | удалить дубликат: директива должна быть ровно одна |
+| `NU1504: Обнаружены повторяющиеся элементы "PackageReference"` | в `.csproj` две одинаковые ссылки на пакет (ручная правка + merge) | оставить одну `<PackageReference Include="..." />`; версия при этом всё равно берётся из `Directory.Packages.props` |
 
 ## 10. Ограничения наброска и направления развития
 
