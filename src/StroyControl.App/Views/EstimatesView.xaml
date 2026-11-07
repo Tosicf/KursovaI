@@ -229,12 +229,12 @@
                                         </DataTemplate>
                                     </DataGridTemplateColumn.CellTemplate>
                                 </DataGridTemplateColumn>
-                                <DataGridTextColumn Header="Кол-во" Binding="{Binding PlannedQuantity, StringFormat={}{0:N2}}" Width="100"
+                                <DataGridTextColumn Header="Кол-во" Binding="{Binding PlannedQuantity, StringFormat='{}{0:N2}', Mode=OneWay}" Width="100"
                                                     ElementStyle="{StaticResource NumericCell}" />
-                                <DataGridTextColumn Header="Ед." Binding="{Binding UnitDisplay}" Width="64" />
-                                <DataGridTextColumn Header="Цена, BYN" Binding="{Binding PlannedUnitPrice, StringFormat={}{0:N2}}" Width="110"
+                                <DataGridTextColumn Header="Ед." Binding="{Binding UnitDisplay, Mode=OneWay}" Width="64" />
+                                <DataGridTextColumn Header="Цена, BYN" Binding="{Binding PlannedUnitPrice, StringFormat='{}{0:N2}', Mode=OneWay}" Width="110"
                                                     ElementStyle="{StaticResource NumericCell}" />
-                                <DataGridTextColumn Header="Сумма, BYN" Binding="{Binding PlannedCost, StringFormat={}{0:N2}}" Width="120"
+                                <DataGridTextColumn Header="Сумма, BYN" Binding="{Binding PlannedCost, StringFormat='{}{0:N2}', Mode=OneWay}" Width="120"
                                                     ElementStyle="{StaticResource NumericCell}" />
                                 <DataGridTemplateColumn Header="" Width="80">
                                     <DataGridTemplateColumn.CellTemplate>

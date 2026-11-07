@@ -95,11 +95,11 @@
                     <TextBlock Style="{StaticResource Caption}" Text="{Binding RowsSummary}" />
                     <TextBlock Style="{StaticResource Caption}" FontSize="11" Margin="0,2,0,0">
                         <Run Text="Внимание: " />
-                        <Run Text="{Binding WarningCount}" Foreground="{StaticResource WarningBrush}" />
+                        <Run Text="{Binding WarningCount, Mode=OneWay}" Foreground="{StaticResource WarningBrush}" />
                         <Run Text="   ·   Критично: " />
-                        <Run Text="{Binding CriticalCount}" Foreground="{StaticResource DangerBrush}" />
+                        <Run Text="{Binding CriticalCount, Mode=OneWay}" Foreground="{StaticResource DangerBrush}" />
                         <Run Text="   ·   Экономия: " />
-                        <Run Text="{Binding EconomyCount}" Foreground="{StaticResource SuccessBrush}" />
+                        <Run Text="{Binding EconomyCount, Mode=OneWay}" Foreground="{StaticResource SuccessBrush}" />
                     </TextBlock>
                 </StackPanel>
 
@@ -124,9 +124,9 @@
                                     <StackPanel VerticalAlignment="Center">
                                         <TextBlock Text="{Binding MaterialName}" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" />
                                         <TextBlock Style="{StaticResource Caption}" FontSize="11" Margin="0,2,0,0" TextTrimming="CharacterEllipsis">
-                                            <Run Text="{Binding ProjectName}" />
+                                            <Run Text="{Binding ProjectName, Mode=OneWay}" />
                                             <Run Text="  ·  " Foreground="{StaticResource TextMutedBrush}" />
-                                            <Run Text="{Binding Section}" />
+                                            <Run Text="{Binding Section, Mode=OneWay}" />
                                         </TextBlock>
                                     </StackPanel>
                                 </DataTemplate>
@@ -138,15 +138,15 @@
                                 <DataTemplate>
                                     <StackPanel VerticalAlignment="Center">
                                         <TextBlock FontSize="12">
-                                            <Run Text="{Binding ActualQuantity, StringFormat={}{0:N2}}" />
+                                            <Run Text="{Binding ActualQuantity, StringFormat='{}{0:N2}', Mode=OneWay}" />
                                             <Run Text=" / " Foreground="{StaticResource TextMutedBrush}" />
-                                            <Run Text="{Binding PlannedQuantity, StringFormat={}{0:N2}}" Foreground="{StaticResource TextSecondaryBrush}" />
-                                            <Run Text="{Binding Unit}" Foreground="{StaticResource TextMutedBrush}" FontSize="10.5" />
+                                            <Run Text="{Binding PlannedQuantity, StringFormat='{}{0:N2}', Mode=OneWay}" Foreground="{StaticResource TextSecondaryBrush}" />
+                                            <Run Text="{Binding Unit, Mode=OneWay}" Foreground="{StaticResource TextMutedBrush}" FontSize="10.5" />
                                         </TextBlock>
                                         <TextBlock FontSize="10.5" Margin="0,2,0,0"
                                                    Foreground="{Binding IsOverrun, Converter={StaticResource BoolToBrush}, ConverterParameter=DangerBrush|SuccessBrush}">
                                             <Run Text="Δ " />
-                                            <Run Text="{Binding QuantityDeviation, StringFormat={}{0:+0.00;-0.00;0}}" />
+                                            <Run Text="{Binding QuantityDeviation, StringFormat='{}{0:+0.00;-0.00;0}', Mode=OneWay}" />
                                         </TextBlock>
                                     </StackPanel>
                                 </DataTemplate>
@@ -158,13 +158,13 @@
                                 <DataTemplate>
                                     <StackPanel VerticalAlignment="Center">
                                         <TextBlock FontSize="12">
-                                            <Run Text="{Binding ActualPrice, StringFormat={}{0:N2}}" />
+                                            <Run Text="{Binding ActualPrice, StringFormat='{}{0:N2}', Mode=OneWay}" />
                                             <Run Text=" / " Foreground="{StaticResource TextMutedBrush}" />
-                                            <Run Text="{Binding PlannedPrice, StringFormat={}{0:N2}}" Foreground="{StaticResource TextSecondaryBrush}" />
+                                            <Run Text="{Binding PlannedPrice, StringFormat='{}{0:N2}', Mode=OneWay}" Foreground="{StaticResource TextSecondaryBrush}" />
                                         </TextBlock>
                                         <TextBlock FontSize="10.5" Margin="0,2,0,0" Foreground="{StaticResource TextMutedBrush}">
                                             <Run Text="Δ " />
-                                            <Run Text="{Binding PriceDeviation, StringFormat={}{0:+0.00;-0.00;0}}" />
+                                            <Run Text="{Binding PriceDeviation, StringFormat='{}{0:+0.00;-0.00;0}', Mode=OneWay}" />
                                         </TextBlock>
                                     </StackPanel>
                                 </DataTemplate>
@@ -176,14 +176,14 @@
                                 <DataTemplate>
                                     <StackPanel VerticalAlignment="Center">
                                         <TextBlock FontSize="12" FontWeight="SemiBold">
-                                            <Run Text="{Binding ActualCost, StringFormat={}{0:N2}}" />
+                                            <Run Text="{Binding ActualCost, StringFormat='{}{0:N2}', Mode=OneWay}" />
                                             <Run Text=" / " Foreground="{StaticResource TextMutedBrush}" FontWeight="Normal" />
-                                            <Run Text="{Binding PlannedCost, StringFormat={}{0:N2}}" FontWeight="Normal"
+                                            <Run Text="{Binding PlannedCost, StringFormat='{}{0:N2}', Mode=OneWay}" FontWeight="Normal"
                                                  Foreground="{StaticResource TextSecondaryBrush}" />
                                         </TextBlock>
                                         <TextBlock FontSize="10.5" Margin="0,2,0,0"
                                                    Foreground="{Binding IsOverrun, Converter={StaticResource BoolToBrush}, ConverterParameter=DangerBrush|SuccessBrush}">
-                                            <Run Text="{Binding CostDeviation, StringFormat={}{0:+0.00;-0.00;0.00}}" />
+                                            <Run Text="{Binding CostDeviation, StringFormat='{}{0:+0.00;-0.00;0.00}', Mode=OneWay}" />
                                             <Run Text=" BYN" />
                                         </TextBlock>
                                     </StackPanel>

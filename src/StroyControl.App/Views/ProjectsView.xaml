@@ -89,18 +89,18 @@
                                     <StackPanel VerticalAlignment="Center">
                                         <TextBlock Text="{Binding Name}" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" />
                                         <TextBlock Style="{StaticResource Caption}" FontSize="11" Margin="0,2,0,0">
-                                            <Run Text="{Binding Code}" />
+                                            <Run Text="{Binding Code, Mode=OneWay}" />
                                             <Run Text="  ·  " Foreground="{StaticResource TextMutedBrush}" />
-                                            <Run Text="{Binding AddressDisplay}" />
+                                            <Run Text="{Binding AddressDisplay, Mode=OneWay}" />
                                         </TextBlock>
                                     </StackPanel>
                                 </DataTemplate>
                             </DataGridTemplateColumn.CellTemplate>
                         </DataGridTemplateColumn>
 
-                        <DataGridTextColumn Header="Заказчик" Binding="{Binding Customer}" Width="190" />
-                        <DataGridTextColumn Header="Сроки" Binding="{Binding PeriodDisplay}" Width="180" />
-                        <DataGridTextColumn Header="Договор, BYN" Binding="{Binding ContractSum, StringFormat={}{0:N0}}" Width="130"
+                        <DataGridTextColumn Header="Заказчик" Binding="{Binding Customer, Mode=OneWay}" Width="190" />
+                        <DataGridTextColumn Header="Сроки" Binding="{Binding PeriodDisplay, Mode=OneWay}" Width="180" />
+                        <DataGridTextColumn Header="Договор, BYN" Binding="{Binding ContractSum, StringFormat='{}{0:N0}', Mode=OneWay}" Width="130"
                                             ElementStyle="{StaticResource NumericCell}" />
 
                         <DataGridTemplateColumn Header="Готовность" Width="150">
