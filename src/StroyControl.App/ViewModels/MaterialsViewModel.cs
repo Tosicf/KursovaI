@@ -59,7 +59,7 @@ public sealed partial class MaterialsViewModel : ViewModelBase
 
     public ICollectionView ItemsView { get; }
 
-    public bool CanEdit => _session.CanEdit;
+    public bool CanEdit => _session.CanEditMaterials;
 
     public bool IsEmpty => Items.Count == 0;
 

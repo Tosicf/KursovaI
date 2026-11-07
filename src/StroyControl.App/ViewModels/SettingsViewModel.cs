@@ -3,7 +3,6 @@ using CommunityToolkit.Mvvm.Input;
 using StroyControl.App.Services;
 using StroyControl.App.Startup;
 using StroyControl.Core.Enums;
-using RoleKind = StroyControl.Core.Enums.UserRole;
 using StroyControl.Core.Interfaces;
 using RoleKind = StroyControl.Core.Enums.UserRole;
 
@@ -55,11 +54,11 @@ public sealed partial class SettingsViewModel : ViewModelBase
 
     public string RoleDescription => Session.CurrentUser?.Role switch
     {
-        RoleKind.Admin => "Полный доступ: справочники, документы, сотрудники и настройки.",
-        RoleKind.Engineer => "Сметы, анализ отклонений, справочники и документы.",
-        RoleKind.SupplyManager => "Материалы, поставщики и поступления.",
-        RoleKind.Foreman => "Списания материалов и контроль остатков по объекту.",
-        RoleKind.Accountant => "Просмотр данных и отчётов без изменения документов.",
+        RoleKind.Admin => "Полный доступ: справочники, сметы, документы, сотрудники и настройки.",
+        RoleKind.Engineer => "Сметы и план: справочники, сметы, документы, анализ отклонений и отчёты.",
+        RoleKind.SupplyManager => "Закупки: поставщики и поступления; видит смету и остаток бюджета.",
+        RoleKind.Foreman => "Факт на объекте: поступления и списания материалов, контроль остатков.",
+        RoleKind.Accountant => "Финансы и отчётность: просмотр смет и отклонений, экспорт отчётов.",
         _ => "Роль не определена."
     };
     public IReadOnlyList<string> Capabilities
@@ -68,10 +67,26 @@ public sealed partial class SettingsViewModel : ViewModelBase
         {
             var list = new List<string> { "Просмотр справочников, смет и документов движения" };
 
-            if (Session.CanEdit)
-                list.Add("Создание и редактирование справочников и документов");
+            if (Session.CanEditEstimates)
+                list.Add("Редактирование смет и позиций плана");
+
+            var catalogs = new List<string>();
+            if (Session.CanEditMaterials) catalogs.Add("материалы");
+            if (Session.CanEditSuppliers) catalogs.Add("поставщики");
+            if (Session.CanEditProjects) catalogs.Add("объекты");
+            if (catalogs.Count > 0)
+                list.Add("Ведение справочников: " + string.Join(", ", catalogs));
+
+            var documents = new List<string>();
+            if (Session.CanEditDeliveries) documents.Add("поступления");
+            if (Session.CanEditUsages) documents.Add("списания");
+            if (documents.Count > 0)
+                list.Add("Оформление документов: " + string.Join(", ", documents));
+
             if (Session.CanViewFinance)
-                list.Add("Просмотр финансовых показателей и экспорт отчётов");
+                list.Add("Просмотр финансовых показателей и отклонений от сметы");
+            if (Session.CanExportReports)
+                list.Add("Формирование и экспорт отчётов (CSV для Excel/1С)");
             if (Session.CanManageUsers)
                 list.Add("Управление учётными записями сотрудников");
 

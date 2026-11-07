@@ -51,9 +51,14 @@ public partial class App : Application
             .AddJsonFile("appsettings.json", optional: false, reloadOnChange: false)
             .Build();
 
-        var connectionString = configuration.GetConnectionString("MySql")
-                               ?? configuration["Database:ConnectionString"]
-                               ?? string.Empty;
+        // Приоритет: переменная окружения (удобно для лабораторных и чужих ПК) →
+        // ConnectionStrings:MySql → Database:ConnectionString в appsettings.json.
+        var connectionString = Environment.GetEnvironmentVariable("STROYCONTROL_CONNECTION");
+        if (string.IsNullOrWhiteSpace(connectionString))
+            connectionString = configuration.GetConnectionString("MySql")
+                               ?? configuration["Database:ConnectionString"];
+
+        connectionString ??= string.Empty;
         var serverVersion = configuration["Database:ServerVersion"];
         var demoModeAllowed = configuration.GetValue("Application:DemoModeAllowed", true);
         var organization = configuration["Application:Organization"] ?? "СУ-14, г. Минск";

@@ -59,7 +59,7 @@ public sealed partial class EstimatesViewModel : ViewModelBase
 
     public ICollectionView EstimatesView { get; }
 
-    public bool CanEdit => _session.CanEdit;
+    public bool CanEdit => _session.CanEditEstimates;
 
     public bool IsEmpty => Estimates.Count == 0;
 

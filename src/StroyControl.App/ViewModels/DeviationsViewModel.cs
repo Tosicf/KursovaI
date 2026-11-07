@@ -70,7 +70,7 @@ public sealed partial class DeviationsViewModel : ViewModelBase
 
     public ICollectionView RowsView { get; }
 
-    public bool CanExport => _session.CanViewFinance;
+    public bool CanExport => _session.CanExportReports;
 
     public bool IsEmpty => Report is null || Report.Rows.Count == 0;
 

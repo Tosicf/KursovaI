@@ -43,7 +43,7 @@ public sealed partial class ProjectsViewModel : ViewModelBase
 
     public ICollectionView ItemsView { get; }
 
-    public bool CanEdit => _session.CanEdit;
+    public bool CanEdit => _session.CanEditProjects;
 
     public bool IsEmpty => Items.Count == 0;
 

@@ -62,7 +62,7 @@ public sealed partial class UsagesViewModel : ViewModelBase
 
     public ICollectionView ItemsView { get; }
 
-    public bool CanEdit => _session.CanEdit;
+    public bool CanEdit => _session.CanEditUsages;
 
     public bool IsEmpty => Items.Count == 0;
 
