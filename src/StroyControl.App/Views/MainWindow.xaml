@@ -72,7 +72,7 @@
                             Visibility="{Binding IsSidebarCollapsed, Converter={StaticResource BoolToVisibility}, ConverterParameter=invert}">
                         <StackPanel>
                             <TextBlock Text="{Binding Organization}" Foreground="#DCE6F3" FontSize="12" FontWeight="SemiBold" />
-                            <TextBlock Text="Сервер MySQL" Foreground="#7E93B2" FontSize="11" Margin="0,2,0,0" />
+                            <TextBlock Text="Сервер SQL Server" Foreground="#7E93B2" FontSize="11" Margin="0,2,0,0" />
                             <TextBlock Text="{Binding Environment.ServerDisplay}" Foreground="#9FB3D0" FontSize="11" />
                         </StackPanel>
                     </Border>

@@ -296,7 +296,7 @@ public sealed class InventoryService : IInventoryService
 
     private static Task<IDbContextTransaction?> BeginTransactionAsync(AppDbContext db, CancellationToken cancellationToken)
     {
-        // Для реляционной MySQL открываем настоящую транзакцию; для демо-режима
+        // Для реляционной СУБД открываем настоящую транзакцию; для демо-режима
         // (InMemory) транзакции не поддерживаются, операции выполняются сразу.
         return db.Database.IsRelational()
             ? BeginAsync(db, cancellationToken)

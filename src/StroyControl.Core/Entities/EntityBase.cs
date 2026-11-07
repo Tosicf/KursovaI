@@ -3,7 +3,7 @@ namespace StroyControl.Core.Entities;
 /// <summary>
 /// Базовая сущность: первичный ключ, метка времени и версия строки.
 /// RowVersion используется как токен оптимистической блокировки при сетевой работе
-/// нескольких клиентов с одной базой MySQL.
+/// нескольких клиентов с одной базой SQL Server.
 /// </summary>
 public abstract class EntityBase : IEntity
 {

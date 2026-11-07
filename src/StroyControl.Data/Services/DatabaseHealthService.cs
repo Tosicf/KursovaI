@@ -3,7 +3,7 @@ using StroyControl.Core.Interfaces;
 
 namespace StroyControl.Data.Services;
 
-/// <summary>Проверка доступности сервера MySQL с клиентского рабочего места.</summary>
+/// <summary>Проверка доступности сервера SQL Server с клиентского рабочего места.</summary>
 public sealed class DatabaseHealthService : IDatabaseHealthService
 {
     private readonly IDbContextFactory<AppDbContext> _factory;
@@ -22,7 +22,7 @@ public sealed class DatabaseHealthService : IDatabaseHealthService
             {
                 return new DatabaseHealth(
                     false,
-                    "Сервер не отвечает. Проверьте, запущена ли служба MySQL и доступен ли порт 3306.",
+                    "Сервер не отвечает. Проверьте, запущена ли служба SQL Server (MSSQL$SQLEXPRESS) и доступен ли порт 1433.",
                     connection.DataSource,
                     connection.Database,
                     0,

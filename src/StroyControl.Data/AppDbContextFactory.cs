@@ -12,10 +12,10 @@ public sealed class AppDbContextFactory : IDesignTimeDbContextFactory<AppDbConte
     public AppDbContext CreateDbContext(string[] args)
     {
         var connectionString = Environment.GetEnvironmentVariable("STROYCONTROL_CONNECTION")
-            ?? "Server=localhost;Port=3306;Database=stroycontrol;User=root;Password=root;";
+            ?? @"Server=.\SQLEXPRESS;Database=StroyControl;Trusted_Connection=True;TrustServerCertificate=True;";
 
         var options = new DbContextOptionsBuilder<AppDbContext>()
-            .UseMySql(connectionString, new MySqlServerVersion(new Version(8, 0, 36)))
+            .UseSqlServer(connectionString)
             .Options;
 
         return new AppDbContext(options);

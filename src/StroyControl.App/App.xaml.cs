@@ -52,26 +52,25 @@ public partial class App : Application
             .Build();
 
         // Приоритет: переменная окружения (удобно для лабораторных и чужих ПК) →
-        // ConnectionStrings:MySql → Database:ConnectionString в appsettings.json.
+        // ConnectionStrings:SqlServer → Database:ConnectionString в appsettings.json.
         var connectionString = Environment.GetEnvironmentVariable("STROYCONTROL_CONNECTION");
         if (string.IsNullOrWhiteSpace(connectionString))
-            connectionString = configuration.GetConnectionString("MySql")
+            connectionString = configuration.GetConnectionString("SqlServer")
                                ?? configuration["Database:ConnectionString"];
 
         connectionString ??= string.Empty;
-        var serverVersion = configuration["Database:ServerVersion"];
         var demoModeAllowed = configuration.GetValue("Application:DemoModeAllowed", true);
         var organization = configuration["Application:Organization"] ?? "СУ-14, г. Минск";
 
         var demoMode = false;
-        var probe = await MySqlProbe.TryConnectAsync(connectionString);
+        var probe = await SqlServerProbe.TryConnectAsync(connectionString);
 
         if (!probe.Success)
         {
             if (!demoModeAllowed)
             {
                 MessageBox.Show(
-                    $"Сервер MySQL недоступен.\n\n{probe.Error}\n\nПроверьте службу MySQL и строку подключения в appsettings.json.",
+                    $"Сервер SQL Server недоступен.\n\n{probe.Error}\n\nПроверьте, запущена ли служба SQL Server, и строку подключения в appsettings.json.",
                     "Нет связи с базой данных",
                     MessageBoxButton.OK,
                     MessageBoxImage.Error);
@@ -80,7 +79,7 @@ public partial class App : Application
             }
 
             var answer = MessageBox.Show(
-                $"Сервер MySQL недоступен.\n\n{probe.Error}\n\n" +
+                $"Сервер SQL Server недоступен.\n\n{probe.Error}\n\n" +
                 "Запустить приложение в демонстрационном режиме? Данные будут храниться в памяти процесса " +
                 "и не сохранятся после закрытия.",
                 "Нет связи с базой данных",
@@ -102,7 +101,7 @@ public partial class App : Application
         services.AddSingleton<IConfiguration>(configuration);
         services.AddSingleton(environment);
 
-        services.AddStroyControlData(connectionString, demoMode, serverVersion);
+        services.AddStroyControlData(connectionString, demoMode);
         RegisterApplicationServices(services);
 
         _services = services.BuildServiceProvider();

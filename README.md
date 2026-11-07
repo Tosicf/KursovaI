@@ -2,7 +2,7 @@
 
 **Тема курсовой работы:** «Сетевое программное средство управления строительными материалами и анализа отклонений от сметы на строительном объекте».
 
-Клиент-серверное приложение для строительной организации: справочник материалов и поставщиков, сметы по объектам, приходные накладные, акты списания и автоматический анализ отклонений «план — факт» по количеству, цене и стоимости. Все данные хранятся в общей базе **MySQL**, к которой одновременно подключаются несколько рабочих мест по сети.
+Клиент-серверное приложение для строительной организации: справочник материалов и поставщиков, сметы по объектам, приходные накладные, акты списания и автоматический анализ отклонений «план — факт» по количеству, цене и стоимости. Все данные хранятся в общей базе **Microsoft SQL Server**, к которой одновременно подключаются несколько рабочих мест по сети.
 
 ---
 
@@ -33,7 +33,7 @@
 | Слой | Технологии |
 |---|---|
 | Клиент | C# 12, .NET 8, WPF, MVVM (CommunityToolkit.Mvvm), XAML-стили и ControlTemplate'ы без сторонних UI-библиотек |
-| Данные | EF Core 8, Pomelo.EntityFrameworkCore.MySql, MySQL 8, `IDbContextFactory` |
+| Данные | EF Core 8, Microsoft.EntityFrameworkCore.SqlServer (ADO.NET — Microsoft.Data.SqlClient), SQL Server 2019/2022 (в т.ч. бесплатный Express), `IDbContextFactory` |
 | Инфраструктура | Microsoft.Extensions.DependencyInjection, Microsoft.Extensions.Configuration (appsettings.json) |
 | Тесты | xUnit (модульные тесты расчёта отклонений и хеширования паролей) |
 
@@ -50,7 +50,7 @@ KursovaI.sln
 │   │   ├── Services/             # AuthService, UserService, SessionService, CsvReportExporter
 │   │   └── Security/             # PasswordHasher
 │   │
-│   ├── StroyControl.Data/        # доступ к MySQL
+│   ├── StroyControl.Data/        # доступ к SQL Server
 │   │   ├── AppDbContext.cs       # DbSet'ы, аудит, версия строки (оптимистическая блокировка)
 │   │   ├── Configurations/       # IEntityTypeConfiguration на каждую сущность
 │   │   ├── Repositories/         # RepositoryBase<T> + репозитории сущностей
@@ -65,7 +65,7 @@ KursovaI.sln
 │       ├── Resources/Templates/  # ViewTemplates (VM → View), EditorTemplates (формы диалогов)
 │       ├── Controls/             # LoadingOverlay, EmptyState, KpiCard, ToastHost
 │       ├── Converters/, Services/, Startup/, Behaviors/, Models/
-│       └── appsettings.json      # строка подключения к MySQL
+│       └── appsettings.json      # строка подключения к SQL Server
 │
 ├── tests/StroyControl.Core.Tests # xUnit-тесты бизнес-логики
 ├── database/                     # schema.sql — создание БД, reset.sql — полный сброс
@@ -79,15 +79,15 @@ KursovaI.sln
 ### Требования
 - Windows 10/11, **.NET SDK 8.0** (сборка возможна и более новым SDK — 9.x/10.x, если установлен targeting pack .NET 8)
 - **.NET Desktop Runtime 8.0** для запуска (если его нет, приложение стартует на более новом рантайме благодаря `<RollForward>Major</RollForward>`)
-- MySQL Server 8.0 (локально или в сети)
+- Microsoft SQL Server 2019/2022, включая бесплатный **SQL Server Express** (локально или в сети); клиентские инструменты — SSMS и/или `sqlcmd`
 
-### 1) Подключить базу данных MySQL (один раз)
+### 1) Подключить базу данных SQL Server (один раз)
 
-Подробная пошаговая инструкция — ниже, в разделе **5.1**. Кратко: установить MySQL 8, запустить службу, выполнить `database/schema.sql` под `root`, прописать строку подключения в `appsettings.json`.
+Подробная пошаговая инструкция — ниже, в разделе **5.1**. Кратко: установить SQL Server Express, выполнить `database/schema.sql`, прописать строку подключения в `appsettings.json`.
 
 Проверка, что всё получилось:
-```bash
-mysql -u stroycontrol -pstroycontrol -e "SHOW TABLES FROM stroycontrol;"
+```powershell
+sqlcmd -S .\SQLEXPRESS -E -Q "SELECT name FROM StroyControl.sys.tables ORDER BY name"
 ```
 Должно вывестись 9 таблиц: `deliveries`, `delivery_items`, `estimate_items`, `estimates`, `material_usages`, `materials`, `projects`, `suppliers`, `users`.
 
@@ -95,26 +95,32 @@ mysql -u stroycontrol -pstroycontrol -e "SHOW TABLES FROM stroycontrol;"
 
 | Файл | Что делает | Когда нужен |
 |---|---|---|
-| `database/schema.sql` | создаёт базу `stroycontrol`, пользователя `stroycontrol/stroycontrol`, 9 таблиц и 2 представления | при первом развёртывании и после переустановки MySQL |
-| `database/reset.sql` | удаляет все таблицы и представления (данные теряются, база и пользователь остаются) | когда нужно «начать с нуля»: после сброса приложение снова создаст схему и демо-данные |
+| `database/schema.sql` | создаёт базу `StroyControl`, SQL-логин `stroycontrol`, 9 таблиц и 2 представления (T-SQL) | при первом развёртывании и после переустановки SQL Server |
+| `database/reset.sql` | удаляет все таблицы и представления (данные теряются, база и логин остаются) | когда нужно «начать с нуля»: после сброса приложение снова создаст схему и демо-данные |
 
-Оба скрипта идемпотентны (повторный запуск не ломает базу) и содержат в конце проверочный `SELECT` со списком таблиц.
+Скрипты идемпотентны: каждый объект создаётся с проверкой наличия (`IF DB_ID(...) IS NULL`, `IF OBJECT_ID(...) IS NULL`), поэтому повторный запуск не ломает базу и не удаляет данные.
+
+> Таблицы можно вообще не создавать вручную: при первом запуске приложение выполняет `EnsureCreated` и создаёт схему само. Скрипт нужен, когда базу разворачивает администратор или у учётной записи приложения нет прав на создание объектов.
 
 Строка подключения задаётся в `src/StroyControl.App/appsettings.json`:
 ```json
 {
   "Database": {
-    "Provider": "MySql",
-    "ServerVersion": "8.0.36",
-    "ConnectionString": "Server=localhost;Port=3306;Database=stroycontrol;User=stroycontrol;Password=stroycontrol;CharSet=utf8mb4;AllowUserVariables=True;"
+    "Provider": "SqlServer",
+    "ConnectionString": "Server=.\\SQLEXPRESS;Database=StroyControl;Trusted_Connection=True;TrustServerCertificate=True;MultipleActiveResultSets=True;"
   }
 }
 ```
-Для работы нескольких рабочих мест достаточно указать в строке подключения IP сервера MySQL (например, `Server=192.168.1.10;Port=3306;...`) — клиентские приложения при этом используют одну и ту же базу.
+`Trusted_Connection=True` — вход под текущей учётной записью Windows (пароль нигде не хранится). `TrustServerCertificate=True` нужен потому, что `Microsoft.Data.SqlClient` по умолчанию требует шифрование и валидный сертификат сервера — для учебного локального сервера сертификат самоподписанный.
+
+Для работы нескольких рабочих мест укажите в строке подключения адрес сервера и SQL-логин (подробности в 5.1):
+```
+Server=192.168.1.10,1433;Database=StroyControl;User Id=stroycontrol;Password=stroycontrol;TrustServerCertificate=True;MultipleActiveResultSets=True;
+```
 
 Альтернатива правке файла — переменная окружения `STROYCONTROL_CONNECTION`: она имеет приоритет над `appsettings.json` и удобна, когда приложение запускают на чужом компьютере или в лаборатории.
 ```powershell
-$env:STROYCONTROL_CONNECTION = "Server=localhost;Port=3306;Database=stroycontrol;User=stroycontrol;Password=stroycontrol;CharSet=utf8mb4;AllowUserVariables=True;"
+$env:STROYCONTROL_CONNECTION = "Server=.\SQLEXPRESS;Database=StroyControl;Trusted_Connection=True;TrustServerCertificate=True;"
 dotnet run --project src/StroyControl.App
 ```
 
@@ -136,7 +142,7 @@ dotnet run --project src/StroyControl.App
 
 На экране входа есть кнопки быстрого входа демонстрационными ролями.
 
-> Если сервер MySQL недоступен, приложение предложит **демонстрационный режим** (EF Core InMemory): интерфейс полностью работоспособен, но данные не сохраняются после закрытия. Отключается флагом `Application:DemoModeAllowed: false`.
+> Если сервер SQL Server недоступен, приложение предложит **демонстрационный режим** (EF Core InMemory): интерфейс полностью работоспособен, но данные не сохраняются после закрытия. Отключается флагом `Application:DemoModeAllowed: false`.
 
 ### 4) Тесты
 ```bash
@@ -151,62 +157,92 @@ dotnet ef migrations add InitialCreate --project src/StroyControl.Data --startup
 dotnet ef database update --project src/StroyControl.Data --startup-project src/StroyControl.App
 ```
 
-### 5.1 Подключение MySQL шаг за шагом (Windows)
+### 5.1 Подключение SQL Server шаг за шагом (Windows)
 
-**Шаг 1. Установить MySQL Server 8.0.** Подойдёт MySQL Installer (Developer Default) или winget:
+**Шаг 1. Установить SQL Server Express.** Варианты:
+- установщик с сайта Microsoft: «SQL Server 2022 Express» (тип установки «Базовая»);
+- либо через winget, если пакет доступен в вашей версии каталога: `winget search "SQL Server"`.
+
+По умолчанию создаётся именованный экземпляр `.\SQLEXPRESS` (то есть `ИМЯ_ПК\SQLEXPRESS`), служба называется `MSSQL$SQLEXPRESS`. Для управления удобно поставить **SQL Server Management Studio (SSMS)** — она же пригодится для проверки таблиц и прав.
+
+**Шаг 2. Проверить, что служба запущена** (PowerShell от имени администратора):
 ```powershell
-winget install Oracle.MySQL
+Get-Service -Name "MSSQL*"       # Status должен быть Running
+net start 'MSSQL$SQLEXPRESS'     # если остановлена
 ```
-При установке запомните пароль пользователя `root`. Порт оставьте `3306`.
-
-**Шаг 2. Проверить, что служба запущена.** В PowerShell от имени администратора:
+Проверка подключения:
 ```powershell
-Get-Service -Name "MySQL*"          # Status должен быть Running
-net start MySQL80                   # если остановлена (имя службы может быть MySQL80 или MySQL)
+sqlcmd -S .\SQLEXPRESS -E -Q "SELECT @@VERSION"
 ```
-Если `net start` отвечает «Служба не найдена», посмотрите точное имя: `Get-Service | Where-Object Name -like "MySQL*"`.
+`-E` — Windows-аутентификация (вход под текущим пользователем Windows). Установившаяся по умолчанию учётная запись администратора SQL Server имеет права `sysadmin`, поэтому ей доступны создание базы и таблиц.
 
-**Шаг 3. Выполнить скрипт создания базы** из корня репозитория:
+**Шаг 3. Создать базу и схему.** Из корня репозитория:
 ```powershell
-cmd /c "mysql -u root -p < database\schema.sql"
+sqlcmd -S .\SQLEXPRESS -E -i database\schema.sql
 ```
-(в PowerShell символ `<` не поддерживается, поэтому вызов идёт через `cmd /c`; в обычном `cmd.exe` достаточно `mysql -u root -p < database\schema.sql`).
-В MySQL Workbench: `File → Open SQL Script…` → `database/schema.sql` → кнопка Execute (молния ⚡).
+В SSMS: `File → Open → File…` → `database/schema.sql` → **Execute (F5)**.
+Скрипт создаёт базу `StroyControl`, SQL-логин `stroycontrol`, 9 таблиц и 2 представления; в конце печатает список объектов (`BASE TABLE` — 9, `VIEW` — 2).
 
-В конце скрипт печатает список созданных объектов — должно быть 9 таблиц (`BASE TABLE`) и 2 представления (`VIEW`).
-
-**Шаг 4. Проверить вход пользователем приложения:**
+**Шаг 4. Проверить результат:**
 ```powershell
-mysql -u stroycontrol -pstroycontrol -e "SHOW TABLES FROM stroycontrol; SELECT COUNT(*) AS users FROM stroycontrol.users;"
+sqlcmd -S .\SQLEXPRESS -E -Q "SELECT name FROM StroyControl.sys.tables ORDER BY name"
+sqlcmd -S .\SQLEXPRESS -E -Q "SELECT COUNT(*) AS Users FROM StroyControl.dbo.users"
 ```
-Если команда `mysql` не находится — добавьте в `PATH` каталог `C:\Program Files\MySQL\MySQL Server 8.0\bin` (или запускайте `mysql.exe` по полному пути).
+Если `sqlcmd` не найден — он входит в пакет SQL Server (каталог `C:\Program Files\Microsoft SQL Server\Client SDK\ODBC\170\Tools\Binn`); либо используйте SSMS.
 
-**Шаг 5. Прописать строку подключения** в `src/StroyControl.App/appsettings.json` (по умолчанию она уже совпадает со скриптом):
+**Шаг 5. Прописать строку подключения** в `src/StroyControl.App/appsettings.json` (по умолчанию она уже такая):
 ```
-Server=localhost;Port=3306;Database=stroycontrol;User=stroycontrol;Password=stroycontrol;CharSet=utf8mb4;AllowUserVariables=True;
+Server=.\SQLEXPRESS;Database=StroyControl;Trusted_Connection=True;TrustServerCertificate=True;MultipleActiveResultSets=True;
 ```
-Отдельные поля: `Server` — адрес сервера (`localhost` или IP по сети), `Port` — 3306, `Database` — `stroycontrol`, `User`/`Password` — учётка из скрипта. Для другого пароля поменяйте его и в скрипте (`CREATE USER`), и здесь.
+Разбор полей: `Server` — экземпляр (`.\SQLEXPRESS`, `localhost`, `192.168.1.10,1433`), `Database` — имя базы, `Trusted_Connection=True` — вход под учётной записью Windows, `TrustServerCertificate=True` — не проверять самоподписанный сертификат, `MultipleActiveResultSets=True` — несколько активных запросов в одном подключении.
 
 **Шаг 6. Запустить приложение:**
 ```powershell
 dotnet run --project src/StroyControl.App
 ```
-Первый запуск сам создаст (при необходимости) и наполнит базу демо-данными: 5 сотрудников, поставщики, ~20 материалов, 3 объекта, сметы, поступления и списания. Повторно демо-данные не дублируются — признак «база уже наполнена» — наличие записей в `users`.
+Первый запуск создаёт (если нужно) таблицы и наполняет базу демо-данными: 5 сотрудников, поставщики, ~20 материалов, 3 объекта, сметы, поступления и списания. Повторно они не дублируются — признак «база наполнена» — записи в `dbo.users`.
 
-**Шаг 7. Убедиться, что режим не демонстрационный.** На странице «Настройки» внизу отображается источник данных: должно быть **`MySQL 8 (сетевая БД)`** и «Подключение активно», а не «Демо-режим (данные в памяти)».
+**Шаг 7. Убедиться, что режим не демонстрационный.** «Настройки» → внизу источник данных: должно быть **`Microsoft SQL Server (сетевая БД)`** и «Подключение активно», а не «Демо-режим (данные в памяти)».
+
+#### Доступ с других рабочих мест (несколько ПК по сети)
+
+Важно: **Windows-аутентификация по сети работает только в домене Active Directory.** В рабочей группе удалённые клиенты должны подключаться по SQL-логину — он уже создан скриптом (`stroycontrol` / `stroycontrol`), но нужно разрешить смешанный режим и сетевой доступ.
+
+1. **Включить TCP/IP и фиксированный порт.** SQL Server Configuration Manager → `SQL Server Network Configuration → Protocols for SQLEXPRESS → TCP/IP` → `Enabled`; вкладка `IP Addresses` → раздел `IPAll`: `TCP Port = 1433`, `TCP Dynamic Ports` — очистить. Перезапустить службу `SQL Server (SQLEXPRESS)`.
+2. **Служба SQL Server Browser** (нужна для подключения по имени экземпляра): `Set-Service SQLBrowser -StartupType Automatic; Start-Service SQLBrowser`.
+3. **Смешанный режим аутентификации.** SSMS → правый клик по серверу → `Properties → Security → SQL Server and Windows Authentication mode` → OK → перезапуск службы:
+   ```powershell
+   net stop 'MSSQL$SQLEXPRESS'; net start 'MSSQL$SQLEXPRESS'
+   ```
+4. **Брандмауэр:**
+   ```powershell
+   New-NetFirewallRule -DisplayName "SQL Server 1433" -Direction Inbound -Protocol TCP -LocalPort 1433 -Action Allow
+   New-NetFirewallRule -DisplayName "SQL Server Browser" -Direction Inbound -Protocol UDP -LocalPort 1434 -Action Allow
+   ```
+5. **Проверить с другой машины:**
+   ```powershell
+   sqlcmd -S 192.168.1.10,1433 -U stroycontrol -P stroycontrol -Q "SELECT DB_NAME(), SUSER_NAME()"
+   ```
+6. **Строка подключения на клиентах** (`appsettings.json` на каждом ПК):
+   ```
+   Server=192.168.1.10,1433;Database=StroyControl;User Id=stroycontrol;Password=stroycontrol;TrustServerCertificate=True;MultipleActiveResultSets=True;
+   ```
+   Пароль поменяйте и в SSMS (`ALTER LOGIN stroycontrol WITH PASSWORD = N'...'`), и в строке подключения.
 
 #### Если что-то не подключается
 
-| Симптом в приложении | Причина | Что делать |
+| Симптом | Причина | Что делать |
 |---|---|---|
-| `Access denied for user 'stroycontrol'@'localhost'` | пользователь не создан или другой пароль | выполнить `database/schema.sql` под `root`; при смене пароля — обновить строку подключения |
-| `Unknown database 'stroycontrol'` | скрипт запускался не под `root` и база не создалась | запустить `schema.sql` под `root` (`mysql -u root -p`) |
-| `Unable to connect to any of the specified MySQL hosts` / таймаут | служба MySQL остановлена или неверный порт | `net start MySQL80`, проверить `Port=3306` |
-| Приложение предлагает демо-режим | сервер недоступен, но `DemoModeAllowed = true` | устранить причину выше либо согласиться на демо-режим (данные не сохранятся) |
-| `Table 'stroycontrol.users' doesn't exist` | схема не создана, а пользователь без прав на создание | выполнить `database/schema.sql` |
-| Данные «не сохраняются» после перезапуска | работа идёт в демо-режиме (InMemory) | см. строку выше; в «Настройках» источник должен быть MySQL |
+| `Login failed for user 'ИМЯ_ПК\Пользователь'` | у учётной записи Windows нет прав на экземпляр | подключиться под администратором SQL Server или использовать SQL-логин |
+| `Login failed for user 'stroycontrol'` | сервер в режиме «только Windows-аутентификация» / другой пароль | включить смешанный режим (шаг 3 выше), сверить пароль |
+| `A network-related or instance-specific error...` / таймаут | служба остановлена, TCP/IP выключен, порт занят | `Get-Service MSSQL*`, включить TCP/IP, проверить порт 1433 и брандмауэр |
+| `Cannot open database "StroyControl" requested by the login` | база не создана или у логина нет пользователя в ней | выполнить `database/schema.sql`; проверить `CREATE USER ... FOR LOGIN` |
+| `The certificate chain was issued by an authority that is not trusted` | `Microsoft.Data.SqlClient` требует шифрование | добавить `TrustServerCertificate=True` в строку подключения |
+| `Cannot open database ... The login failed` при первом запуске на чистом сервере | базы ещё нет, а у учётной записи нет прав `dbcreator` | выполнить `database/schema.sql` под администратором |
+| Приложение предлагает демо-режим | сервер недоступен, а `DemoModeAllowed = true` | устранить причину выше либо согласиться (данные не сохранятся) |
+| Данные «не сохраняются» после перезапуска | работа идёт в демо-режиме (InMemory) | в «Настройках» источник должен быть `Microsoft SQL Server` |
 
-Полный сброс: `cmd /c "mysql -u root -p < database\reset.sql"`, затем снова запустить приложение.
+Полный сброс: `sqlcmd -S .\SQLEXPRESS -E -i database\reset.sql`, затем снова запустить приложение (схема и демо-данные создадутся заново).
 
 ## 6. Как считается отклонение от сметы
 
@@ -246,7 +282,7 @@ dotnet run --project src/StroyControl.App
 | Списания | акты расхода, предупреждение о превышении остатка, CRUD |
 | Анализ отклонений | фильтры по объекту и критичности, детализация план/факт, экспорт CSV |
 | Сотрудники | CRUD учётных записей, роли, блокировка, сброс пароля |
-| Настройки | проверка подключения к MySQL, сведения о БД, права текущей роли |
+| Настройки | проверка подключения к SQL Server, сведения о БД, права текущей роли |
 
 ## 9. Версии пакетов и совместимость
 
@@ -255,14 +291,14 @@ dotnet run --project src/StroyControl.App
 | Пакет | Версия | Почему именно она |
 |---|---|---|
 | `Microsoft.EntityFrameworkCore` (+ `.InMemory`, `.Design`, `.Tools`, `.Relational`) | 8.0.10 | ветка EF Core 8 — единственная, совместимая с `net8.0` |
-| `Pomelo.EntityFrameworkCore.MySql` | 8.0.2 | провайдер MySQL для EF Core 8 (с EF 9/10 несовместим) |
+| `Microsoft.EntityFrameworkCore.SqlServer` | 8.0.10 | провайдер Microsoft SQL Server для EF Core 8 (тянет `Microsoft.Data.SqlClient`) |
 | `Microsoft.Extensions.*` | 8.0.x | инфраструктура .NET 8 (DI, конфигурация) |
 | `CommunityToolkit.Mvvm` | 8.2.2 | генераторы `[ObservableProperty]`, `[RelayCommand]` |
 | `xunit` / `Microsoft.NET.Test.Sdk` | 2.9.0 / 17.11.1 | модульные тесты |
 
-> **Не обновляйте EF Core до 9.x/10.x и Pomelo до 9.x/10.x.** Эти пакеты требуют `net9.0`/`net10.0`, и сборка падает с ошибкой
+> **Не обновляйте EF Core и его провайдеры до 9.x/10.x.** Эти пакеты требуют `net9.0`/`net10.0`, и сборка падает с ошибкой
 > «Пакет Microsoft.EntityFrameworkCore 10.0.14 несовместим с net8.0 (.NETCoreApp,Version=v8.0)».
-> Если нужно перейти на EF Core 9/10 — сначала поднимите `TargetFramework` всех проектов (и `net8.0-windows` → `net9.0-windows`/`net10.0-windows` в `StroyControl.App`), затем обновите Pomelo.
+> Если нужно перейти на EF Core 9/10 — сначала поднимите `TargetFramework` всех проектов (и `net8.0-windows` → `net9.0-windows`/`net10.0-windows` в `StroyControl.App`), затем обновите `Microsoft.EntityFrameworkCore.SqlServer`.
 
 ### Если ошибка про несовместимый EF Core уже появилась
 

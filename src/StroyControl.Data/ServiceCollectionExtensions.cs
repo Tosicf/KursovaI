@@ -11,15 +11,15 @@ namespace StroyControl.Data;
 public static class ServiceCollectionExtensions
 {
     /// <summary>
-    /// Подключает MySQL (Pomelo) либо, при <paramref name="useInMemory"/> = true,
-    /// демонстрационную базу в памяти. Фабрика контекста позволяет WPF-клиенту
-    /// создавать короткоживущий DbContext на каждую операцию.
+    /// Подключает Microsoft SQL Server (EF Core + SqlClient) либо, при
+    /// <paramref name="useInMemory"/> = true, демонстрационную базу в памяти.
+    /// Фабрика контекста позволяет WPF-клиенту создавать короткоживущий DbContext
+    /// на каждую операцию.
     /// </summary>
     public static IServiceCollection AddStroyControlData(
         this IServiceCollection services,
         string connectionString,
-        bool useInMemory = false,
-        string? serverVersion = null)
+        bool useInMemory = false)
     {
         services.AddDbContextFactory<AppDbContext>(options =>
         {
@@ -30,11 +30,9 @@ public static class ServiceCollectionExtensions
             }
             else
             {
-                var version = Version.TryParse(serverVersion, out var parsed) ? parsed : new Version(8, 0, 36);
-                options.UseMySql(
+                options.UseSqlServer(
                     connectionString,
-                    new MySqlServerVersion(version),
-                    mySql => mySql.EnableRetryOnFailure(3, TimeSpan.FromSeconds(3), null));
+                    sql => sql.EnableRetryOnFailure(3, TimeSpan.FromSeconds(3), null));
             }
         });
 
