@@ -7,7 +7,7 @@ namespace StroyControl.App.ViewModels;
 
 public sealed record DemoAccount(string Login, string Password, string DisplayName, string Role);
 
-/// <summary>Аутентификация пользователя по учётной записи в общей базе MySQL.</summary>
+/// <summary>Аутентификация пользователя по учётной записи в общей базе SQL Server.</summary>
 public sealed partial class LoginViewModel : ViewModelBase
 {
     private readonly IAuthService _authService;
@@ -68,7 +68,7 @@ public sealed partial class LoginViewModel : ViewModelBase
         }
         catch (Exception ex)
         {
-            ErrorText = $"Сервер MySQL недоступен. Проверьте подключение. ({ex.Message})";
+            ErrorText = $"Сервер SQL Server недоступен. Проверьте подключение. ({ex.Message})";
         }
         finally
         {

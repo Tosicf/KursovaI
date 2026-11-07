@@ -4,8 +4,8 @@ using StroyControl.Core.Entities;
 namespace StroyControl.Data;
 
 /// <summary>
-/// Контекст доступа к базе MySQL. Одна база обслуживает все рабочие места,
-/// подключённые по сети (см. строку подключения в appsettings.json).
+/// Контекст доступа к базе Microsoft SQL Server. Одна база обслуживает все
+/// рабочие места, подключённые по сети (см. строку подключения в appsettings.json).
 /// </summary>
 public class AppDbContext : DbContext
 {

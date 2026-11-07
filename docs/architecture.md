@@ -19,10 +19,10 @@
 │  InventoryService, DeviationService,          │
 │  DashboardService, DemoDataSeeder             │
 └───────────────────────────┬───────────────────┘
-                            │ Pomelo (TCP 3306)
+                            │ SqlClient (TCP 1433)
                     ┌───────▼────────┐
-                    │   MySQL 8      │
-                    │  stroycontrol  │
+                    │  SQL Server    │
+                    │  (StroyControl)│
                     └────────────────┘
 ```
 
@@ -31,7 +31,7 @@
 | Проект | Ответственность | Зависимости |
 |---|---|---|
 | `StroyControl.Core` | доменные сущности, перечисления, DTO, интерфейсы, бизнес-правила (расчёт отклонений, хеширование паролей, экспорт CSV), сессия | нет (чистый .NET) |
-| `StroyControl.Data` | EF Core, конфигурации сущностей, репозитории, транзакционные сервисы, наполнение БД | Core, EF Core, Pomelo |
+| `StroyControl.Data` | EF Core, конфигурации сущностей, репозитории, транзакционные сервисы, наполнение БД | Core, EF Core, Microsoft.Data.SqlClient |
 | `StroyControl.App` | WPF/MVVM: окна, страницы, модели представления, стили, конвертеры, диалоги | Core, Data, CommunityToolkit.Mvvm |
 
 ## 2. ER-модель
@@ -166,7 +166,7 @@ erDiagram
 | Страницы | `DashboardView`, `MaterialsView`, `SuppliersView`, `ProjectsView`, `EstimatesView`, `DeliveriesView`, `UsagesView`, `DeviationsView`, `UsersView`, `SettingsView` |
 | Модели представления | `MainViewModel`, `LoginViewModel`, `DashboardViewModel`, `MaterialsViewModel`, … , `SettingsViewModel` |
 | Диалоги (VM) | `EditorViewModelBase` + 8 редакторов (`MaterialEditorViewModel`, `DeliveryEditorViewModel`, …) |
-| Инфраструктура | `IToastService`, `IDialogService`, `ApplicationController`, `AppEnvironment`, `MySqlProbe`, `PasswordBoxHelper` |
+| Инфраструктура | `IToastService`, `IDialogService`, `ApplicationController`, `AppEnvironment`, `SqlServerProbe`, `PasswordBoxHelper` |
 | UI-компоненты | `LoadingOverlay`, `EmptyState`, `KpiCard`, `ToastHost`, конвертеры |
 
 ## 4. Проведение документа (пример: поступление)
@@ -229,7 +229,7 @@ sequenceDiagram
     participant VM as UsagesViewModel
     participant Dlg as EditorWindow (UsageEditorViewModel)
     participant Inv as InventoryService
-    participant DB as MySQL
+    participant DB as SQL Server
 
     Foreman->>VM: «Оформить списание»
     VM->>Dlg: ShowDialog(все объекты, материалы, сметы)

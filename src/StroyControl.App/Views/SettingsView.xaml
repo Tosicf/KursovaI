@@ -74,7 +74,7 @@
                                 <StackPanel>
                                     <TextBlock Text="Строка подключения задаётся в appsettings.json" FontSize="11.5" FontWeight="SemiBold"
                                                Foreground="{StaticResource TextSecondaryBrush}" />
-                                    <TextBlock Text="Server=…;Port=3306;Database=stroycontrol;User=…;Password=…;"
+                                    <TextBlock Text="Server=.\SQLEXPRESS;Database=StroyControl;Trusted_Connection=True;"
                                                FontFamily="Consolas" FontSize="11" Foreground="{StaticResource TextMutedBrush}"
                                                Margin="0,6,0,0" TextWrapping="Wrap" />
                                 </StackPanel>
@@ -151,7 +151,7 @@
                             <StackPanel Grid.Column="1">
                                 <TextBlock Text="Технологии" Style="{StaticResource Caption}" FontSize="11" />
                                 <TextBlock Text="WPF · .NET 8 · EF Core" FontWeight="SemiBold" FontSize="13" Margin="0,3,0,0" />
-                                <TextBlock Text="MySQL 8 (Pomelo)" Style="{StaticResource Caption}" Margin="0,2,0,0" />
+                                <TextBlock Text="SQL Server 2019/2022" Style="{StaticResource Caption}" Margin="0,2,0,0" />
                             </StackPanel>
                             <StackPanel Grid.Column="2">
                                 <TextBlock Text="Архитектура" Style="{StaticResource Caption}" FontSize="11" />
@@ -163,7 +163,7 @@
                         <Border Height="1" Background="{StaticResource BorderBrush}" Margin="0,16" />
 
                         <TextBlock Style="{StaticResource Caption}" TextWrapping="Wrap" LineHeight="18"
-                                   Text="Курсовой проект: сетевое программное средство управления строительными материалами и анализа отклонений от сметы на строительном объекте. Данные хранятся в общей базе MySQL, доступ к ним разграничен по ролям." />
+                                   Text="Курсовой проект: сетевое программное средство управления строительными материалами и анализа отклонений от сметы на строительном объекте. Данные хранятся в общей базе Microsoft SQL Server, доступ к ним разграничен по ролям." />
                     </StackPanel>
                 </Border>
             </StackPanel>

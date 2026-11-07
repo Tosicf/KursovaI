@@ -10,20 +10,20 @@
       «Пакет Microsoft.EntityFrameworkCore 10.0.14 несовместим с net8.0».
 
     Версию меняем только здесь и только в пределах 8.0.x
-    (Pomelo.EntityFrameworkCore.MySql 8.0.x совместим исключительно с EF Core 8).
+    (Microsoft.EntityFrameworkCore.SqlServer 8.0.x совместим исключительно с EF Core 8).
   -->
   <PropertyGroup>
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
     <CentralPackageTransitivePinningEnabled>false</CentralPackageTransitivePinningEnabled>
   </PropertyGroup>
 
-  <ItemGroup Label="Доступ к данным (EF Core 8 + MySQL)">
+  <ItemGroup Label="Доступ к данным (EF Core 8 + Microsoft SQL Server)">
     <PackageVersion Include="Microsoft.EntityFrameworkCore" Version="8.0.10" />
     <PackageVersion Include="Microsoft.EntityFrameworkCore.InMemory" Version="8.0.10" />
     <PackageVersion Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.10" />
     <PackageVersion Include="Microsoft.EntityFrameworkCore.Tools" Version="8.0.10" />
     <PackageVersion Include="Microsoft.EntityFrameworkCore.Relational" Version="8.0.10" />
-    <PackageVersion Include="Pomelo.EntityFrameworkCore.MySql" Version="8.0.2" />
+    <PackageVersion Include="Microsoft.EntityFrameworkCore.SqlServer" Version="8.0.10" />
   </ItemGroup>
 
   <ItemGroup Label="Инфраструктура .NET 8">

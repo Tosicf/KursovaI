@@ -8,7 +8,7 @@ using RoleKind = StroyControl.Core.Enums.UserRole;
 
 namespace StroyControl.App.ViewModels;
 
-/// <summary>Настройки клиента: сетевое подключение к MySQL, текущая учётная запись и права.</summary>
+/// <summary>Настройки клиента: сетевое подключение к SQL Server, текущая учётная запись и права.</summary>
 public sealed partial class SettingsViewModel : ViewModelBase
 {
     private readonly IDatabaseHealthService _healthService;
@@ -109,7 +109,7 @@ public sealed partial class SettingsViewModel : ViewModelBase
         _ => "Сервер недоступен"
     };
 
-    public string HealthMessage => Health?.Message ?? "Нажмите «Проверить подключение», чтобы проверить доступность сервера MySQL.";
+    public string HealthMessage => Health?.Message ?? "Нажмите «Проверить подключение», чтобы проверить доступность сервера SQL Server.";
 
     public string UsersCountDisplay => Health is null ? "—" : Health.UsersCount.ToString();
 
@@ -147,8 +147,8 @@ public sealed partial class SettingsViewModel : ViewModelBase
             _toasts.Error("Подключение", ErrorMessage);
         else if (Health is not null)
         {
-            if (Health.IsAvailable) _toasts.Success("Соединение с MySQL", Health.Message);
-            else _toasts.Error("Соединение с MySQL", Health.Message);
+            if (Health.IsAvailable) _toasts.Success("Соединение с SQL Server", Health.Message);
+            else _toasts.Error("Соединение с SQL Server", Health.Message);
         }
     }
 }

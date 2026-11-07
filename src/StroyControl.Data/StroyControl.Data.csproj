@@ -3,7 +3,7 @@
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
     <RootNamespace>StroyControl.Data</RootNamespace>
-    <Description>Слой доступа к данным MySQL (EF Core + Pomelo), репозитории и первичное наполнение БД.</Description>
+    <Description>Слой доступа к данным Microsoft SQL Server (EF Core + SqlClient), репозитории и первичное наполнение БД.</Description>
   </PropertyGroup>
 
   <ItemGroup>
@@ -19,7 +19,7 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="Pomelo.EntityFrameworkCore.MySql" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
   </ItemGroup>
 

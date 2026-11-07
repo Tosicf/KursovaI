@@ -6,7 +6,7 @@ namespace StroyControl.Core.Dtos;
 /// <summary>
 /// Чистая бизнес-логика анализа отклонений: расчёт процентов и классификация.
 /// Выделена в отдельный класс, чтобы её можно было покрыть модульными тестами
-/// независимо от WPF и MySQL.
+/// независимо от WPF и СУБД.
 /// </summary>
 public static class DeviationCalculator
 {

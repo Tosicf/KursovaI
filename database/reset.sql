@@ -1,34 +1,36 @@
 -- =====================================================================
---  СтройКонтроль — полный сброс данных
+--  СтройКонтроль — полный сброс данных (Microsoft SQL Server)
 --
---  Удаляет все таблицы и представления базы stroycontrol. Сама база и
---  пользователь stroycontrol не удаляются, поэтому после сброса достаточно
---  запустить приложение: оно создаст схему и загрузит демо-данные заново.
+--  Удаляет представления и таблицы базы StroyControl. Сама база и логин
+--  stroycontrol не удаляются: после сброса достаточно запустить приложение —
+--  оно создаст схему (EnsureCreated) и загрузит демо-данные заново.
 --
 --  ВНИМАНИЕ: все введённые вручную данные будут потеряны.
 --
 --  Запуск:
---    mysql -u root -p < database/reset.sql
---    (PowerShell: cmd /c "mysql -u root -p < database\reset.sql")
+--    sqlcmd -S .\SQLEXPRESS -E -i database\reset.sql
+--    (или открыть файл в SSMS и нажать F5)
 -- =====================================================================
 
-USE stroycontrol;
+USE StroyControl;
+GO
 
-SET FOREIGN_KEY_CHECKS = 0;
+-- Дочерние таблицы удаляются первыми (порядок важен для внешних ключей)
+DROP VIEW IF EXISTS dbo.v_material_consumption;
+GO
+DROP VIEW IF EXISTS dbo.v_estimate_plan;
+GO
 
-DROP VIEW IF EXISTS v_material_consumption;
-DROP VIEW IF EXISTS v_estimate_plan;
+DROP TABLE IF EXISTS dbo.material_usages;
+DROP TABLE IF EXISTS dbo.delivery_items;
+DROP TABLE IF EXISTS dbo.deliveries;
+DROP TABLE IF EXISTS dbo.estimate_items;
+DROP TABLE IF EXISTS dbo.estimates;
+DROP TABLE IF EXISTS dbo.materials;
+DROP TABLE IF EXISTS dbo.projects;
+DROP TABLE IF EXISTS dbo.suppliers;
+DROP TABLE IF EXISTS dbo.users;
+GO
 
-DROP TABLE IF EXISTS material_usages;
-DROP TABLE IF EXISTS delivery_items;
-DROP TABLE IF EXISTS deliveries;
-DROP TABLE IF EXISTS estimate_items;
-DROP TABLE IF EXISTS estimates;
-DROP TABLE IF EXISTS materials;
-DROP TABLE IF EXISTS projects;
-DROP TABLE IF EXISTS suppliers;
-DROP TABLE IF EXISTS users;
-
-SET FOREIGN_KEY_CHECKS = 1;
-
-SELECT 'База очищена. Запустите приложение — схема и демо-данные будут созданы заново.' AS `Результат`;
+SELECT N'База очищена. Запустите приложение — схема и демо-данные будут созданы заново.' AS [Результат];
+GO

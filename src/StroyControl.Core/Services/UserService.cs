@@ -30,12 +30,13 @@ public sealed class UserService : IUserService
             throw new AppException("Логин должен содержать не менее 3 символов.");
         if (string.IsNullOrWhiteSpace(displayName))
             throw new AppException("Укажите ФИО сотрудника.");
-        if ((password ?? string.Empty).Length < 6)
+        var passwordText = password ?? string.Empty;
+        if (passwordText.Length < 6)
             throw new AppException("Пароль должен содержать не менее 6 символов.");
         if (await _users.LoginExistsAsync(login, null, cancellationToken))
             throw new AppException($"Логин «{login}» уже используется.");
 
-        var (hash, salt) = PasswordHasher.CreateHash(password);
+        var (hash, salt) = PasswordHasher.CreateHash(passwordText);
         var user = new User
         {
             Login = login,
@@ -63,13 +64,14 @@ public sealed class UserService : IUserService
 
     public async Task ResetPasswordAsync(int userId, string newPassword, CancellationToken cancellationToken = default)
     {
-        if ((newPassword ?? string.Empty).Length < 6)
+        var passwordText = newPassword ?? string.Empty;
+        if (passwordText.Length < 6)
             throw new AppException("Пароль должен содержать не менее 6 символов.");
 
         var user = await _users.GetByIdAsync(userId, cancellationToken)
                    ?? throw new AppException("Пользователь не найден.");
 
-        var (hash, salt) = PasswordHasher.CreateHash(newPassword);
+        var (hash, salt) = PasswordHasher.CreateHash(passwordText);
         user.PasswordHash = hash;
         user.PasswordSalt = salt;
         await _users.UpdateAsync(user, cancellationToken);

@@ -9,7 +9,7 @@ public sealed class AppEnvironment
 
     public string Organization { get; init; } = "СУ-14, г. Минск";
 
-    public string ProviderDisplay => IsDemoMode ? "Демо-режим (данные в памяти)" : "MySQL 8 (сетевая БД)";
+    public string ProviderDisplay => IsDemoMode ? "Демо-режим (данные в памяти)" : "Microsoft SQL Server (сетевая БД)";
 
     public string ServerDisplay { get; init; } = "—";
 
@@ -19,9 +19,9 @@ public sealed class AppEnvironment
 
     public static AppEnvironment Create(string connectionString, bool demoMode, string organization)
     {
-        var server = "localhost";
-        var port = "3306";
-        var database = "stroycontrol";
+        var server = @".\SQLEXPRESS";
+        var port = "1433";
+        var database = "StroyControl";
 
         foreach (var part in connectionString.Split(';', StringSplitOptions.RemoveEmptyEntries))
         {
@@ -31,13 +31,26 @@ public sealed class AppEnvironment
             switch (kv[0].Trim().ToLowerInvariant())
             {
                 case "server":
+                case "data source":
                 case "host":
-                    server = kv[1].Trim();
+                    // SQL Server допускает запись Server=host,порт — разбираем на части.
+                    var address = kv[1].Trim();
+                    var comma = address.LastIndexOf(',');
+                    if (comma > 0)
+                    {
+                        server = address[..comma].Trim();
+                        port = address[(comma + 1)..].Trim();
+                    }
+                    else
+                    {
+                        server = address;
+                    }
                     break;
                 case "port":
                     port = kv[1].Trim();
                     break;
                 case "database":
+                case "initial catalog":
                     database = kv[1].Trim();
                     break;
             }
