@@ -34,7 +34,7 @@ public sealed partial class SuppliersViewModel : ViewModelBase
 
     public ICollectionView ItemsView { get; }
 
-    public bool CanEdit => _session.CanEdit;
+    public bool CanEdit => _session.CanEditSuppliers;
 
     public bool IsEmpty => Items.Count == 0;
 

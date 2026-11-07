@@ -1,25 +1,56 @@
 -- =====================================================================
---  СтройКонтроль — схема базы данных MySQL 8
+--  СтройКонтроль — установка базы данных MySQL 8
 --  Сетевое средство управления строительными материалами и анализа
 --  отклонений от сметы на строительном объекте.
 --
---  Скрипт необязателен: приложение создаёт схему автоматически
---  (EF Core, Database.EnsureCreated) и наполняет её демо-данными.
---  Используйте скрипт, если требуется развернуть БД вручную.
+--  КАК ЗАПУСТИТЬ
+--    1) из консоли (cmd):
+--         mysql -u root -p < database\schema.sql
+--       из PowerShell (там символ "<" не работает):
+--         cmd /c "mysql -u root -p < database\schema.sql"
+--    2) в MySQL Workbench: File -> Open SQL Script -> выбрать файл ->
+--       кнопка "Execute" (молния).
+--
+--  ЧТО ДЕЛАЕТ СКРИПТ
+--    * создаёт базу stroycontrol (utf8mb4);
+--    * создаёт пользователя stroycontrol / stroycontrol и выдаёт права;
+--    * создаёт 9 таблиц и 2 представления для отчётов.
+--
+--  Скрипт безопасно запускать повторно: используется CREATE ... IF NOT EXISTS,
+--  существующие данные не удаляются. Полный сброс базы — database/reset.sql.
+--
+--  Демо-данные (сотрудники, материалы, объекты, сметы, документы) вставляет
+--  само приложение при первом запуске, поэтому вручную их добавлять не нужно.
 -- =====================================================================
 
+SET NAMES utf8mb4;
+
+-- ---------------------------------------------------------------------
+-- База данных
+-- ---------------------------------------------------------------------
 CREATE DATABASE IF NOT EXISTS stroycontrol
     CHARACTER SET utf8mb4
     COLLATE utf8mb4_unicode_ci;
 
-CREATE USER IF NOT EXISTS 'stroycontrol'@'%' IDENTIFIED BY 'stroycontrol';
+-- ---------------------------------------------------------------------
+-- Пользователь приложения.
+--   'stroycontrol'@'localhost' — подключение с этой же машины (TCP 127.0.0.1)
+--   'stroycontrol'@'%'         — подключение с других рабочих мест по сети
+-- Пароль совпадает со строкой подключения в appsettings.json.
+-- ---------------------------------------------------------------------
+CREATE USER IF NOT EXISTS 'stroycontrol'@'localhost' IDENTIFIED BY 'stroycontrol';
+CREATE USER IF NOT EXISTS 'stroycontrol'@'%'         IDENTIFIED BY 'stroycontrol';
+
+GRANT ALL PRIVILEGES ON stroycontrol.* TO 'stroycontrol'@'localhost';
 GRANT ALL PRIVILEGES ON stroycontrol.* TO 'stroycontrol'@'%';
 FLUSH PRIVILEGES;
 
 USE stroycontrol;
 
 -- ---------------------------------------------------------------------
--- Учётные записи
+-- Учётные записи сотрудников
+-- Пароль не хранится: только PBKDF2-хеш и индивидуальная соль (Base64).
+-- Role: 0 — Admin, 1 — Engineer, 2 — SupplyManager, 3 — Accountant, 4 — Foreman.
 -- ---------------------------------------------------------------------
 CREATE TABLE IF NOT EXISTS users (
     Id            INT            NOT NULL AUTO_INCREMENT,
@@ -60,7 +91,8 @@ CREATE TABLE IF NOT EXISTS suppliers (
 ) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4;
 
 -- ---------------------------------------------------------------------
--- Материалы
+-- Материалы (номенклатура и текущий остаток)
+-- Unit: 0 — шт, 1 — м, 2 — м2, 3 — м3, 4 — кг, 5 — т, 6 — л, 7 — уп, 8 — меш.
 -- ---------------------------------------------------------------------
 CREATE TABLE IF NOT EXISTS materials (
     Id            INT            NOT NULL AUTO_INCREMENT,
@@ -86,6 +118,7 @@ CREATE TABLE IF NOT EXISTS materials (
 
 -- ---------------------------------------------------------------------
 -- Строительные объекты
+-- Status: 0 — Planned, 1 — InProgress, 2 — Suspended, 3 — Completed.
 -- ---------------------------------------------------------------------
 CREATE TABLE IF NOT EXISTS projects (
     Id              INT            NOT NULL AUTO_INCREMENT,
@@ -108,7 +141,8 @@ CREATE TABLE IF NOT EXISTS projects (
 ) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4;
 
 -- ---------------------------------------------------------------------
--- Сметы и позиции смет
+-- Сметы и позиции смет (план)
+-- Status сметы: 0 — Draft, 1 — Approved, 2 — Archived.
 -- ---------------------------------------------------------------------
 CREATE TABLE IF NOT EXISTS estimates (
     Id         INT           NOT NULL AUTO_INCREMENT,
@@ -148,7 +182,7 @@ CREATE TABLE IF NOT EXISTS estimate_items (
 ) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4;
 
 -- ---------------------------------------------------------------------
--- Поступления (приходные накладные)
+-- Поступления (приходные накладные) и их строки
 -- ---------------------------------------------------------------------
 CREATE TABLE IF NOT EXISTS deliveries (
     Id             INT           NOT NULL AUTO_INCREMENT,
@@ -222,16 +256,16 @@ CREATE TABLE IF NOT EXISTS material_usages (
 ) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4;
 
 -- ---------------------------------------------------------------------
--- Полезные представления для отчётов (необязательно)
+-- Представления для отчётов (те же формулы, что считает приложение)
 -- ---------------------------------------------------------------------
 CREATE OR REPLACE VIEW v_material_consumption AS
 SELECT
-    p.Id                AS ProjectId,
-    p.Name              AS ProjectName,
-    m.Id                AS MaterialId,
-    m.Name              AS MaterialName,
-    m.Unit              AS Unit,
-    SUM(u.Quantity)     AS ActualQuantity,
+    p.Id                          AS ProjectId,
+    p.Name                        AS ProjectName,
+    m.Id                          AS MaterialId,
+    m.Name                        AS MaterialName,
+    m.Unit                        AS Unit,
+    SUM(u.Quantity)               AS ActualQuantity,
     SUM(u.Quantity * u.UnitPrice) AS ActualCost
 FROM material_usages u
          JOIN projects p ON p.Id = u.ProjectId
@@ -240,10 +274,22 @@ GROUP BY p.Id, p.Name, m.Id, m.Name, m.Unit;
 
 CREATE OR REPLACE VIEW v_estimate_plan AS
 SELECT
-    e.ProjectId         AS ProjectId,
-    i.MaterialId        AS MaterialId,
-    SUM(i.PlannedQuantity)                  AS PlannedQuantity,
+    e.ProjectId                                 AS ProjectId,
+    i.MaterialId                                AS MaterialId,
+    SUM(i.PlannedQuantity)                      AS PlannedQuantity,
     SUM(i.PlannedQuantity * i.PlannedUnitPrice) AS PlannedCost
 FROM estimate_items i
          JOIN estimates e ON e.Id = i.EstimateId
 GROUP BY e.ProjectId, i.MaterialId;
+
+-- ---------------------------------------------------------------------
+-- Проверка результата: должно быть ровно 9 строк со статусом BASE TABLE
+-- ---------------------------------------------------------------------
+SELECT TABLE_NAME   AS `Таблица`,
+       TABLE_TYPE   AS `Тип`,
+       TABLE_ROWS   AS `Строк (оценка)`
+FROM information_schema.TABLES
+WHERE TABLE_SCHEMA = 'stroycontrol'
+ORDER BY TABLE_TYPE, TABLE_NAME;
+
+SELECT 'Готово: база stroycontrol создана, пользователь stroycontrol/stroycontrol настроен.' AS `Результат`;

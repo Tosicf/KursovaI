@@ -62,7 +62,7 @@ public sealed partial class DeliveriesViewModel : ViewModelBase
 
     public ICollectionView ItemsView { get; }
 
-    public bool CanEdit => _session.CanEdit;
+    public bool CanEdit => _session.CanEditDeliveries;
 
     public bool IsEmpty => Items.Count == 0;
 
