@@ -3,6 +3,7 @@ using CommunityToolkit.Mvvm.Input;
 using StroyControl.App.Services;
 using StroyControl.App.Startup;
 using StroyControl.Core.Enums;
+using RoleKind = StroyControl.Core.Enums.UserRole;
 using StroyControl.Core.Interfaces;
 using RoleKind = StroyControl.Core.Enums.UserRole;
 
