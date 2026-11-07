@@ -86,17 +86,17 @@
                                         <TextBlock Text="{Binding Name}" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" />
                                         <TextBlock Style="{StaticResource Caption}" FontSize="11" Margin="0,2,0,0">
                                             <Run Text="УНП " />
-                                            <Run Text="{Binding Unp}" />
+                                            <Run Text="{Binding Unp, Mode=OneWay}" />
                                         </TextBlock>
                                     </StackPanel>
                                 </DataTemplate>
                             </DataGridTemplateColumn.CellTemplate>
                         </DataGridTemplateColumn>
 
-                        <DataGridTextColumn Header="Контактное лицо" Binding="{Binding ContactPerson}" Width="190" />
-                        <DataGridTextColumn Header="Телефон" Binding="{Binding Phone}" Width="160" />
-                        <DataGridTextColumn Header="E-mail" Binding="{Binding Email}" Width="200" />
-                        <DataGridTextColumn Header="Материалов" Binding="{Binding MaterialsCount}" Width="106"
+                        <DataGridTextColumn Header="Контактное лицо" Binding="{Binding ContactPerson, Mode=OneWay}" Width="190" />
+                        <DataGridTextColumn Header="Телефон" Binding="{Binding Phone, Mode=OneWay}" Width="160" />
+                        <DataGridTextColumn Header="E-mail" Binding="{Binding Email, Mode=OneWay}" Width="200" />
+                        <DataGridTextColumn Header="Материалов" Binding="{Binding MaterialsCount, Mode=OneWay}" Width="106"
                                             ElementStyle="{StaticResource NumericCell}" />
 
                         <DataGridTemplateColumn Header="Надёжность" Width="120">

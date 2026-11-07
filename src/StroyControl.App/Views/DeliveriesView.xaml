@@ -124,19 +124,19 @@
                                         <TextBlock Text="{Binding Number}" FontWeight="SemiBold" />
                                         <TextBlock Style="{StaticResource Caption}" FontSize="11" Margin="0,2,0,0">
                                             <Run Text="ТТН " />
-                                            <Run Text="{Binding InvoiceNumber}" />
+                                            <Run Text="{Binding InvoiceNumber, Mode=OneWay}" />
                                         </TextBlock>
                                     </StackPanel>
                                 </DataTemplate>
                             </DataGridTemplateColumn.CellTemplate>
                         </DataGridTemplateColumn>
 
-                        <DataGridTextColumn Header="Дата" Binding="{Binding DateDisplay}" Width="110" />
-                        <DataGridTextColumn Header="Поставщик" Binding="{Binding SupplierName}" Width="*" MinWidth="170" />
-                        <DataGridTextColumn Header="Объект" Binding="{Binding ProjectName}" Width="*" MinWidth="150" />
-                        <DataGridTextColumn Header="Позиций" Binding="{Binding ItemsCount}" Width="92"
+                        <DataGridTextColumn Header="Дата" Binding="{Binding DateDisplay, Mode=OneWay}" Width="110" />
+                        <DataGridTextColumn Header="Поставщик" Binding="{Binding SupplierName, Mode=OneWay}" Width="*" MinWidth="170" />
+                        <DataGridTextColumn Header="Объект" Binding="{Binding ProjectName, Mode=OneWay}" Width="*" MinWidth="150" />
+                        <DataGridTextColumn Header="Позиций" Binding="{Binding ItemsCount, Mode=OneWay}" Width="92"
                                             ElementStyle="{StaticResource NumericCell}" />
-                        <DataGridTextColumn Header="Сумма, BYN" Binding="{Binding Total, StringFormat={}{0:N2}}" Width="130"
+                        <DataGridTextColumn Header="Сумма, BYN" Binding="{Binding Total, StringFormat='{}{0:N2}', Mode=OneWay}" Width="130"
                                             ElementStyle="{StaticResource NumericCell}" />
 
                         <DataGridTemplateColumn Header="" Width="88">

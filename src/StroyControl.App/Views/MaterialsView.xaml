@@ -104,7 +104,7 @@
                 <DataGrid Style="{StaticResource DataGridStyle}" ItemsSource="{Binding ItemsView}"
                           SelectedItem="{Binding SelectedMaterial}" Margin="8,6,8,8">
                     <DataGrid.Columns>
-                        <DataGridTextColumn Header="Артикул" Binding="{Binding Code}" Width="120" />
+                        <DataGridTextColumn Header="Артикул" Binding="{Binding Code, Mode=OneWay}" Width="120" />
                         <DataGridTemplateColumn Header="Наименование" Width="*" MinWidth="220">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
@@ -116,12 +116,12 @@
                                 </DataTemplate>
                             </DataGridTemplateColumn.CellTemplate>
                         </DataGridTemplateColumn>
-                        <DataGridTextColumn Header="Ед." Binding="{Binding UnitDisplay}" Width="66" />
-                        <DataGridTextColumn Header="Цена, BYN" Binding="{Binding Price, StringFormat={}{0:N2}}" Width="104"
+                        <DataGridTextColumn Header="Ед." Binding="{Binding UnitDisplay, Mode=OneWay}" Width="66" />
+                        <DataGridTextColumn Header="Цена, BYN" Binding="{Binding Price, StringFormat='{}{0:N2}', Mode=OneWay}" Width="104"
                                             ElementStyle="{StaticResource NumericCell}" />
-                        <DataGridTextColumn Header="Остаток" Binding="{Binding StockDisplay}" Width="118"
+                        <DataGridTextColumn Header="Остаток" Binding="{Binding StockDisplay, Mode=OneWay}" Width="118"
                                             ElementStyle="{StaticResource NumericCell}" />
-                        <DataGridTextColumn Header="Мин. запас" Binding="{Binding MinStock, StringFormat={}{0:N0}}" Width="96"
+                        <DataGridTextColumn Header="Мин. запас" Binding="{Binding MinStock, StringFormat='{}{0:N0}', Mode=OneWay}" Width="96"
                                             ElementStyle="{StaticResource NumericCell}" />
                         <DataGridTemplateColumn Header="Статус" Width="132">
                             <DataGridTemplateColumn.CellTemplate>
@@ -134,7 +134,7 @@
                                 </DataTemplate>
                             </DataGridTemplateColumn.CellTemplate>
                         </DataGridTemplateColumn>
-                        <DataGridTextColumn Header="Поставщик" Binding="{Binding SupplierName}" Width="170" />
+                        <DataGridTextColumn Header="Поставщик" Binding="{Binding SupplierName, Mode=OneWay}" Width="170" />
                         <DataGridTemplateColumn Header="" Width="88">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>

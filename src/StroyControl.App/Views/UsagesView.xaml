@@ -95,16 +95,16 @@
                             </DataGridTemplateColumn.CellTemplate>
                         </DataGridTemplateColumn>
 
-                        <DataGridTextColumn Header="Объект" Binding="{Binding ProjectName}" Width="*" MinWidth="170" />
-                        <DataGridTextColumn Header="Материал" Binding="{Binding MaterialName}" Width="*" MinWidth="180" />
-                        <DataGridTextColumn Header="Кол-во" Binding="{Binding Quantity, StringFormat={}{0:N2}}" Width="96"
+                        <DataGridTextColumn Header="Объект" Binding="{Binding ProjectName, Mode=OneWay}" Width="*" MinWidth="170" />
+                        <DataGridTextColumn Header="Материал" Binding="{Binding MaterialName, Mode=OneWay}" Width="*" MinWidth="180" />
+                        <DataGridTextColumn Header="Кол-во" Binding="{Binding Quantity, StringFormat='{}{0:N2}', Mode=OneWay}" Width="96"
                                             ElementStyle="{StaticResource NumericCell}" />
-                        <DataGridTextColumn Header="Ед." Binding="{Binding UnitDisplay}" Width="64" />
-                        <DataGridTextColumn Header="Цена, BYN" Binding="{Binding UnitPrice, StringFormat={}{0:N2}}" Width="110"
+                        <DataGridTextColumn Header="Ед." Binding="{Binding UnitDisplay, Mode=OneWay}" Width="64" />
+                        <DataGridTextColumn Header="Цена, BYN" Binding="{Binding UnitPrice, StringFormat='{}{0:N2}', Mode=OneWay}" Width="110"
                                             ElementStyle="{StaticResource NumericCell}" />
-                        <DataGridTextColumn Header="Сумма, BYN" Binding="{Binding Cost, StringFormat={}{0:N2}}" Width="120"
+                        <DataGridTextColumn Header="Сумма, BYN" Binding="{Binding Cost, StringFormat='{}{0:N2}', Mode=OneWay}" Width="120"
                                             ElementStyle="{StaticResource NumericCell}" />
-                        <DataGridTextColumn Header="Оформил" Binding="{Binding AuthorName}" Width="170" />
+                        <DataGridTextColumn Header="Оформил" Binding="{Binding AuthorName, Mode=OneWay}" Width="170" />
 
                         <DataGridTemplateColumn Header="" Width="88">
                             <DataGridTemplateColumn.CellTemplate>

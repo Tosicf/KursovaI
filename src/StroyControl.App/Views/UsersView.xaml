@@ -92,7 +92,7 @@
                                             <TextBlock Text="{Binding DisplayName}" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" />
                                             <TextBlock Style="{StaticResource Caption}" FontSize="11" Margin="0,2,0,0">
                                                 <Run Text="@" />
-                                                <Run Text="{Binding Login}" />
+                                                <Run Text="{Binding Login, Mode=OneWay}" />
                                             </TextBlock>
                                         </StackPanel>
                                     </StackPanel>
@@ -111,9 +111,9 @@
                             </DataGridTemplateColumn.CellTemplate>
                         </DataGridTemplateColumn>
 
-                        <DataGridTextColumn Header="E-mail" Binding="{Binding Email}" Width="*" MinWidth="170" />
-                        <DataGridTextColumn Header="Телефон" Binding="{Binding Phone}" Width="150" />
-                        <DataGridTextColumn Header="Последний вход" Binding="{Binding LastLoginDisplay}" Width="160" />
+                        <DataGridTextColumn Header="E-mail" Binding="{Binding Email, Mode=OneWay}" Width="*" MinWidth="170" />
+                        <DataGridTextColumn Header="Телефон" Binding="{Binding Phone, Mode=OneWay}" Width="150" />
+                        <DataGridTextColumn Header="Последний вход" Binding="{Binding LastLoginDisplay, Mode=OneWay}" Width="160" />
 
                         <DataGridTemplateColumn Header="Доступ" Width="130">
                             <DataGridTemplateColumn.CellTemplate>

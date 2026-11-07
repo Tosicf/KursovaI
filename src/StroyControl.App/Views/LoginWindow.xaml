@@ -154,9 +154,9 @@
                                         CommandParameter="{Binding Login}"
                                         ToolTip="{Binding DisplayName}">
                                     <TextBlock FontSize="11.5">
-                                        <Run Text="{Binding Role}" />
+                                        <Run Text="{Binding Role, Mode=OneWay}" />
                                         <Run Text="·" Foreground="{StaticResource TextMutedBrush}" />
-                                        <Run Text="{Binding Login}" Foreground="{StaticResource AccentBrush}" />
+                                        <Run Text="{Binding Login, Mode=OneWay}" Foreground="{StaticResource AccentBrush}" />
                                     </TextBlock>
                                 </Button>
                             </DataTemplate>

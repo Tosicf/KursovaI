@@ -17,9 +17,9 @@
                     <StackPanel>
                         <TextBlock Text="{Binding Greeting}" FontSize="21" FontWeight="SemiBold" />
                         <TextBlock Style="{StaticResource Caption}" Margin="0,5,0,0">
-                            <Run Text="{Binding TodayDisplay}" />
+                            <Run Text="{Binding TodayDisplay, Mode=OneWay}" />
                             <Run Text="  ·  " Foreground="{StaticResource TextMutedBrush}" />
-                            <Run Text="{Binding MaterialsSummary}" />
+                            <Run Text="{Binding MaterialsSummary, Mode=OneWay}" />
                         </TextBlock>
                     </StackPanel>
 
@@ -92,9 +92,9 @@
                                             <Grid Margin="0,7,0,0">
                                                 <TextBlock Style="{StaticResource Caption}">
                                                     <Run Text="план " />
-                                                    <Run Text="{Binding PlannedCost, Converter={StaticResource Money}}" Foreground="{StaticResource TextPrimaryBrush}" />
+                                                    <Run Text="{Binding PlannedCost, Converter={StaticResource Money}, Mode=OneWay}" Foreground="{StaticResource TextPrimaryBrush}" />
                                                     <Run Text="   ·   факт " />
-                                                    <Run Text="{Binding ActualCost, Converter={StaticResource Money}}" Foreground="{StaticResource TextPrimaryBrush}" />
+                                                    <Run Text="{Binding ActualCost, Converter={StaticResource Money}, Mode=OneWay}" Foreground="{StaticResource TextPrimaryBrush}" />
                                                 </TextBlock>
                                             </Grid>
 
@@ -113,9 +113,9 @@
 
                                             <TextBlock Margin="0,6,0,0" FontSize="11.5"
                                                        Foreground="{Binding IsOverrun, Converter={StaticResource BoolToBrush}, ConverterParameter=DangerBrush|SuccessBrush}">
-                                                <Run Text="{Binding DeviationPercent, StringFormat={}{0:+0.0;-0.0;0} %}" />
+                                                <Run Text="{Binding DeviationPercent, StringFormat='{}{0:+0.0;-0.0;0} %', Mode=OneWay}" />
                                                 <Run Text="  ·  " Foreground="{StaticResource TextMutedBrush}" />
-                                                <Run Text="{Binding Deviation, Converter={StaticResource Money}}" />
+                                                <Run Text="{Binding Deviation, Converter={StaticResource Money}, Mode=OneWay}" />
                                             </TextBlock>
                                         </StackPanel>
                                     </DataTemplate>
@@ -146,9 +146,9 @@
                                                 <TextBlock Text="{Binding Name}" FontSize="12.5" TextTrimming="CharacterEllipsis" />
                                                 <TextBlock Style="{StaticResource Caption}" FontSize="11" Margin="0,2,0,0">
                                                     <Run Text="остаток " />
-                                                    <Run Text="{Binding StockDisplay}" Foreground="{StaticResource DangerBrush}" />
+                                                    <Run Text="{Binding StockDisplay, Mode=OneWay}" Foreground="{StaticResource DangerBrush}" />
                                                     <Run Text=" / мин. " />
-                                                    <Run Text="{Binding MinStock, StringFormat={}{0:N0}}" />
+                                                    <Run Text="{Binding MinStock, StringFormat='{}{0:N0}', Mode=OneWay}" />
                                                 </TextBlock>
                                             </StackPanel>
                                             <Path Grid.Column="1" Data="{StaticResource IconAlert}" Stroke="{StaticResource DangerBrush}"
