@@ -180,7 +180,7 @@ dotnet ef database update --project src/StroyControl.Data --startup-project src/
 
 | Пакет | Версия | Почему именно она |
 |---|---|---|
-| `Microsoft.EntityFrameworkCore` (+ `.InMemory`, `.Design`, `.Tools`) | 8.0.10 | ветка EF Core 8 — единственная, совместимая с `net8.0` |
+| `Microsoft.EntityFrameworkCore` (+ `.InMemory`, `.Design`, `.Tools`, `.Relational`) | 8.0.10 | ветка EF Core 8 — единственная, совместимая с `net8.0` |
 | `Pomelo.EntityFrameworkCore.MySql` | 8.0.2 | провайдер MySQL для EF Core 8 (с EF 9/10 несовместим) |
 | `Microsoft.Extensions.*` | 8.0.x | инфраструктура .NET 8 (DI, конфигурация) |
 | `CommunityToolkit.Mvvm` | 8.2.2 | генераторы `[ObservableProperty]`, `[RelayCommand]` |
@@ -210,6 +210,10 @@ dotnet ef database update --project src/StroyControl.Data --startup-project src/
 | `CS0103: Имя "Path" не существует в текущем контексте` | зависимость от неявного `using System.IO` / конфликт с `System.Windows.Shapes.Path` | в коде используется полное имя `System.IO.Path` (и `System.IO.File`) |
 | `NU1605: Обнаружено понижение версии пакета Microsoft.Extensions.DependencyInjection.Abstractions` | EF Core 8.0.10 → `Caching.Memory 8.0.1` требует `Abstractions >= 8.0.2` | версия зафиксирована `8.0.2` в `Directory.Packages.props` |
 | `NU1008: Projects that use central package version management should not define the version` | в `.csproj` остался `Version` у `PackageReference` | удалить атрибут `Version` — версии задаются в `Directory.Packages.props` |
+| `NU1010: PackageReference не соответствует PackageVersion` | новая ссылка в `.csproj` добавлена без версии в `Directory.Packages.props` | добавить `<PackageVersion Include="..." Version="..." />` в `Directory.Packages.props` |
+| `CS0246: Не удалось найти тип или имя пространства имён "ServiceCollection"` (и подобные) | ошибка восстановления пакетов (например, `NU1010`/`NU1605`) — ссылки на пакеты не разрешились | сначала устранить ошибку `NU*`, затем `dotnet restore` |
+| `FileNotFoundException: Could not load file or assembly "Microsoft.EntityFrameworkCore.Relational"` | `Design`/`Tools` подключены приватно (`PrivateAssets=all`), поэтому их зависимость `Relational` не копируется в выход приложения | публичная ссылка `<PackageReference Include="Microsoft.EntityFrameworkCore.Relational" />` в `StroyControl.Data` + версия в `Directory.Packages.props` |
+| `CS1061: "string" не содержит определения "Admin"` (и других ролей) | свойство `UserRole` в `SettingsViewModel` затеняет тип-перечисление `UserRole` | в `SettingsViewModel` используется псевдоним `using RoleKind = StroyControl.Core.Enums.UserRole;` |
 
 ## 10. Ограничения наброска и направления развития
 
