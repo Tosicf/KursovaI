@@ -245,3 +245,18 @@ sequenceDiagram
     VM-->>Foreman: toast «Списание оформлено»
     Note over VM,DB: при ошибке — ROLLBACK, строка удаляется из таблицы, toast с причиной
 ```
+
+## 9. Проектные диаграммы
+
+Полный комплект диаграмм вынесен в отдельный каталог [docs/diagrams](diagrams/README.md): исходники в Mermaid (отрисовываются прямо на GitHub) и готовые изображения 300 dpi. Сводный документ для пояснительной записки — [docs/Диаграммы.docx](Диаграммы.docx) (подписи по ГОСТ: «Рисунок N — …»).
+
+| № | Диаграмма | Файл |
+|---|---|---|
+| 1 | Варианты использования (5 акторов, «include»/«extend») | [01-use-case.md](diagrams/01-use-case.md) |
+| 2 | Анализа: границы, управления, сущности | [02-analysis-classes.md](diagrams/02-analysis-classes.md) |
+| 3 | Последовательности: вход в систему | [03-sequence-login.md](diagrams/03-sequence-login.md) |
+| 4 | Деятельности: оформление списания | [04-activity-usage.md](diagrams/04-activity-usage.md) |
+| 5 | Деятельности: «Работа со сметой» | [05-activity-estimate.md](diagrams/05-activity-estimate.md) |
+| 6 | Автоматов: навигация по разделам | [06-state-navigation.md](diagrams/06-state-navigation.md) |
+
+Изображения и документ пересобираются скриптом `tools/render_diagrams.py` (Python + Pillow + python-docx).

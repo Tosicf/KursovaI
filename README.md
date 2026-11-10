@@ -70,6 +70,8 @@ KursovaI.sln
 ├── tests/StroyControl.Core.Tests # xUnit-тесты бизнес-логики
 ├── database/                     # schema.sql — создание БД, reset.sql — полный сброс
 ├── docs/architecture.md          # описание архитектуры, ER-модели и алгоритмов
+├── docs/diagrams/                # 6 UML-диаграмм (Mermaid + PNG) и сводный Диаграммы.docx
+├── tools/render_diagrams.py      # сборка изображений диаграмм и docx
 ├── Directory.Build.props         # общие свойства сборки (C# 12, nullable, RollForward)
 └── Directory.Packages.props      # единый список версий NuGet (Central Package Management)
 ```
@@ -336,4 +338,4 @@ dotnet run --project src/StroyControl.App
 - Экспорт реализован в CSV; печатные формы (PDF/Word) — следующий шаг.
 - Для продуктивного развёртывания нужны EF-миграции вместо `EnsureCreated` и хранение секретов вне `appsettings.json`.
 
-Подробное описание архитектуры, ER-модели и алгоритмов — в [docs/architecture.md](docs/architecture.md).
+Подробное описание архитектуры, ER-модели и алгоритмов — в [docs/architecture.md](docs/architecture.md). Проектные диаграммы (варианты использования, анализа, последовательности, деятельности, автоматов) — в [docs/diagrams](docs/diagrams/README.md) и одним документом [docs/Диаграммы.docx](docs/Диаграммы.docx).
