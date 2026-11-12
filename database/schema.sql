@@ -187,6 +187,7 @@ CREATE TABLE dbo.projects (
     Customer        NVARCHAR(200)  NULL,
     ManagerName     NVARCHAR(150)  NULL,
     ContractSum     DECIMAL(18,2)  NOT NULL,
+    TotalArea       DECIMAL(12,2)  NOT NULL CONSTRAINT DF_projects_TotalArea DEFAULT 0,
     StartDate       DATETIME2(6)   NOT NULL,
     PlannedEndDate  DATETIME2(6)   NOT NULL,
     Status          INT            NOT NULL,
@@ -215,6 +216,9 @@ CREATE TABLE dbo.estimates (
     ProjectId  INT            NOT NULL,
     Status     INT            NOT NULL,
     Note       NVARCHAR(500)  NULL,
+    MarkupPercent     DECIMAL(6,2) NOT NULL CONSTRAINT DF_estimates_MarkupPercent DEFAULT 10,
+    ProfitPercent     DECIMAL(6,2) NOT NULL CONSTRAINT DF_estimates_ProfitPercent DEFAULT 12,
+    LaborSharePercent DECIMAL(6,2) NOT NULL CONSTRAINT DF_estimates_LaborSharePercent DEFAULT 35,
     CONSTRAINT PK_estimates PRIMARY KEY (Id),
     CONSTRAINT FK_estimates_projects FOREIGN KEY (ProjectId)
         REFERENCES dbo.projects (Id) ON DELETE CASCADE
@@ -236,8 +240,11 @@ CREATE TABLE dbo.estimate_items (
     CreatedAt         DATETIME2(6)   NOT NULL,
     UpdatedAt         DATETIME2(6)   NULL,
     EstimateId        INT            NOT NULL,
-    MaterialId        INT            NOT NULL,
+    MaterialId        INT            NULL,
     Section           NVARCHAR(120)  NULL,
+    IsWork            BIT            NOT NULL CONSTRAINT DF_estimate_items_IsWork DEFAULT 0,
+    WorkName          NVARCHAR(200)  NULL,
+    WorkUnit          NVARCHAR(16)   NOT NULL CONSTRAINT DF_estimate_items_WorkUnit DEFAULT N'',
     PlannedQuantity   DECIMAL(18,3)  NOT NULL,
     PlannedUnitPrice  DECIMAL(18,2)  NOT NULL,
     Note              NVARCHAR(300)  NULL,
@@ -393,6 +400,37 @@ SELECT
 FROM dbo.estimate_items i
          JOIN dbo.estimates e ON e.Id = i.EstimateId
 GROUP BY e.ProjectId, i.MaterialId;
+GO
+
+-- ---------------------------------------------------------------------
+-- 10.1. Догоняющие изменения (для баз, созданных предыдущей версией)
+--      Приложение выполняет их же при старте (StroyControl.Data.Seed.SchemaPatcher),
+--      скрипт нужен при ручном развёртывании базы администратором.
+-- ---------------------------------------------------------------------
+IF COL_LENGTH('dbo.estimate_items', 'IsWork') IS NULL
+    ALTER TABLE dbo.estimate_items ADD IsWork BIT NOT NULL CONSTRAINT DF_estimate_items_IsWork DEFAULT 0;
+GO
+IF COL_LENGTH('dbo.estimate_items', 'WorkName') IS NULL
+    ALTER TABLE dbo.estimate_items ADD WorkName NVARCHAR(200) NULL;
+GO
+IF COL_LENGTH('dbo.estimate_items', 'WorkUnit') IS NULL
+    ALTER TABLE dbo.estimate_items ADD WorkUnit NVARCHAR(16) NOT NULL CONSTRAINT DF_estimate_items_WorkUnit DEFAULT N'';
+GO
+IF EXISTS (SELECT 1 FROM sys.columns
+           WHERE object_id = OBJECT_ID(N'dbo.estimate_items') AND name = N'MaterialId' AND is_nullable = 0)
+    ALTER TABLE dbo.estimate_items ALTER COLUMN MaterialId INT NULL;
+GO
+IF COL_LENGTH('dbo.estimates', 'MarkupPercent') IS NULL
+    ALTER TABLE dbo.estimates ADD MarkupPercent DECIMAL(6,2) NOT NULL CONSTRAINT DF_estimates_MarkupPercent DEFAULT 10;
+GO
+IF COL_LENGTH('dbo.estimates', 'ProfitPercent') IS NULL
+    ALTER TABLE dbo.estimates ADD ProfitPercent DECIMAL(6,2) NOT NULL CONSTRAINT DF_estimates_ProfitPercent DEFAULT 12;
+GO
+IF COL_LENGTH('dbo.estimates', 'LaborSharePercent') IS NULL
+    ALTER TABLE dbo.estimates ADD LaborSharePercent DECIMAL(6,2) NOT NULL CONSTRAINT DF_estimates_LaborSharePercent DEFAULT 35;
+GO
+IF COL_LENGTH('dbo.projects', 'TotalArea') IS NULL
+    ALTER TABLE dbo.projects ADD TotalArea DECIMAL(12,2) NOT NULL CONSTRAINT DF_projects_TotalArea DEFAULT 0;
 GO
 
 -- ---------------------------------------------------------------------

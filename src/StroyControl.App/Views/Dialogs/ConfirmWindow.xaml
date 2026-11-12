@@ -10,17 +10,17 @@
         WindowStartupLocation="CenterOwner"
         ShowInTaskbar="False"
         FontFamily="Segoe UI">
-    <Border Background="{StaticResource SurfaceBrush}" CornerRadius="16" Margin="18" Padding="26">
+    <Border Background="{DynamicResource SurfaceBrush}" CornerRadius="16" Margin="18" Padding="26">
         <Border.Effect>
             <DropShadowEffect BlurRadius="28" ShadowDepth="6" Opacity="0.18" Color="#0F172A" />
         </Border.Effect>
         <StackPanel>
-            <Border Width="48" Height="48" CornerRadius="14" Background="{StaticResource DangerSoftBrush}" HorizontalAlignment="Left">
-                <Path Data="{StaticResource IconAlert}" Stroke="{StaticResource DangerBrush}" StrokeThickness="1.8"
+            <Border Width="48" Height="48" CornerRadius="14" Background="{DynamicResource DangerSoftBrush}" HorizontalAlignment="Left">
+                <Path Data="{StaticResource IconAlert}" Stroke="{DynamicResource DangerBrush}" StrokeThickness="1.8"
                       Width="22" Height="22" Stretch="Uniform" StrokeStartLineCap="Round" StrokeLineJoin="Round" />
             </Border>
             <TextBlock x:Name="TitleText" FontSize="17" FontWeight="SemiBold" Margin="0,16,0,8" TextWrapping="Wrap" />
-            <TextBlock x:Name="MessageText" Foreground="{StaticResource TextSecondaryBrush}" TextWrapping="Wrap" LineHeight="20" />
+            <TextBlock x:Name="MessageText" Foreground="{DynamicResource TextSecondaryBrush}" TextWrapping="Wrap" LineHeight="20" />
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,24,0,0">
                 <Button Content="Отмена" Style="{StaticResource SecondaryButton}" MinWidth="110" Margin="0,0,10,0"
                         IsCancel="True" Click="OnCancelClick" />

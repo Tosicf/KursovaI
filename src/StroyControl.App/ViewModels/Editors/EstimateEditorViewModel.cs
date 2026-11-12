@@ -18,6 +18,9 @@ public sealed partial class EstimateEditorViewModel : EditorViewModelBase
         SelectedProject = projects.FirstOrDefault(p => p.Id == source?.ProjectId) ?? projects.FirstOrDefault();
         SelectedStatus = Statuses.FirstOrDefault(s => s.Value == (source?.Status ?? EstimateStatus.Draft)) ?? Statuses[0];
         Note = source?.Note;
+        MarkupPercent = source?.MarkupPercent ?? 10m;
+        ProfitPercent = source?.ProfitPercent ?? 12m;
+        LaborSharePercent = source?.LaborSharePercent ?? 35m;
     }
 
     public override string Title => _source is null ? "Новая смета" : "Редактирование сметы";
@@ -41,11 +44,26 @@ public sealed partial class EstimateEditorViewModel : EditorViewModelBase
     [ObservableProperty]
     private string? note;
 
+    /// <summary>Наценка на цену материала, % (закладывается в «цену с наценкой» отчёта).</summary>
+    [ObservableProperty]
+    private decimal markupPercent;
+
+    /// <summary>Прибыль, % от стоимости позиции.</summary>
+    [ObservableProperty]
+    private decimal profitPercent;
+
+    /// <summary>Доля зарплаты рабочих в стоимости работ, %.</summary>
+    [ObservableProperty]
+    private decimal laborSharePercent;
+
     protected override string? Validate()
     {
         if (string.IsNullOrWhiteSpace(Number)) return "Укажите номер сметы.";
         if (string.IsNullOrWhiteSpace(Name)) return "Укажите наименование сметы.";
         if (SelectedProject is null) return "Выберите строительный объект.";
+        if (MarkupPercent is < 0m or > 100m) return "Наценка должна быть в пределах 0–100 %.";
+        if (ProfitPercent is < 0m or > 100m) return "Прибыль должна быть в пределах 0–100 %.";
+        if (LaborSharePercent is < 0m or > 100m) return "Доля зарплаты рабочих должна быть в пределах 0–100 %.";
         return null;
     }
 
@@ -58,6 +76,9 @@ public sealed partial class EstimateEditorViewModel : EditorViewModelBase
         Name = Name.Trim(),
         ProjectId = SelectedProject?.Id ?? 0,
         Status = SelectedStatus.Value,
-        Note = string.IsNullOrWhiteSpace(Note) ? null : Note.Trim()
+        Note = string.IsNullOrWhiteSpace(Note) ? null : Note.Trim(),
+        MarkupPercent = MarkupPercent,
+        ProfitPercent = ProfitPercent,
+        LaborSharePercent = LaborSharePercent
     };
 }

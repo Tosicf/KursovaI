@@ -15,12 +15,12 @@
                     <StackPanel>
                         <TextBlock Text="Настройки рабочего места" Style="{StaticResource Caption}" FontSize="12.5" />
                         <TextBlock Text="Параметры сетевого подключения и полномочия текущей роли" Style="{StaticResource Caption}"
-                                   FontSize="11" Foreground="{StaticResource TextMutedBrush}" Margin="0,3,0,0" />
+                                   FontSize="11" Foreground="{DynamicResource TextMutedBrush}" Margin="0,3,0,0" />
                     </StackPanel>
                     <Button Grid.Column="1" Style="{StaticResource SecondaryButton}" Command="{Binding CheckConnectionCommand}"
                             IsEnabled="{Binding IsChecking, Converter={StaticResource InverseBoolean}}">
                         <StackPanel Orientation="Horizontal">
-                            <Path Data="{StaticResource IconRefresh}" Stroke="{StaticResource TextSecondaryBrush}" StrokeThickness="1.7"
+                            <Path Data="{StaticResource IconRefresh}" Stroke="{DynamicResource TextSecondaryBrush}" StrokeThickness="1.7"
                                   Width="15" Height="15" Stretch="Uniform" VerticalAlignment="Center" />
                             <TextBlock Text="Проверить подключение" Margin="8,0,0,0" VerticalAlignment="Center" />
                         </StackPanel>
@@ -66,16 +66,16 @@
                                 <TextBlock Text="{Binding MaterialsCountDisplay}" HorizontalAlignment="Right" FontSize="12.5" />
                             </Grid>
 
-                            <Border Height="1" Background="{StaticResource BorderBrush}" Margin="0,0,0,14" />
+                            <Border Height="1" Background="{DynamicResource BorderBrush}" Margin="0,0,0,14" />
 
                             <TextBlock Text="{Binding HealthMessage}" TextWrapping="Wrap" Style="{StaticResource Caption}" LineHeight="18" />
 
-                            <Border Background="{StaticResource SurfaceAltBrush}" CornerRadius="10" Padding="14,12" Margin="0,16,0,0">
+                            <Border Background="{DynamicResource SurfaceAltBrush}" CornerRadius="10" Padding="14,12" Margin="0,16,0,0">
                                 <StackPanel>
                                     <TextBlock Text="Строка подключения задаётся в appsettings.json" FontSize="11.5" FontWeight="SemiBold"
-                                               Foreground="{StaticResource TextSecondaryBrush}" />
+                                               Foreground="{DynamicResource TextSecondaryBrush}" />
                                     <TextBlock Text="Server=.\SQLEXPRESS;Database=StroyControl;Trusted_Connection=True;"
-                                               FontFamily="Consolas" FontSize="11" Foreground="{StaticResource TextMutedBrush}"
+                                               FontFamily="Consolas" FontSize="11" Foreground="{DynamicResource TextMutedBrush}"
                                                Margin="0,6,0,0" TextWrapping="Wrap" />
                                 </StackPanel>
                             </Border>
@@ -88,9 +88,9 @@
                             <TextBlock Text="Текущая учётная запись" Style="{StaticResource SectionTitle}" Margin="0,0,0,16" />
 
                             <StackPanel Orientation="Horizontal" Margin="0,0,0,16">
-                                <Border Width="52" Height="52" CornerRadius="16" Background="{StaticResource AccentSoftBrush}">
+                                <Border Width="52" Height="52" CornerRadius="16" Background="{DynamicResource AccentSoftBrush}">
                                     <TextBlock Text="{Binding UserInitials}" FontSize="16" FontWeight="SemiBold"
-                                               Foreground="{StaticResource AccentBrush}"
+                                               Foreground="{DynamicResource AccentBrush}"
                                                HorizontalAlignment="Center" VerticalAlignment="Center" />
                                 </Border>
                                 <StackPanel Margin="14,0,0,0" VerticalAlignment="Center">
@@ -120,7 +120,7 @@
                                 <ItemsControl.ItemTemplate>
                                     <DataTemplate>
                                         <StackPanel Orientation="Horizontal" Margin="0,0,0,7">
-                                            <Path Data="{StaticResource IconCheck}" Stroke="{StaticResource SuccessBrush}" StrokeThickness="2"
+                                            <Path Data="{StaticResource IconCheck}" Stroke="{DynamicResource SuccessBrush}" StrokeThickness="2"
                                                   Width="13" Height="13" Stretch="Uniform" VerticalAlignment="Center" />
                                             <TextBlock Text="{Binding}" FontSize="12" Margin="8,0,0,0" TextWrapping="Wrap" />
                                         </StackPanel>
@@ -160,7 +160,7 @@
                             </StackPanel>
                         </Grid>
 
-                        <Border Height="1" Background="{StaticResource BorderBrush}" Margin="0,16" />
+                        <Border Height="1" Background="{DynamicResource BorderBrush}" Margin="0,16" />
 
                         <TextBlock Style="{StaticResource Caption}" TextWrapping="Wrap" LineHeight="18"
                                    Text="Курсовой проект: сетевое программное средство управления строительными материалами и анализа отклонений от сметы на строительном объекте. Данные хранятся в общей базе Microsoft SQL Server, доступ к ним разграничен по ролям." />

@@ -39,4 +39,7 @@ public sealed class DashboardData
     public IReadOnlyList<Material> StockAlerts { get; init; } = Array.Empty<Material>();
 
     public IReadOnlyList<MonthlyCostRow> MonthlyCosts { get; init; } = Array.Empty<MonthlyCostRow>();
+
+    /// <summary>Затраты по категориям материалов (кольцевая диаграмма).</summary>
+    public IReadOnlyList<CategoryCostRow> CategoryCosts { get; init; } = Array.Empty<CategoryCostRow>();
 }

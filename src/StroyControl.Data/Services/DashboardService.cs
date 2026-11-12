@@ -71,6 +71,11 @@ public sealed class DashboardService : IDashboardService
             .Take(6)
             .ToList();
 
+        var categories = BuildCategorySeries(usages
+            .Select(u => (Category: string.IsNullOrWhiteSpace(u.Material?.Category) ? "Прочее" : u.Material!.Category,
+                          Cost: u.Quantity * u.UnitPrice))
+            .ToList());
+
         var monthly = BuildMonthlySeries(usages
             .Select(u => (u.Date, Cost: u.Quantity * u.UnitPrice))
             .ToList());
@@ -90,8 +95,33 @@ public sealed class DashboardService : IDashboardService
             ProjectBudgets = budgets,
             RecentActivity = activity,
             StockAlerts = alerts,
-            MonthlyCosts = monthly
+            MonthlyCosts = monthly,
+            CategoryCosts = categories
         };
+    }
+
+    /// <summary>Затраты по категориям материалов с долей в процентах (топ-6 + «Прочие»).</summary>
+    private static IReadOnlyList<CategoryCostRow> BuildCategorySeries(IReadOnlyList<(string Category, decimal Cost)> usages)
+    {
+        var total = usages.Sum(u => u.Cost);
+        if (total <= 0m) return Array.Empty<CategoryCostRow>();
+
+        var grouped = usages
+            .GroupBy(u => u.Category)
+            .Select(g => new { Category = g.Key, Cost = g.Sum(x => x.Cost) })
+            .OrderByDescending(x => x.Cost)
+            .ToList();
+
+        var top = grouped.Take(5).ToList();
+        var rest = grouped.Skip(5).Sum(x => x.Cost);
+        if (rest > 0m) top.Add(new { Category = "Прочие", Cost = rest });
+
+        return top
+            .Select(x => new CategoryCostRow(
+                x.Category,
+                Math.Round(x.Cost, 2),
+                Math.Round(x.Cost / total * 100m, 1)))
+            .ToList();
     }
 
     /// <summary>Факт затрат по месяцам и среднемесячный план (смета / 6 месяцев).</summary>

@@ -19,13 +19,13 @@
             <StackPanel>
                 <TextBlock Text="Приходные накладные и движение материалов" Style="{StaticResource Caption}" FontSize="12.5" />
                 <TextBlock Text="Каждое поступление увеличивает остаток на складе в одной транзакции" Style="{StaticResource Caption}"
-                           FontSize="11" Foreground="{StaticResource TextMutedBrush}" Margin="0,3,0,0" />
+                           FontSize="11" Foreground="{DynamicResource TextMutedBrush}" Margin="0,3,0,0" />
             </StackPanel>
 
             <StackPanel Grid.Column="1" Orientation="Horizontal">
                 <Button Style="{StaticResource SecondaryButton}" Command="{Binding RefreshCommand}" Margin="0,0,10,0">
                     <StackPanel Orientation="Horizontal">
-                        <Path Data="{StaticResource IconRefresh}" Stroke="{StaticResource TextSecondaryBrush}" StrokeThickness="1.7"
+                        <Path Data="{StaticResource IconRefresh}" Stroke="{DynamicResource TextSecondaryBrush}" StrokeThickness="1.7"
                               Width="15" Height="15" Stretch="Uniform" VerticalAlignment="Center" />
                         <TextBlock Text="Обновить" Margin="8,0,0,0" VerticalAlignment="Center" />
                     </StackPanel>
@@ -52,10 +52,10 @@
 
                 <Grid MaxWidth="340" HorizontalAlignment="Left">
                     <TextBox Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}" Padding="38,0,12,0" />
-                    <Path Data="{StaticResource IconSearch}" Stroke="{StaticResource TextMutedBrush}" StrokeThickness="1.7"
+                    <Path Data="{StaticResource IconSearch}" Stroke="{DynamicResource TextMutedBrush}" StrokeThickness="1.7"
                           Width="16" Height="16" Stretch="Uniform" HorizontalAlignment="Left" Margin="13,0,0,0"
                           VerticalAlignment="Center" IsHitTestVisible="False" />
-                    <TextBlock Text="Поиск по номеру, поставщику, ТТН" Foreground="{StaticResource TextMutedBrush}"
+                    <TextBlock Text="Поиск по номеру, поставщику, ТТН" Foreground="{DynamicResource TextMutedBrush}"
                                FontSize="12.5" VerticalAlignment="Center" Margin="38,0,10,0" IsHitTestVisible="False"
                                Visibility="{Binding SearchText, Converter={StaticResource EmptyToVisibility}}" />
                 </Grid>
@@ -85,11 +85,11 @@
                           RowDetailsVisibilityMode="VisibleWhenSelected" RowHeight="46">
                     <DataGrid.RowDetailsTemplate>
                         <DataTemplate>
-                            <Border Background="{StaticResource SurfaceAltBrush}" Padding="18,12"
-                                    BorderBrush="{StaticResource BorderBrush}" BorderThickness="0,1,0,1">
+                            <Border Background="{DynamicResource SurfaceAltBrush}" Padding="18,12"
+                                    BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0,1,0,1">
                                 <StackPanel>
                                     <TextBlock Text="Состав документа" FontSize="11.5" FontWeight="SemiBold"
-                                               Foreground="{StaticResource TextSecondaryBrush}" Margin="0,0,0,8" />
+                                               Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,0,0,8" />
                                     <ItemsControl ItemsSource="{Binding Items}">
                                         <ItemsControl.ItemTemplate>
                                             <DataTemplate>
@@ -102,9 +102,9 @@
                                                     </Grid.ColumnDefinitions>
                                                     <TextBlock Text="{Binding MaterialName}" FontSize="12" TextTrimming="CharacterEllipsis" />
                                                     <TextBlock Grid.Column="1" Text="{Binding QuantityDisplay}" FontSize="12"
-                                                               HorizontalAlignment="Right" Foreground="{StaticResource TextSecondaryBrush}" />
+                                                               HorizontalAlignment="Right" Foreground="{DynamicResource TextSecondaryBrush}" />
                                                     <TextBlock Grid.Column="2" Text="{Binding UnitPrice, StringFormat={}{0:N2} BYN}" FontSize="12"
-                                                               HorizontalAlignment="Right" Foreground="{StaticResource TextSecondaryBrush}" />
+                                                               HorizontalAlignment="Right" Foreground="{DynamicResource TextSecondaryBrush}" />
                                                     <TextBlock Grid.Column="3" Text="{Binding Cost, StringFormat={}{0:N2} BYN}" FontSize="12"
                                                                HorizontalAlignment="Right" FontWeight="SemiBold" />
                                                 </Grid>
@@ -115,6 +115,25 @@
                             </Border>
                         </DataTemplate>
                     </DataGrid.RowDetailsTemplate>
+
+                    <DataGrid.ContextMenu>
+                        <ContextMenu>
+                            <MenuItem Header="Изменить…" InputGestureText="F2"
+                                      Command="{Binding PlacementTarget.DataContext.EditCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
+                                  CommandParameter="{Binding PlacementTarget.SelectedItem, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
+                                  IsEnabled="{Binding PlacementTarget.DataContext.CanEdit, RelativeSource={RelativeSource AncestorType=ContextMenu}}" />
+                            <MenuItem Header="Удалить" InputGestureText="Del"
+                                      Command="{Binding PlacementTarget.DataContext.DeleteCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
+                                  CommandParameter="{Binding PlacementTarget.SelectedItem, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
+                                  IsEnabled="{Binding PlacementTarget.DataContext.CanEdit, RelativeSource={RelativeSource AncestorType=ContextMenu}}" />
+                            <Separator />
+                            <MenuItem Header="Добавить"
+                                      Command="{Binding PlacementTarget.DataContext.AddCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
+                                  IsEnabled="{Binding PlacementTarget.DataContext.CanEdit, RelativeSource={RelativeSource AncestorType=ContextMenu}}" />
+                            <MenuItem Header="Обновить" InputGestureText="Ctrl+R"
+                                      Command="{Binding PlacementTarget.DataContext.RefreshCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}" />
+                        </ContextMenu>
+                    </DataGrid.ContextMenu>
 
                     <DataGrid.Columns>
                         <DataGridTemplateColumn Header="Документ" Width="*" MinWidth="220">
@@ -147,14 +166,14 @@
                                                 IsEnabled="{Binding DataContext.CanEdit, RelativeSource={RelativeSource AncestorType=DataGrid}}"
                                                 Command="{Binding DataContext.EditCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
                                                 CommandParameter="{Binding}">
-                                            <Path Data="{StaticResource IconEdit}" Stroke="{StaticResource TextSecondaryBrush}"
+                                            <Path Data="{StaticResource IconEdit}" Stroke="{DynamicResource TextSecondaryBrush}"
                                                   StrokeThickness="1.6" Width="14" Height="14" Stretch="Uniform" />
                                         </Button>
                                         <Button Style="{StaticResource IconButton}" Width="30" Height="30" ToolTip="Удалить"
                                                 IsEnabled="{Binding DataContext.CanEdit, RelativeSource={RelativeSource AncestorType=DataGrid}}"
                                                 Command="{Binding DataContext.DeleteCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
                                                 CommandParameter="{Binding}">
-                                            <Path Data="{StaticResource IconTrash}" Stroke="{StaticResource DangerBrush}"
+                                            <Path Data="{StaticResource IconTrash}" Stroke="{DynamicResource DangerBrush}"
                                                   StrokeThickness="1.6" Width="14" Height="14" Stretch="Uniform" />
                                         </Button>
                                     </StackPanel>

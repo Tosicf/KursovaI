@@ -21,13 +21,13 @@
             <StackPanel>
                 <TextBlock Text="Отклонения фактического расхода от сметы" Style="{StaticResource Caption}" FontSize="12.5" />
                 <TextBlock Text="Порог внимания — 5 %, критично — 10 % от сметной стоимости позиции" Style="{StaticResource Caption}"
-                           FontSize="11" Foreground="{StaticResource TextMutedBrush}" Margin="0,3,0,0" />
+                           FontSize="11" Foreground="{DynamicResource TextMutedBrush}" Margin="0,3,0,0" />
             </StackPanel>
 
             <StackPanel Grid.Column="1" Orientation="Horizontal">
                 <Button Style="{StaticResource SecondaryButton}" Command="{Binding RefreshCommand}" Margin="0,0,10,0">
                     <StackPanel Orientation="Horizontal">
-                        <Path Data="{StaticResource IconRefresh}" Stroke="{StaticResource TextSecondaryBrush}" StrokeThickness="1.7"
+                        <Path Data="{StaticResource IconRefresh}" Stroke="{DynamicResource TextSecondaryBrush}" StrokeThickness="1.7"
                               Width="15" Height="15" Stretch="Uniform" VerticalAlignment="Center" />
                         <TextBlock Text="Пересчитать" Margin="8,0,0,0" VerticalAlignment="Center" />
                     </StackPanel>
@@ -47,25 +47,25 @@
             <controls:KpiCard Title="План по сметам" Value="{Binding PlannedTotalDisplay}"
                               Caption="{Binding ScopeName}"
                               Icon="{StaticResource IconEstimates}"
-                              Accent="{StaticResource PurpleBrush}" IconBackground="{StaticResource PurpleSoftBrush}"
+                              Accent="{DynamicResource PurpleBrush}" IconBackground="{DynamicResource PurpleSoftBrush}"
                               Margin="0,0,14,14" MinWidth="250" />
 
             <controls:KpiCard Title="Фактические затраты" Value="{Binding ActualTotalDisplay}"
                               Caption="{Binding PositionsCount, StringFormat=позиций в отчёте: {0}}"
                               Icon="{StaticResource IconWallet}"
-                              Accent="{StaticResource WarningBrush}" IconBackground="{StaticResource WarningSoftBrush}"
+                              Accent="{DynamicResource WarningBrush}" IconBackground="{DynamicResource WarningSoftBrush}"
                               Margin="0,0,14,14" MinWidth="250" />
 
             <controls:KpiCard Title="Отклонение" Value="{Binding DeviationPercentDisplay}"
                               Caption="{Binding DeviationDirection}"
                               Icon="{StaticResource IconDeviations}"
-                              Accent="{StaticResource DangerBrush}" IconBackground="{StaticResource DangerSoftBrush}"
+                              Accent="{DynamicResource DangerBrush}" IconBackground="{DynamicResource DangerSoftBrush}"
                               Margin="0,0,14,14" MinWidth="230" />
 
             <controls:KpiCard Title="Критичных позиций" Value="{Binding CriticalCount}"
                               Caption="{Binding OverrunCount, StringFormat=с перерасходом: {0}}"
                               Icon="{StaticResource IconAlert}"
-                              Accent="{StaticResource InfoBrush}" IconBackground="{StaticResource InfoSoftBrush}"
+                              Accent="{DynamicResource InfoBrush}" IconBackground="{DynamicResource InfoSoftBrush}"
                               Margin="0,0,14,14" MinWidth="230" />
         </WrapPanel>
 
@@ -95,11 +95,11 @@
                     <TextBlock Style="{StaticResource Caption}" Text="{Binding RowsSummary}" />
                     <TextBlock Style="{StaticResource Caption}" FontSize="11" Margin="0,2,0,0">
                         <Run Text="Внимание: " />
-                        <Run Text="{Binding WarningCount, Mode=OneWay}" Foreground="{StaticResource WarningBrush}" />
+                        <Run Text="{Binding WarningCount, Mode=OneWay}" Foreground="{DynamicResource WarningBrush}" />
                         <Run Text="   ·   Критично: " />
-                        <Run Text="{Binding CriticalCount, Mode=OneWay}" Foreground="{StaticResource DangerBrush}" />
+                        <Run Text="{Binding CriticalCount, Mode=OneWay}" Foreground="{DynamicResource DangerBrush}" />
                         <Run Text="   ·   Экономия: " />
-                        <Run Text="{Binding EconomyCount, Mode=OneWay}" Foreground="{StaticResource SuccessBrush}" />
+                        <Run Text="{Binding EconomyCount, Mode=OneWay}" Foreground="{DynamicResource SuccessBrush}" />
                     </TextBlock>
                 </StackPanel>
 
@@ -117,6 +117,19 @@
             <Grid>
                 <DataGrid Style="{StaticResource DataGridStyle}" ItemsSource="{Binding RowsView}"
                           SelectedItem="{Binding SelectedRow}" Margin="8,6,8,8" RowHeight="54">
+                    <DataGrid.ContextMenu>
+                        <ContextMenu>
+                            <MenuItem Header="Экспорт в CSV…"
+                                      Command="{Binding PlacementTarget.DataContext.ExportCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
+                                      IsEnabled="{Binding PlacementTarget.DataContext.CanExport, RelativeSource={RelativeSource AncestorType=ContextMenu}}" />
+                            <MenuItem Header="Обновить" InputGestureText="Ctrl+R"
+                                      Command="{Binding PlacementTarget.DataContext.RefreshCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}" />
+                            <MenuItem Header="Копировать" InputGestureText="Ctrl+C"
+                                      Command="ApplicationCommands.Copy"
+                                      CommandTarget="{Binding PlacementTarget, RelativeSource={RelativeSource AncestorType=ContextMenu}}" />
+                        </ContextMenu>
+                    </DataGrid.ContextMenu>
+
                     <DataGrid.Columns>
                         <DataGridTemplateColumn Header="Материал" Width="*" MinWidth="240">
                             <DataGridTemplateColumn.CellTemplate>
@@ -125,7 +138,7 @@
                                         <TextBlock Text="{Binding MaterialName}" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" />
                                         <TextBlock Style="{StaticResource Caption}" FontSize="11" Margin="0,2,0,0" TextTrimming="CharacterEllipsis">
                                             <Run Text="{Binding ProjectName, Mode=OneWay}" />
-                                            <Run Text="  ·  " Foreground="{StaticResource TextMutedBrush}" />
+                                            <Run Text="  ·  " Foreground="{DynamicResource TextMutedBrush}" />
                                             <Run Text="{Binding Section, Mode=OneWay}" />
                                         </TextBlock>
                                     </StackPanel>
@@ -139,9 +152,9 @@
                                     <StackPanel VerticalAlignment="Center">
                                         <TextBlock FontSize="12">
                                             <Run Text="{Binding ActualQuantity, StringFormat='{}{0:N2}', Mode=OneWay}" />
-                                            <Run Text=" / " Foreground="{StaticResource TextMutedBrush}" />
-                                            <Run Text="{Binding PlannedQuantity, StringFormat='{}{0:N2}', Mode=OneWay}" Foreground="{StaticResource TextSecondaryBrush}" />
-                                            <Run Text="{Binding Unit, Mode=OneWay}" Foreground="{StaticResource TextMutedBrush}" FontSize="10.5" />
+                                            <Run Text=" / " Foreground="{DynamicResource TextMutedBrush}" />
+                                            <Run Text="{Binding PlannedQuantity, StringFormat='{}{0:N2}', Mode=OneWay}" Foreground="{DynamicResource TextSecondaryBrush}" />
+                                            <Run Text="{Binding Unit, Mode=OneWay}" Foreground="{DynamicResource TextMutedBrush}" FontSize="10.5" />
                                         </TextBlock>
                                         <TextBlock FontSize="10.5" Margin="0,2,0,0"
                                                    Foreground="{Binding IsOverrun, Converter={StaticResource BoolToBrush}, ConverterParameter=DangerBrush|SuccessBrush}">
@@ -159,10 +172,10 @@
                                     <StackPanel VerticalAlignment="Center">
                                         <TextBlock FontSize="12">
                                             <Run Text="{Binding ActualPrice, StringFormat='{}{0:N2}', Mode=OneWay}" />
-                                            <Run Text=" / " Foreground="{StaticResource TextMutedBrush}" />
-                                            <Run Text="{Binding PlannedPrice, StringFormat='{}{0:N2}', Mode=OneWay}" Foreground="{StaticResource TextSecondaryBrush}" />
+                                            <Run Text=" / " Foreground="{DynamicResource TextMutedBrush}" />
+                                            <Run Text="{Binding PlannedPrice, StringFormat='{}{0:N2}', Mode=OneWay}" Foreground="{DynamicResource TextSecondaryBrush}" />
                                         </TextBlock>
-                                        <TextBlock FontSize="10.5" Margin="0,2,0,0" Foreground="{StaticResource TextMutedBrush}">
+                                        <TextBlock FontSize="10.5" Margin="0,2,0,0" Foreground="{DynamicResource TextMutedBrush}">
                                             <Run Text="Δ " />
                                             <Run Text="{Binding PriceDeviation, StringFormat='{}{0:+0.00;-0.00;0}', Mode=OneWay}" />
                                         </TextBlock>
@@ -177,9 +190,9 @@
                                     <StackPanel VerticalAlignment="Center">
                                         <TextBlock FontSize="12" FontWeight="SemiBold">
                                             <Run Text="{Binding ActualCost, StringFormat='{}{0:N2}', Mode=OneWay}" />
-                                            <Run Text=" / " Foreground="{StaticResource TextMutedBrush}" FontWeight="Normal" />
+                                            <Run Text=" / " Foreground="{DynamicResource TextMutedBrush}" FontWeight="Normal" />
                                             <Run Text="{Binding PlannedCost, StringFormat='{}{0:N2}', Mode=OneWay}" FontWeight="Normal"
-                                                 Foreground="{StaticResource TextSecondaryBrush}" />
+                                                 Foreground="{DynamicResource TextSecondaryBrush}" />
                                         </TextBlock>
                                         <TextBlock FontSize="10.5" Margin="0,2,0,0"
                                                    Foreground="{Binding IsOverrun, Converter={StaticResource BoolToBrush}, ConverterParameter=DangerBrush|SuccessBrush}">

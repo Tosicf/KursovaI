@@ -12,6 +12,9 @@ public static class DatabaseInitializer
         await using var db = await factory.CreateDbContextAsync(cancellationToken);
 
         await db.Database.EnsureCreatedAsync(cancellationToken);
+
+        // EnsureCreated не меняет уже существующую базу, поэтому догоняем схему вручную.
+        await SchemaPatcher.ApplyAsync(db, cancellationToken);
         await DemoDataSeeder.SeedAsync(db, cancellationToken);
     }
 
@@ -23,6 +26,9 @@ public static class DatabaseInitializer
 
         await db.Database.EnsureDeletedAsync(cancellationToken);
         await db.Database.EnsureCreatedAsync(cancellationToken);
+
+        // EnsureCreated не меняет уже существующую базу, поэтому догоняем схему вручную.
+        await SchemaPatcher.ApplyAsync(db, cancellationToken);
         await DemoDataSeeder.SeedAsync(db, cancellationToken);
     }
 }

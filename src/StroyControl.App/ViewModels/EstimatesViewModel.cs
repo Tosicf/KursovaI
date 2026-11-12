@@ -61,6 +61,9 @@ public sealed partial class EstimatesViewModel : ViewModelBase
 
     public bool CanEdit => _session.CanEditEstimates;
 
+    /// <summary>Отчёт содержит финансовые показатели — доступен ролям с правом просмотра финансов.</summary>
+    public bool CanViewReport => _session.CanViewFinance;
+
     public bool IsEmpty => Estimates.Count == 0;
 
     public bool IsFilteredEmpty => Estimates.Count > 0 && VisibleCount == 0;
@@ -263,10 +266,31 @@ public sealed partial class EstimatesViewModel : ViewModelBase
         }
     }
 
+    /// <summary>Открывает отчёт по выбранной смете (расчёт работ и материалов).</summary>
+    [RelayCommand]
+    private void ShowReport()
+    {
+        if (SelectedEstimate is null)
+        {
+            _toasts.Info("Смета не выбрана", "Выберите смету из списка слева.");
+            return;
+        }
+
+        if (!CanViewReport)
+        {
+            _toasts.Info("Недостаточно прав", "Отчёт доступен ролям с доступом к финансовым показателям.");
+            return;
+        }
+
+        _dialogs.ShowEstimateReport(SelectedEstimate);
+    }
+
     [RelayCommand]
     private async Task AddItemAsync()
     {
         if (!CanEdit || SelectedEstimate is null) return;
+
+        await RefreshMaterialsAsync();
 
         if (Materials.Count == 0)
         {
@@ -303,6 +327,8 @@ public sealed partial class EstimatesViewModel : ViewModelBase
     private async Task EditItemAsync(EstimateItem? item)
     {
         if (!CanEdit || item is null || SelectedEstimate is null) return;
+
+        await RefreshMaterialsAsync();
 
         var updated = _dialogs.EditEstimateItem(item, SelectedEstimate.Id, Materials);
         if (updated is null) return;
@@ -395,5 +421,24 @@ public sealed partial class EstimatesViewModel : ViewModelBase
         OnPropertyChanged(nameof(ItemsCount));
         OnPropertyChanged(nameof(HasItems));
         OnPropertyChanged(nameof(IsItemsEmpty));
+    }
+
+    /// <summary>
+    /// Перечитывает справочник материалов из БД перед открытием диалога: цены должны быть
+    /// актуальными, иначе в форму подставится устаревшая цена из кэша страницы.
+    /// </summary>
+    private async Task RefreshMaterialsAsync()
+    {
+        try
+        {
+            var materials = await _materials.GetAllWithSupplierAsync();
+            Materials.Clear();
+            foreach (var material in materials.Where(m => m.IsActive))
+                Materials.Add(material);
+        }
+        catch
+        {
+            // Связь недоступна — работаем с уже загруженным справочником.
+        }
     }
 }

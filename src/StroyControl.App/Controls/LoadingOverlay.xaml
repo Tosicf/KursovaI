@@ -6,8 +6,8 @@
     <Border Background="#E6FFFFFF" CornerRadius="14">
         <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
             <Grid Width="56" Height="56" HorizontalAlignment="Center">
-                <Ellipse Width="48" Height="48" Stroke="{StaticResource AccentSoftBrush}" StrokeThickness="4" />
-                <Ellipse Width="48" Height="48" Stroke="{StaticResource AccentBrush}" StrokeThickness="4"
+                <Ellipse Width="48" Height="48" Stroke="{DynamicResource AccentSoftBrush}" StrokeThickness="4" />
+                <Ellipse Width="48" Height="48" Stroke="{DynamicResource AccentBrush}" StrokeThickness="4"
                          StrokeDashArray="3 5" StrokeDashCap="Round" RenderTransformOrigin="0.5,0.5">
                     <Ellipse.RenderTransform>
                         <RotateTransform />
@@ -25,7 +25,7 @@
                 </Ellipse>
             </Grid>
             <TextBlock Text="{Binding Message, ElementName=Root}" Margin="0,14,0,0"
-                       Foreground="{StaticResource TextSecondaryBrush}" HorizontalAlignment="Center" />
+                       Foreground="{DynamicResource TextSecondaryBrush}" HorizontalAlignment="Center" />
         </StackPanel>
     </Border>
 </UserControl>

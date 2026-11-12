@@ -10,7 +10,7 @@
         MinHeight="700"
         WindowState="Maximized"
         WindowStartupLocation="CenterScreen"
-        Background="{StaticResource AppBackgroundBrush}"
+        Background="{DynamicResource AppBackgroundBrush}"
         FontFamily="Segoe UI"
         TextOptions.TextFormattingMode="Display">
 
@@ -21,7 +21,7 @@
         </Grid.ColumnDefinitions>
 
         <!-- ==================== Боковое меню ==================== -->
-        <Border Grid.Column="0" Width="{Binding SidebarWidth}" Background="{StaticResource SidebarGradientBrush}">
+        <Border Grid.Column="0" Width="{Binding SidebarWidth}" Background="{DynamicResource SidebarGradientBrush}">
             <Grid>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto" />
@@ -31,7 +31,7 @@
 
                 <!-- Логотип -->
                 <StackPanel Orientation="Horizontal" Margin="20,24,20,22">
-                    <Border Width="42" Height="42" CornerRadius="12" Background="{StaticResource AccentBrush}">
+                    <Border Width="42" Height="42" CornerRadius="12" Background="{DynamicResource AccentBrush}">
                         <Path Data="{StaticResource IconBox}" Stroke="White" StrokeThickness="1.7" Width="20" Height="20"
                               Stretch="Uniform" StrokeStartLineCap="Round" StrokeLineJoin="Round" />
                     </Border>
@@ -115,7 +115,7 @@
             </Grid.RowDefinitions>
 
             <!-- Шапка -->
-            <Border Grid.Row="0" Background="{StaticResource SurfaceBrush}" BorderBrush="{StaticResource BorderBrush}" BorderThickness="0,0,0,1">
+            <Border Grid.Row="0" Background="{DynamicResource SurfaceBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0,0,0,1">
                 <Grid Margin="26,0,26,0">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*" />
@@ -124,29 +124,58 @@
 
                     <StackPanel VerticalAlignment="Center">
                         <TextBlock Text="{Binding PageTitle}" FontSize="17" FontWeight="SemiBold" />
-                        <TextBlock Text="{Binding Organization}" FontSize="11.5" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,2,0,0" />
+                        <TextBlock Text="{Binding Organization}" FontSize="11.5" Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,2,0,0" />
                     </StackPanel>
 
                     <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
-                        <Border Style="{StaticResource Badge}" Background="{StaticResource WarningSoftBrush}" Margin="0,0,10,0"
+                        <Border Style="{StaticResource Badge}" Background="{DynamicResource WarningSoftBrush}" Margin="0,0,10,0"
                                 Visibility="{Binding IsDemoMode, Converter={StaticResource BoolToVisibility}}">
-                            <TextBlock Text="ДЕМО-РЕЖИМ" FontSize="10.5" FontWeight="SemiBold" Foreground="{StaticResource WarningBrush}" />
+                            <TextBlock Text="ДЕМО-РЕЖИМ" FontSize="10.5" FontWeight="SemiBold" Foreground="{DynamicResource WarningBrush}" />
                         </Border>
 
+                        <!-- Сотрудники: только администратору -->
+                        <Button Style="{StaticResource IconButton}" Command="{Binding OpenUsersCommand}" ToolTip="Сотрудники"
+                                Margin="0,0,4,0"
+                                Visibility="{Binding CanManageUsers, Converter={StaticResource BoolToVisibility}}">
+                            <Path Data="{StaticResource IconUsers}" Stroke="{DynamicResource TextSecondaryBrush}" StrokeThickness="1.7"
+                                  Width="17" Height="17" Stretch="Uniform" StrokeStartLineCap="Round" StrokeLineJoin="Round" />
+                        </Button>
+
+                        <!-- Настройки -->
+                        <Button Style="{StaticResource IconButton}" Command="{Binding OpenSettingsCommand}" ToolTip="Настройки" Margin="0,0,4,0">
+                            <Path Data="{StaticResource IconSettings}" Stroke="{DynamicResource TextSecondaryBrush}" StrokeThickness="1.7"
+                                  Width="17" Height="17" Stretch="Uniform" StrokeStartLineCap="Round" StrokeLineJoin="Round" />
+                        </Button>
+
+                        <!-- Переключатель темы -->
+                        <Button Style="{StaticResource IconButton}" Command="{Binding ToggleThemeCommand}"
+                                ToolTip="{Binding ThemeTooltip}" Margin="0,0,4,0">
+                            <Grid Width="17" Height="17">
+                                <Path Data="{StaticResource IconMoon}" Stroke="{DynamicResource TextSecondaryBrush}" StrokeThickness="1.7"
+                                      Stretch="Uniform" StrokeStartLineCap="Round" StrokeLineJoin="Round"
+                                      Visibility="{Binding IsDarkTheme, Converter={StaticResource BoolToVisibility}}"
+                                      ToolTip="Включена тёмная тема — нажмите для светлой" />
+                                <Path Data="{StaticResource IconSun}" Stroke="{DynamicResource TextSecondaryBrush}" StrokeThickness="1.7"
+                                      Stretch="Uniform" StrokeStartLineCap="Round" StrokeLineJoin="Round"
+                                      Visibility="{Binding IsDarkTheme, Converter={StaticResource BoolToVisibility}, ConverterParameter=invert}"
+                                      ToolTip="Включена светлая тема — нажмите для тёмной" />
+                            </Grid>
+                        </Button>
+
                         <Button Style="{StaticResource IconButton}" Command="{Binding RefreshCommand}" ToolTip="Обновить данные" Margin="0,0,6,0">
-                            <Path Data="{StaticResource IconRefresh}" Stroke="{StaticResource TextSecondaryBrush}" StrokeThickness="1.7"
+                            <Path Data="{StaticResource IconRefresh}" Stroke="{DynamicResource TextSecondaryBrush}" StrokeThickness="1.7"
                                   Width="16" Height="16" Stretch="Uniform" StrokeStartLineCap="Round" StrokeLineJoin="Round" />
                         </Button>
 
-                        <Border Width="1" Height="28" Background="{StaticResource BorderBrush}" Margin="10,0" />
+                        <Border Width="1" Height="28" Background="{DynamicResource BorderBrush}" Margin="10,0" />
 
-                        <Border Width="38" Height="38" CornerRadius="12" Background="{StaticResource AccentSoftBrush}">
-                            <TextBlock Text="{Binding UserInitials}" Foreground="{StaticResource AccentBrush}" FontWeight="SemiBold"
+                        <Border Width="38" Height="38" CornerRadius="12" Background="{DynamicResource AccentSoftBrush}">
+                            <TextBlock Text="{Binding UserInitials}" Foreground="{DynamicResource AccentBrush}" FontWeight="SemiBold"
                                        HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="12" />
                         </Border>
                         <StackPanel Margin="10,0,0,0" VerticalAlignment="Center">
                             <TextBlock Text="{Binding UserName}" FontSize="12.5" FontWeight="SemiBold" />
-                            <TextBlock Text="{Binding UserRole}" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" />
+                            <TextBlock Text="{Binding UserRole}" FontSize="11" Foreground="{DynamicResource TextSecondaryBrush}" />
                         </StackPanel>
                     </StackPanel>
                 </Grid>

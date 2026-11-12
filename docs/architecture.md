@@ -260,3 +260,53 @@ sequenceDiagram
 | 6 | Автоматов: навигация по разделам | [06-state-navigation.md](diagrams/06-state-navigation.md) |
 
 Изображения и документ пересобираются скриптом `tools/render_diagrams.py` (Python + Pillow + python-docx).
+
+## 10. Отчёт по смете
+
+Отчёт «Расчёт количества и стоимости работ и материалов» строится классом `EstimateReportBuilder` (`StroyControl.Core/Dtos/EstimateReport.cs`) — чистая функция без обращения к БД, поэтому покрыта модульными тестами (`EstimateReportBuilderTests`).
+
+**Позиции сметы.** В одной смете хранятся и материалы, и работы: у позиции есть `IsWork`, для работы заполняются `WorkName` и `WorkUnit`, для материала — `MaterialId` (теперь допускает `NULL`). Раздел задаётся полем `Section`.
+
+**Формулы (округление до копеек, `MidpointRounding.AwayFromZero`):**
+
+| Показатель | Формула |
+|---|---|
+| Цена с наценкой | `PlannedUnitPrice × (1 + MarkupPercent / 100)` |
+| Итого по позиции | `PlannedQuantity × Цена с наценкой` |
+| Прибыль позиции | `Итого × ProfitPercent / 100` |
+| Зарплата рабочих | только для работ: `Итого × LaborSharePercent / 100` |
+| Прямые затраты | материалы + работы |
+| Всего затрат | прямые затраты + прибыль |
+| Стоимость 1 м² | `Всего затрат / Project.TotalArea` |
+| Прибыль от 1 м² | `Прибыль / Project.TotalArea` |
+
+Коэффициенты хранятся в смете (`MarkupPercent`, `ProfitPercent`, `LaborSharePercent`, по умолчанию 10 / 12 / 35 %) и могут быть изменены прямо в окне отчёта без записи в БД — это сценарий «что если».
+
+**Представление.** `EstimateReportDocument` собирает `FlowDocument` (Times New Roman, А4): шапка с итогами, таблица с разделами, подгруппами «Работы» / «Материалы», подытогами и итогом по смете. Тот же документ уходит в печать, поэтому экран и бумага совпадают. Экспорт `EstimateReportExporter` формирует CSV (UTF-8 BOM, `;`) и полноценный `.xlsx` — книга OOXML собирается вручную через `System.IO.Compression` без сторонних библиотек (стили, объединённые ячейки шапки, формат `#,##0.00`, закреплённая строка заголовка).
+
+## 11. Диаграммы на панели управления
+
+Три элемента рисуют себя сами (`Controls/BarChart`, `DonutChart`, `LineChart` — наследники `ChartBase`, переопределяют `OnRender`), внешних библиотек нет:
+
+- **План и факт по объектам** — сгруппированные столбики, красный цвет при перерасходе;
+- **Структура затрат** — кольцевая диаграмма по `Material.Category` (топ-5 + «Прочие»), подпись итога в центре;
+- **Динамика по месяцам** — две линии (план пунктиром, факт сплошной) и точки.
+
+Данные агрегирует `DashboardService` (`ProjectBudgets`, `CategoryCosts`, `MonthlyCosts`), диаграммы получают готовые DTO. Цвета берутся из ресурсов темы, при переключении темы контролы перерисовываются по событию `ThemeManager.ThemeChanged`.
+
+## 12. Темы оформления и контекстные меню
+
+Палитра вынесена в два словаря с одинаковым набором ключей: `Resources/Theme/Palette.Light.xaml` и `Palette.Dark.xaml`. Стили ссылаются на кисти через `DynamicResource`, поэтому `ThemeManager.Apply` просто подменяет словарь в `Application.Resources.MergedDictionaries` — без перезапуска окна. Выбор темы сохраняется в `%APPDATA%\StroyControl\ui.json` и применяется в `App.StartAsync` до показа окна входа.
+
+Компоновка: в боковом меню остались восемь рабочих разделов, а «Сотрудники» (только администратор) и «Настройки» переехали в верхнюю панель — рядом с переключателем темы, кнопкой обновления и профилем.
+
+Контекстное меню добавлено ко всем таблицам (`DataGrid.ContextMenu`). Команды не дублируются: пункты привязываются к тем же `Edit/Delete/Add/Refresh/ExportCommand` модели представления через `PlacementTarget.DataContext`, а `IsEnabled` — к правам роли (`CanEdit`, `CanManage`, `CanExport`). «Копировать» использует `ApplicationCommands.Copy`, то есть штатное копирование ячеек DataGrid.
+
+## 13. Миграция схемы при обновлении
+
+Схема создаётся `EnsureCreated`, который не изменяет существующую базу, поэтому добавленные поля догоняются идемпотентными командами:
+
+- `StroyControl.Data/Seed/SchemaPatcher` — выполняется при старте приложения;
+- `database/schema.sql`, раздел 10.1 — те же `ALTER TABLE ... IF COL_LENGTH(...) IS NULL` для ручного развёртывания.
+
+Добавленные поля: `estimate_items.IsWork`, `WorkName`, `WorkUnit` (и `MaterialId` стал `NULL`-допустимым), `estimates.MarkupPercent`, `ProfitPercent`, `LaborSharePercent`, `projects.TotalArea`.

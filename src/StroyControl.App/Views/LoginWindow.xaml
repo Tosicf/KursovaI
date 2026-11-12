@@ -13,7 +13,7 @@
         WindowStartupLocation="CenterScreen"
         FontFamily="Segoe UI">
 
-    <Border CornerRadius="20" Background="{StaticResource SurfaceBrush}">
+    <Border CornerRadius="20" Background="{DynamicResource SurfaceBrush}">
         <Border.Effect>
             <DropShadowEffect BlurRadius="40" ShadowDepth="10" Opacity="0.22" Color="#0B1220" />
         </Border.Effect>
@@ -40,7 +40,7 @@
                     </Grid.RowDefinitions>
 
                     <StackPanel Orientation="Horizontal">
-                        <Border Width="46" Height="46" CornerRadius="13" Background="{StaticResource AccentBrush}">
+                        <Border Width="46" Height="46" CornerRadius="13" Background="{DynamicResource AccentBrush}">
                             <Path Data="{StaticResource IconBox}" Stroke="White" StrokeThickness="1.7" Width="22" Height="22"
                                   Stretch="Uniform" StrokeStartLineCap="Round" StrokeLineJoin="Round" />
                         </Border>
@@ -110,7 +110,7 @@
                 </Grid.RowDefinitions>
 
                 <Button Style="{StaticResource IconButton}" HorizontalAlignment="Right" VerticalAlignment="Top" Click="OnCloseClick" ToolTip="Закрыть">
-                    <Path Data="{StaticResource IconClose}" Stroke="{StaticResource TextSecondaryBrush}" StrokeThickness="1.8"
+                    <Path Data="{StaticResource IconClose}" Stroke="{DynamicResource TextSecondaryBrush}" StrokeThickness="1.8"
                           Width="14" Height="14" Stretch="Uniform" StrokeStartLineCap="Round" />
                 </Button>
 
@@ -125,9 +125,9 @@
                     <PasswordBox behaviors:PasswordBoxHelper.BindPassword="True"
                                  behaviors:PasswordBoxHelper.BoundPassword="{Binding Password, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
 
-                    <Border Background="{StaticResource DangerSoftBrush}" CornerRadius="10" Padding="12,10" Margin="0,16,0,0"
+                    <Border Background="{DynamicResource DangerSoftBrush}" CornerRadius="10" Padding="12,10" Margin="0,16,0,0"
                             Visibility="{Binding ErrorText, Converter={StaticResource NullToVisibility}}">
-                        <TextBlock Text="{Binding ErrorText}" Foreground="{StaticResource DangerBrush}" TextWrapping="Wrap" FontSize="12" />
+                        <TextBlock Text="{Binding ErrorText}" Foreground="{DynamicResource DangerBrush}" TextWrapping="Wrap" FontSize="12" />
                     </Border>
 
                     <Button Style="{StaticResource PrimaryButton}" Height="44" Margin="0,22,0,0"
@@ -155,8 +155,8 @@
                                         ToolTip="{Binding DisplayName}">
                                     <TextBlock FontSize="11.5">
                                         <Run Text="{Binding Role, Mode=OneWay}" />
-                                        <Run Text="·" Foreground="{StaticResource TextMutedBrush}" />
-                                        <Run Text="{Binding Login, Mode=OneWay}" Foreground="{StaticResource AccentBrush}" />
+                                        <Run Text="·" Foreground="{DynamicResource TextMutedBrush}" />
+                                        <Run Text="{Binding Login, Mode=OneWay}" Foreground="{DynamicResource AccentBrush}" />
                                     </TextBlock>
                                 </Button>
                             </DataTemplate>

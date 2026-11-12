@@ -18,6 +18,9 @@ public class Project : EntityBase
     /// <summary>Договорная стоимость строительства, BYN.</summary>
     public decimal ContractSum { get; set; }
 
+    /// <summary>Общая площадь строения, м² — используется в отчёте для стоимости 1 м².</summary>
+    public decimal TotalArea { get; set; }
+
     public DateTime StartDate { get; set; } = DateTime.Today;
 
     public DateTime PlannedEndDate { get; set; } = DateTime.Today.AddMonths(12);

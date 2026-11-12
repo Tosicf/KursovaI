@@ -17,6 +17,15 @@ public class Estimate : EntityBase
 
     public string? Note { get; set; }
 
+    /// <summary>Наценка на единичную цену, % (закладывается в «цену с наценкой» отчёта).</summary>
+    public decimal MarkupPercent { get; set; } = 10m;
+
+    /// <summary>Прибыль в процентах от стоимости позиции.</summary>
+    public decimal ProfitPercent { get; set; } = 12m;
+
+    /// <summary>Доля зарплаты рабочих в стоимости работ, %.</summary>
+    public decimal LaborSharePercent { get; set; } = 35m;
+
     public ICollection<EstimateItem> Items { get; set; } = new List<EstimateItem>();
 
     public decimal PlannedTotal => Items?.Sum(i => i.PlannedCost) ?? 0m;

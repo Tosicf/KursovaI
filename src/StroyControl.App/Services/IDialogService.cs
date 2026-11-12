@@ -28,4 +28,7 @@ public interface IDialogService
     MaterialUsage? EditUsage(MaterialUsage? usage, IReadOnlyList<Project> projects, IReadOnlyList<Material> materials, IReadOnlyList<Estimate> estimates, int? currentUserId);
 
     UserEditorViewModel? EditUser(User? user);
+
+    /// <summary>Показывает отчёт по смете (печать, Excel, CSV).</summary>
+    void ShowEstimateReport(Estimate estimate);
 }

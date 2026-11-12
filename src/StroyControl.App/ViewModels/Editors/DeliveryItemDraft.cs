@@ -23,7 +23,10 @@ public sealed partial class DeliveryItemDraft : ObservableObject
 
     partial void OnMaterialChanged(Material? value)
     {
-        if (value is not null && UnitPrice == 0m)
+        // Цена подтягивается из справочника при каждом выборе материала. При открытии
+        // существующей накладной значение из документа присваивается после Material
+        // (порядок в объектном инициализаторе), поэтому историческая цена сохраняется.
+        if (value is not null)
             UnitPrice = value.Price;
     }
 }

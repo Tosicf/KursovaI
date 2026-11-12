@@ -17,6 +17,7 @@ public sealed partial class ProjectEditorViewModel : EditorViewModelBase
         Customer = source?.Customer ?? string.Empty;
         ManagerName = source?.ManagerName ?? string.Empty;
         ContractSum = source?.ContractSum ?? 0m;
+        TotalArea = source?.TotalArea ?? 0m;
         StartDate = source?.StartDate ?? DateTime.Today;
         PlannedEndDate = source?.PlannedEndDate ?? DateTime.Today.AddMonths(12);
         SelectedStatus = Statuses.FirstOrDefault(s => s.Value == (source?.Status ?? ProjectStatus.Planning)) ?? Statuses[0];
@@ -46,6 +47,10 @@ public sealed partial class ProjectEditorViewModel : EditorViewModelBase
     [ObservableProperty]
     private decimal contractSum;
 
+    /// <summary>Общая площадь строения, м² — нужна для расчёта стоимости и прибыли на 1 м².</summary>
+    [ObservableProperty]
+    private decimal totalArea;
+
     [ObservableProperty]
     private DateTime startDate;
 
@@ -66,6 +71,7 @@ public sealed partial class ProjectEditorViewModel : EditorViewModelBase
         if (string.IsNullOrWhiteSpace(Code)) return "Укажите шифр объекта.";
         if (string.IsNullOrWhiteSpace(Name)) return "Укажите наименование объекта.";
         if (ContractSum < 0m) return "Договорная стоимость не может быть отрицательной.";
+        if (TotalArea < 0m) return "Площадь строения не может быть отрицательной.";
         if (PlannedEndDate <= StartDate) return "Плановая дата окончания должна быть позже даты начала.";
         if (ProgressPercent is < 0 or > 100) return "Готовность объекта — от 0 до 100 %.";
         return null;
@@ -82,6 +88,7 @@ public sealed partial class ProjectEditorViewModel : EditorViewModelBase
         Customer = (Customer ?? string.Empty).Trim(),
         ManagerName = (ManagerName ?? string.Empty).Trim(),
         ContractSum = ContractSum,
+        TotalArea = TotalArea,
         StartDate = StartDate.Date,
         PlannedEndDate = PlannedEndDate.Date,
         Status = SelectedStatus.Value,

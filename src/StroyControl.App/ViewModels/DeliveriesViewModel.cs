@@ -146,6 +146,8 @@ public sealed partial class DeliveriesViewModel : ViewModelBase
             return;
         }
 
+        await RefreshMaterialsAsync();
+
         if (Suppliers.Count == 0 || Materials.Count == 0)
         {
             _toasts.Error("Недостаточно данных", "Сначала заполните справочники поставщиков и материалов.");
@@ -177,6 +179,8 @@ public sealed partial class DeliveriesViewModel : ViewModelBase
     private async Task EditAsync(Delivery? delivery)
     {
         if (!CanEdit || delivery is null) return;
+
+        await RefreshMaterialsAsync();
 
         var updated = _dialogs.EditDelivery(delivery, Suppliers, Projects, Materials);
         if (updated is null) return;
@@ -273,5 +277,24 @@ public sealed partial class DeliveriesViewModel : ViewModelBase
         OnPropertyChanged(nameof(LastDeliveryDisplay));
         OnPropertyChanged(nameof(IsEmpty));
         OnPropertyChanged(nameof(IsFilteredEmpty));
+    }
+
+    /// <summary>
+    /// Перечитывает справочник материалов из БД перед открытием диалога: цены должны быть
+    /// актуальными, иначе в форму подставится устаревшая цена из кэша страницы.
+    /// </summary>
+    private async Task RefreshMaterialsAsync()
+    {
+        try
+        {
+            var materials = await _materials.GetAllWithSupplierAsync();
+            Materials.Clear();
+            foreach (var material in materials.Where(m => m.IsActive))
+                Materials.Add(material);
+        }
+        catch
+        {
+            // Связь недоступна — работаем с уже загруженным справочником.
+        }
     }
 }
