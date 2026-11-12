@@ -15,6 +15,9 @@ public sealed class EstimateConfiguration : IEntityTypeConfiguration<Estimate>
         builder.HasIndex(e => e.Number).IsUnique();
         builder.Property(e => e.Name).HasMaxLength(200).IsRequired();
         builder.Property(e => e.Status).HasConversion<int>();
+        builder.Property(e => e.MarkupPercent).HasPrecision(6, 2).HasDefaultValue(10m);
+        builder.Property(e => e.ProfitPercent).HasPrecision(6, 2).HasDefaultValue(12m);
+        builder.Property(e => e.LaborSharePercent).HasPrecision(6, 2).HasDefaultValue(35m);
         builder.Property(e => e.Note).HasMaxLength(500);
         builder.Property(e => e.RowVersion).IsConcurrencyToken();
 

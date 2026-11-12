@@ -14,6 +14,9 @@ public sealed class EstimateItemConfiguration : IEntityTypeConfiguration<Estimat
         builder.Property(i => i.Section).HasMaxLength(120);
         builder.Property(i => i.PlannedQuantity).HasPrecision(18, 3);
         builder.Property(i => i.PlannedUnitPrice).HasPrecision(18, 2);
+        builder.Property(i => i.IsWork).HasDefaultValue(false);
+        builder.Property(i => i.WorkName).HasMaxLength(200);
+        builder.Property(i => i.WorkUnit).HasMaxLength(16);
         builder.Property(i => i.Note).HasMaxLength(300);
         builder.Property(i => i.RowVersion).IsConcurrencyToken();
 

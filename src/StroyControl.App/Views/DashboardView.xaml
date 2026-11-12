@@ -18,17 +18,17 @@
                         <TextBlock Text="{Binding Greeting}" FontSize="21" FontWeight="SemiBold" />
                         <TextBlock Style="{StaticResource Caption}" Margin="0,5,0,0">
                             <Run Text="{Binding TodayDisplay, Mode=OneWay}" />
-                            <Run Text="  ·  " Foreground="{StaticResource TextMutedBrush}" />
+                            <Run Text="  ·  " Foreground="{DynamicResource TextMutedBrush}" />
                             <Run Text="{Binding MaterialsSummary, Mode=OneWay}" />
                         </TextBlock>
                     </StackPanel>
 
-                    <Border Grid.Column="1" Style="{StaticResource Badge}" Background="{StaticResource AccentSoftBrush}" Padding="12,7" VerticalAlignment="Center">
+                    <Border Grid.Column="1" Style="{StaticResource Badge}" Background="{DynamicResource AccentSoftBrush}" Padding="12,7" VerticalAlignment="Center">
                         <StackPanel Orientation="Horizontal">
-                            <Path Data="{StaticResource IconChart}" Stroke="{StaticResource AccentBrush}" StrokeThickness="1.7"
+                            <Path Data="{StaticResource IconChart}" Stroke="{DynamicResource AccentBrush}" StrokeThickness="1.7"
                                   Width="15" Height="15" Stretch="Uniform" VerticalAlignment="Center" StrokeStartLineCap="Round" />
                             <TextBlock Text="{Binding Data.DeviationPercent, StringFormat=Отклонение по сметам: {0:N1} %}"
-                                       Foreground="{StaticResource AccentBrush}" FontWeight="SemiBold" Margin="8,0,0,0" FontSize="12" />
+                                       Foreground="{DynamicResource AccentBrush}" FontWeight="SemiBold" Margin="8,0,0,0" FontSize="12" />
                         </StackPanel>
                     </Border>
                 </Grid>
@@ -38,27 +38,63 @@
                     <controls:KpiCard Title="Объекты в работе" Value="{Binding Data.ActiveProjects}"
                                       Caption="{Binding Data.ProjectBudgets.Count, StringFormat=объектов в портфеле: {0}}"
                                       Icon="{StaticResource IconProjects}"
-                                      Accent="{StaticResource AccentBrush}" IconBackground="{StaticResource AccentSoftBrush}"
+                                      Accent="{DynamicResource AccentBrush}" IconBackground="{DynamicResource AccentSoftBrush}"
                                       Margin="0,0,14,14" MinWidth="238" />
 
                     <controls:KpiCard Title="Стоимость запасов" Value="{Binding Data.StockValue, Converter={StaticResource Money}}"
                                       Caption="{Binding LowStockCaption}"
                                       Icon="{StaticResource IconBox}"
-                                      Accent="{StaticResource InfoBrush}" IconBackground="{StaticResource InfoSoftBrush}"
+                                      Accent="{DynamicResource InfoBrush}" IconBackground="{DynamicResource InfoSoftBrush}"
                                       Margin="0,0,14,14" MinWidth="238" />
 
                     <controls:KpiCard Title="План по сметам" Value="{Binding Data.PlannedCost, Converter={StaticResource Money}}"
                                       Caption="{Binding PlannedCaption}"
                                       Icon="{StaticResource IconEstimates}"
-                                      Accent="{StaticResource PurpleBrush}" IconBackground="{StaticResource PurpleSoftBrush}"
+                                      Accent="{DynamicResource PurpleBrush}" IconBackground="{DynamicResource PurpleSoftBrush}"
                                       Margin="0,0,14,14" MinWidth="238" />
 
                     <controls:KpiCard Title="Фактические затраты" Value="{Binding Data.ActualCost, Converter={StaticResource Money}}"
                                       Caption="{Binding ActualCaption}"
                                       Icon="{StaticResource IconWallet}"
-                                      Accent="{StaticResource WarningBrush}" IconBackground="{StaticResource WarningSoftBrush}"
+                                      Accent="{DynamicResource WarningBrush}" IconBackground="{DynamicResource WarningSoftBrush}"
                                       Margin="0,0,14,14" MinWidth="238" />
                 </WrapPanel>
+
+                <!-- Аналитические графики -->
+                <Grid Margin="0,4,0,16">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="1.55*" />
+                        <ColumnDefinition Width="1*" />
+                    </Grid.ColumnDefinitions>
+
+                    <Border Grid.Column="0" Style="{StaticResource Card}" Margin="0,0,16,0">
+                        <StackPanel>
+                            <Grid Margin="0,0,0,10">
+                                <TextBlock Text="План и факт по объектам" Style="{StaticResource SectionTitle}" />
+                                <TextBlock Text="BYN" Style="{StaticResource Caption}" HorizontalAlignment="Right" VerticalAlignment="Center" />
+                            </Grid>
+                            <controls:BarChart Items="{Binding Data.ProjectBudgets}" Height="210" />
+                            <StackPanel Orientation="Horizontal" Margin="0,10,0,0">
+                                <Rectangle Width="10" Height="10" RadiusX="3" RadiusY="3" Fill="{DynamicResource AccentBrush}" VerticalAlignment="Center" />
+                                <TextBlock Text="план" Style="{StaticResource Caption}" Margin="6,0,16,0" />
+                                <Rectangle Width="10" Height="10" RadiusX="3" RadiusY="3" Fill="{DynamicResource SuccessBrush}" VerticalAlignment="Center" />
+                                <TextBlock Text="факт" Style="{StaticResource Caption}" Margin="6,0,16,0" />
+                                <Rectangle Width="10" Height="10" RadiusX="3" RadiusY="3" Fill="{DynamicResource DangerBrush}" VerticalAlignment="Center" />
+                                <TextBlock Text="перерасход" Style="{StaticResource Caption}" Margin="6,0,0,0" />
+                            </StackPanel>
+                        </StackPanel>
+                    </Border>
+
+                    <Border Grid.Column="1" Style="{StaticResource Card}">
+                        <StackPanel>
+                            <Grid Margin="0,0,0,10">
+                                <TextBlock Text="Структура затрат" Style="{StaticResource SectionTitle}" />
+                                <TextBlock Text="по категориям" Style="{StaticResource Caption}" HorizontalAlignment="Right" VerticalAlignment="Center" />
+                            </Grid>
+                            <controls:DonutChart Items="{Binding Data.CategoryCosts}" Height="220" />
+                        </StackPanel>
+                    </Border>
+                </Grid>
 
                 <!-- Исполнение смет и остатки -->
                 <Grid Margin="0,4,0,0">
@@ -84,22 +120,22 @@
                                                     <ColumnDefinition Width="Auto" />
                                                 </Grid.ColumnDefinitions>
                                                 <TextBlock Text="{Binding Name}" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" />
-                                                <Border Grid.Column="1" Style="{StaticResource Badge}" Background="{StaticResource SurfaceAltBrush}">
-                                                    <TextBlock Text="{Binding StatusDisplay}" FontSize="10.5" Foreground="{StaticResource TextSecondaryBrush}" />
+                                                <Border Grid.Column="1" Style="{StaticResource Badge}" Background="{DynamicResource SurfaceAltBrush}">
+                                                    <TextBlock Text="{Binding StatusDisplay}" FontSize="10.5" Foreground="{DynamicResource TextSecondaryBrush}" />
                                                 </Border>
                                             </Grid>
 
                                             <Grid Margin="0,7,0,0">
                                                 <TextBlock Style="{StaticResource Caption}">
                                                     <Run Text="план " />
-                                                    <Run Text="{Binding PlannedCost, Converter={StaticResource Money}, Mode=OneWay}" Foreground="{StaticResource TextPrimaryBrush}" />
+                                                    <Run Text="{Binding PlannedCost, Converter={StaticResource Money}, Mode=OneWay}" Foreground="{DynamicResource TextPrimaryBrush}" />
                                                     <Run Text="   ·   факт " />
-                                                    <Run Text="{Binding ActualCost, Converter={StaticResource Money}, Mode=OneWay}" Foreground="{StaticResource TextPrimaryBrush}" />
+                                                    <Run Text="{Binding ActualCost, Converter={StaticResource Money}, Mode=OneWay}" Foreground="{DynamicResource TextPrimaryBrush}" />
                                                 </TextBlock>
                                             </Grid>
 
                                             <Grid Margin="0,8,0,0" Height="8">
-                                                <Border x:Name="Track" Background="{StaticResource SurfaceAltBrush}" CornerRadius="4" />
+                                                <Border x:Name="Track" Background="{DynamicResource SurfaceAltBrush}" CornerRadius="4" />
                                                 <Border CornerRadius="4" HorizontalAlignment="Left"
                                                         Background="{Binding IsOverrun, Converter={StaticResource BoolToBrush}, ConverterParameter=DangerBrush|AccentBrush}">
                                                     <Border.Width>
@@ -114,7 +150,7 @@
                                             <TextBlock Margin="0,6,0,0" FontSize="11.5"
                                                        Foreground="{Binding IsOverrun, Converter={StaticResource BoolToBrush}, ConverterParameter=DangerBrush|SuccessBrush}">
                                                 <Run Text="{Binding DeviationPercent, StringFormat='{}{0:+0.0;-0.0;0} %', Mode=OneWay}" />
-                                                <Run Text="  ·  " Foreground="{StaticResource TextMutedBrush}" />
+                                                <Run Text="  ·  " Foreground="{DynamicResource TextMutedBrush}" />
                                                 <Run Text="{Binding Deviation, Converter={StaticResource Money}, Mode=OneWay}" />
                                             </TextBlock>
                                         </StackPanel>
@@ -128,8 +164,8 @@
                         <StackPanel>
                             <Grid Margin="0,0,0,14">
                                 <TextBlock Text="Требуют закупки" Style="{StaticResource SectionTitle}" />
-                                <Border HorizontalAlignment="Right" Style="{StaticResource Badge}" Background="{StaticResource DangerSoftBrush}">
-                                    <TextBlock Text="{Binding Data.LowStockCount}" Foreground="{StaticResource DangerBrush}"
+                                <Border HorizontalAlignment="Right" Style="{StaticResource Badge}" Background="{DynamicResource DangerSoftBrush}">
+                                    <TextBlock Text="{Binding Data.LowStockCount}" Foreground="{DynamicResource DangerBrush}"
                                                FontSize="11" FontWeight="SemiBold" />
                                 </Border>
                             </Grid>
@@ -146,12 +182,12 @@
                                                 <TextBlock Text="{Binding Name}" FontSize="12.5" TextTrimming="CharacterEllipsis" />
                                                 <TextBlock Style="{StaticResource Caption}" FontSize="11" Margin="0,2,0,0">
                                                     <Run Text="остаток " />
-                                                    <Run Text="{Binding StockDisplay, Mode=OneWay}" Foreground="{StaticResource DangerBrush}" />
+                                                    <Run Text="{Binding StockDisplay, Mode=OneWay}" Foreground="{DynamicResource DangerBrush}" />
                                                     <Run Text=" / мин. " />
                                                     <Run Text="{Binding MinStock, StringFormat='{}{0:N0}', Mode=OneWay}" />
                                                 </TextBlock>
                                             </StackPanel>
-                                            <Path Grid.Column="1" Data="{StaticResource IconAlert}" Stroke="{StaticResource DangerBrush}"
+                                            <Path Grid.Column="1" Data="{StaticResource IconAlert}" Stroke="{DynamicResource DangerBrush}"
                                                   StrokeThickness="1.6" Width="16" Height="16" Stretch="Uniform" VerticalAlignment="Center" />
                                         </Grid>
                                     </DataTemplate>
@@ -178,30 +214,14 @@
                                 <TextBlock Text="план — среднемесячный" Style="{StaticResource Caption}" HorizontalAlignment="Right" VerticalAlignment="Center" />
                             </Grid>
 
-                            <ItemsControl ItemsSource="{Binding Data.MonthlyCosts}">
-                                <ItemsControl.ItemsPanel>
-                                    <ItemsPanelTemplate>
-                                        <StackPanel Orientation="Horizontal" />
-                                    </ItemsPanelTemplate>
-                                </ItemsControl.ItemsPanel>
-                                <ItemsControl.ItemTemplate>
-                                    <DataTemplate>
-                                        <StackPanel Width="64" Margin="0,0,10,0">
-                                            <Grid Height="128">
-                                                <Border Width="26" CornerRadius="7" Background="{StaticResource SurfaceAltBrush}" VerticalAlignment="Bottom" />
-                                                <Border Width="26" CornerRadius="7" Background="{StaticResource AccentGradientBrush}" VerticalAlignment="Bottom">
-                                                    <Border.Height>
-                                                        <Binding Path="ActualPercent" Converter="{StaticResource ScaleToWidth}" ConverterParameter="128" />
-                                                    </Border.Height>
-                                                </Border>
-                                            </Grid>
-                                            <TextBlock Text="{Binding MonthDisplay}" HorizontalAlignment="Center" Style="{StaticResource Caption}" Margin="0,8,0,0" />
-                                            <TextBlock Text="{Binding ActualCost, StringFormat={}{0:N0}}" HorizontalAlignment="Center"
-                                                       FontSize="10.5" Foreground="{StaticResource TextMutedBrush}" />
-                                        </StackPanel>
-                                    </DataTemplate>
-                                </ItemsControl.ItemTemplate>
-                            </ItemsControl>
+                            <controls:LineChart Items="{Binding Data.MonthlyCosts}" Height="210" />
+
+                            <StackPanel Orientation="Horizontal" Margin="0,12,0,0">
+                                <Rectangle Width="10" Height="10" RadiusX="3" RadiusY="3" Fill="{DynamicResource AccentBrush}" VerticalAlignment="Center" />
+                                <TextBlock Text="факт" Style="{StaticResource Caption}" Margin="6,0,16,0" />
+                                <Rectangle Width="10" Height="10" RadiusX="3" RadiusY="3" Fill="{DynamicResource SuccessBrush}" VerticalAlignment="Center" />
+                                <TextBlock Text="план (среднемесячный)" Style="{StaticResource Caption}" Margin="6,0,0,0" />
+                            </StackPanel>
                         </StackPanel>
                     </Border>
 
@@ -219,8 +239,8 @@
                                                 <ColumnDefinition Width="Auto" />
                                             </Grid.ColumnDefinitions>
 
-                                            <Border x:Name="ActivityBadge" Width="32" Height="32" CornerRadius="10" Background="{StaticResource SuccessSoftBrush}">
-                                                <Path x:Name="ActivityIcon" Data="{StaticResource IconIncoming}" Stroke="{StaticResource SuccessBrush}"
+                                            <Border x:Name="ActivityBadge" Width="32" Height="32" CornerRadius="10" Background="{DynamicResource SuccessSoftBrush}">
+                                                <Path x:Name="ActivityIcon" Data="{StaticResource IconIncoming}" Stroke="{DynamicResource SuccessBrush}"
                                                       StrokeThickness="1.6" Width="15" Height="15" Stretch="Uniform"
                                                       StrokeStartLineCap="Round" StrokeLineJoin="Round" />
                                             </Border>
@@ -236,8 +256,8 @@
                                         </Grid>
                                         <DataTemplate.Triggers>
                                             <DataTrigger Binding="{Binding Kind}" Value="usage">
-                                                <Setter TargetName="ActivityBadge" Property="Background" Value="{StaticResource WarningSoftBrush}" />
-                                                <Setter TargetName="ActivityIcon" Property="Stroke" Value="{StaticResource WarningBrush}" />
+                                                <Setter TargetName="ActivityBadge" Property="Background" Value="{DynamicResource WarningSoftBrush}" />
+                                                <Setter TargetName="ActivityIcon" Property="Stroke" Value="{DynamicResource WarningBrush}" />
                                                 <Setter TargetName="ActivityIcon" Property="Data" Value="{StaticResource IconOutgoing}" />
                                             </DataTrigger>
                                         </DataTemplate.Triggers>

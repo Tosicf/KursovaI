@@ -33,6 +33,7 @@ public sealed partial class MainViewModel : ObservableObject
         Toasts = toasts;
         Environment = environment;
 
+        IsDarkTheme = ThemeManager.IsDark;
         BuildNavigation();
     }
 
@@ -54,6 +55,12 @@ public sealed partial class MainViewModel : ObservableObject
 
     public bool CanManageUsers => _session.CanManageUsers;
 
+    public bool IsUsersPage => CurrentViewModel is UsersViewModel;
+
+    public bool IsSettingsPage => CurrentViewModel is SettingsViewModel;
+
+    public string ThemeTooltip => IsDarkTheme ? "Светлая тема" : "Тёмная тема";
+
     public string PageTitle => CurrentViewModel?.Title ?? "Панель управления";
 
     public double SidebarWidth => IsSidebarCollapsed ? 88 : 268;
@@ -67,6 +74,10 @@ public sealed partial class MainViewModel : ObservableObject
     [ObservableProperty]
     private bool isSidebarCollapsed;
 
+    /// <summary>Текущая тема: true — тёмная. Переключается кнопкой в шапке и запоминается.</summary>
+    [ObservableProperty]
+    private bool isDarkTheme;
+
     public async Task InitializeAsync()
     {
         if (_initialized) return;
@@ -76,7 +87,18 @@ public sealed partial class MainViewModel : ObservableObject
         await _navigationTask;
     }
 
-    partial void OnCurrentViewModelChanged(ViewModelBase? value) => OnPropertyChanged(nameof(PageTitle));
+    partial void OnCurrentViewModelChanged(ViewModelBase? value)
+    {
+        OnPropertyChanged(nameof(PageTitle));
+        OnPropertyChanged(nameof(IsUsersPage));
+        OnPropertyChanged(nameof(IsSettingsPage));
+    }
+
+    partial void OnIsDarkThemeChanged(bool value)
+    {
+        ThemeManager.Apply(value ? AppTheme.Dark : AppTheme.Light);
+        OnPropertyChanged(nameof(ThemeTooltip));
+    }
 
     partial void OnIsSidebarCollapsedChanged(bool value) => OnPropertyChanged(nameof(SidebarWidth));
 
@@ -98,6 +120,42 @@ public sealed partial class MainViewModel : ObservableObject
     [RelayCommand]
     private void ToggleSidebar() => IsSidebarCollapsed = !IsSidebarCollapsed;
 
+    /// <summary>Переключение светлой и тёмной темы (кнопка в верхней панели).</summary>
+    [RelayCommand]
+    private void ToggleTheme() => IsDarkTheme = !IsDarkTheme;
+
+    /// <summary>Раздел «Сотрудники» открывается из шапки и доступен только администратору.</summary>
+    [RelayCommand]
+    private async Task OpenUsersAsync()
+    {
+        if (!CanManageUsers)
+        {
+            Toasts.Info("Недостаточно прав", "Раздел доступен только администратору.");
+            return;
+        }
+
+        await ShowStandaloneAsync<UsersViewModel>();
+    }
+
+    /// <summary>Раздел «Настройки» открывается из шапки.</summary>
+    [RelayCommand]
+    private Task OpenSettingsAsync() => ShowStandaloneAsync<SettingsViewModel>();
+
+    private async Task ShowStandaloneAsync<TPage>() where TPage : ViewModelBase
+    {
+        try
+        {
+            SelectedNavigationItem = null;
+            var page = _services.GetRequiredService<TPage>();
+            CurrentViewModel = page;
+            await page.LoadAsync();
+        }
+        catch (Exception ex)
+        {
+            Toasts.Error("Ошибка навигации", ex.Message);
+        }
+    }
+
     [RelayCommand]
     private void Logout() => _controller.Logout();
 
@@ -112,10 +170,7 @@ public sealed partial class MainViewModel : ObservableObject
         NavigationItems.Add(CreateItem<UsagesViewModel>("usages", "Списания", "IconOutgoing"));
         NavigationItems.Add(CreateItem<DeviationsViewModel>("deviations", "Анализ отклонений", "IconDeviations"));
 
-        if (_session.CanManageUsers)
-            NavigationItems.Add(CreateItem<UsersViewModel>("users", "Сотрудники", "IconUsers"));
-
-        NavigationItems.Add(CreateItem<SettingsViewModel>("settings", "Настройки", "IconSettings"));
+        // «Сотрудники» и «Настройки» вынесены в верхнюю панель (см. разметку MainWindow).
     }
 
     private NavigationItem CreateItem<TPage>(string key, string title, string iconKey)

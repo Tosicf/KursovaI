@@ -19,13 +19,13 @@
             <StackPanel>
                 <TextBlock Text="Сметы и плановые потребности в материалах" Style="{StaticResource Caption}" FontSize="12.5" />
                 <TextBlock Text="Позиции сметы служат базой для расчёта отклонений" Style="{StaticResource Caption}"
-                           FontSize="11" Foreground="{StaticResource TextMutedBrush}" Margin="0,3,0,0" />
+                           FontSize="11" Foreground="{DynamicResource TextMutedBrush}" Margin="0,3,0,0" />
             </StackPanel>
 
             <StackPanel Grid.Column="1" Orientation="Horizontal">
                 <Button Style="{StaticResource SecondaryButton}" Command="{Binding RefreshCommand}" Margin="0,0,10,0">
                     <StackPanel Orientation="Horizontal">
-                        <Path Data="{StaticResource IconRefresh}" Stroke="{StaticResource TextSecondaryBrush}" StrokeThickness="1.7"
+                        <Path Data="{StaticResource IconRefresh}" Stroke="{DynamicResource TextSecondaryBrush}" StrokeThickness="1.7"
                               Width="15" Height="15" Stretch="Uniform" VerticalAlignment="Center" />
                         <TextBlock Text="Обновить" Margin="8,0,0,0" VerticalAlignment="Center" />
                     </StackPanel>
@@ -57,10 +57,10 @@
 
                     <Grid>
                         <TextBox Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}" Padding="36,0,10,0" />
-                        <Path Data="{StaticResource IconSearch}" Stroke="{StaticResource TextMutedBrush}" StrokeThickness="1.7"
+                        <Path Data="{StaticResource IconSearch}" Stroke="{DynamicResource TextMutedBrush}" StrokeThickness="1.7"
                               Width="15" Height="15" Stretch="Uniform" HorizontalAlignment="Left" Margin="12,0,0,0"
                               VerticalAlignment="Center" IsHitTestVisible="False" />
-                        <TextBlock Text="Поиск сметы" Foreground="{StaticResource TextMutedBrush}" FontSize="12.5"
+                        <TextBlock Text="Поиск сметы" Foreground="{DynamicResource TextMutedBrush}" FontSize="12.5"
                                    VerticalAlignment="Center" Margin="36,0,10,0" IsHitTestVisible="False"
                                    Visibility="{Binding SearchText, Converter={StaticResource EmptyToVisibility}}" />
                     </Grid>
@@ -82,18 +82,18 @@
                                     <Setter Property="Template">
                                         <Setter.Value>
                                             <ControlTemplate TargetType="ListBoxItem">
-                                                <Border x:Name="Root" Background="{StaticResource SurfaceAltBrush}"
-                                                        BorderBrush="{StaticResource BorderBrush}" BorderThickness="1"
+                                                <Border x:Name="Root" Background="{DynamicResource SurfaceAltBrush}"
+                                                        BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1"
                                                         CornerRadius="12" Padding="14,12">
                                                     <ContentPresenter />
                                                 </Border>
                                                 <ControlTemplate.Triggers>
                                                     <Trigger Property="IsMouseOver" Value="True">
-                                                        <Setter TargetName="Root" Property="BorderBrush" Value="{StaticResource BorderStrongBrush}" />
+                                                        <Setter TargetName="Root" Property="BorderBrush" Value="{DynamicResource BorderStrongBrush}" />
                                                     </Trigger>
                                                     <Trigger Property="IsSelected" Value="True">
-                                                        <Setter TargetName="Root" Property="BorderBrush" Value="{StaticResource AccentBrush}" />
-                                                        <Setter TargetName="Root" Property="Background" Value="{StaticResource AccentSoftBrush}" />
+                                                        <Setter TargetName="Root" Property="BorderBrush" Value="{DynamicResource AccentBrush}" />
+                                                        <Setter TargetName="Root" Property="Background" Value="{DynamicResource AccentSoftBrush}" />
                                                     </Trigger>
                                                 </ControlTemplate.Triggers>
                                             </ControlTemplate>
@@ -162,29 +162,38 @@
                         </StackPanel>
 
                         <StackPanel Grid.Column="1" Orientation="Horizontal">
+                            <Button Style="{StaticResource SecondaryButton}" Height="36" Command="{Binding ShowReportCommand}"
+                                    IsEnabled="{Binding CanViewReport}" Margin="0,0,8,0"
+                                    ToolTip="Отчёт по смете: расчёт работ и материалов, печать и выгрузка в Excel">
+                                <StackPanel Orientation="Horizontal">
+                                    <Path Data="{StaticResource IconEstimates}" Stroke="{DynamicResource TextSecondaryBrush}" StrokeThickness="1.7"
+                                          Width="14" Height="14" Stretch="Uniform" VerticalAlignment="Center" />
+                                    <TextBlock Text="Отчёт" Margin="6,0,0,0" VerticalAlignment="Center" />
+                                </StackPanel>
+                            </Button>
                             <Button Style="{StaticResource SecondaryButton}" Height="36" Command="{Binding AddItemCommand}"
                                     CommandParameter="{Binding SelectedEstimate}" IsEnabled="{Binding CanEdit}" Margin="0,0,8,0">
                                 <StackPanel Orientation="Horizontal">
-                                    <Path Data="{StaticResource IconPlus}" Stroke="{StaticResource TextSecondaryBrush}" StrokeThickness="2"
+                                    <Path Data="{StaticResource IconPlus}" Stroke="{DynamicResource TextSecondaryBrush}" StrokeThickness="2"
                                           Width="13" Height="13" Stretch="Uniform" VerticalAlignment="Center" />
                                     <TextBlock Text="Позиция" Margin="6,0,0,0" VerticalAlignment="Center" />
                                 </StackPanel>
                             </Button>
                             <Button Style="{StaticResource IconButton}" ToolTip="Изменить смету" IsEnabled="{Binding CanEdit}"
                                     Command="{Binding EditEstimateCommand}" CommandParameter="{Binding SelectedEstimate}">
-                                <Path Data="{StaticResource IconEdit}" Stroke="{StaticResource TextSecondaryBrush}" StrokeThickness="1.6"
+                                <Path Data="{StaticResource IconEdit}" Stroke="{DynamicResource TextSecondaryBrush}" StrokeThickness="1.6"
                                       Width="15" Height="15" Stretch="Uniform" />
                             </Button>
                             <Button Style="{StaticResource IconButton}" ToolTip="Удалить смету" IsEnabled="{Binding CanEdit}"
                                     Command="{Binding DeleteEstimateCommand}" CommandParameter="{Binding SelectedEstimate}">
-                                <Path Data="{StaticResource IconTrash}" Stroke="{StaticResource DangerBrush}" StrokeThickness="1.6"
+                                <Path Data="{StaticResource IconTrash}" Stroke="{DynamicResource DangerBrush}" StrokeThickness="1.6"
                                       Width="15" Height="15" Stretch="Uniform" />
                             </Button>
                         </StackPanel>
                     </Grid>
 
                     <!-- Сводка по смете -->
-                    <Border Grid.Row="1" Background="{StaticResource SurfaceAltBrush}" Padding="20,12" Margin="0,0,0,4">
+                    <Border Grid.Row="1" Background="{DynamicResource SurfaceAltBrush}" Padding="20,12" Margin="0,0,0,4">
                         <Grid>
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*" />
@@ -217,7 +226,33 @@
                     <!-- Позиции -->
                     <Grid Grid.Row="2">
                         <DataGrid Style="{StaticResource DataGridStyle}" ItemsSource="{Binding Items}" Margin="8,0,8,0">
-                            <DataGrid.Columns>
+                            <DataGrid.ContextMenu>
+                        <ContextMenu>
+                            <MenuItem Header="Отчёт по смете…"
+                                      Command="{Binding PlacementTarget.DataContext.ShowReportCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
+                                      IsEnabled="{Binding PlacementTarget.DataContext.CanViewReport, RelativeSource={RelativeSource AncestorType=ContextMenu}}" />
+                            <Separator />
+                            <MenuItem Header="Изменить позицию…" InputGestureText="F2"
+                                      Command="{Binding PlacementTarget.DataContext.EditItemCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
+                                      CommandParameter="{Binding PlacementTarget.SelectedItem, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
+                                      IsEnabled="{Binding PlacementTarget.DataContext.CanEdit, RelativeSource={RelativeSource AncestorType=ContextMenu}}" />
+                            <MenuItem Header="Удалить позицию" InputGestureText="Del"
+                                      Command="{Binding PlacementTarget.DataContext.DeleteItemCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
+                                      CommandParameter="{Binding PlacementTarget.SelectedItem, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
+                                      IsEnabled="{Binding PlacementTarget.DataContext.CanEdit, RelativeSource={RelativeSource AncestorType=ContextMenu}}" />
+                            <Separator />
+                            <MenuItem Header="Добавить позицию"
+                                      Command="{Binding PlacementTarget.DataContext.AddItemCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
+                                      IsEnabled="{Binding PlacementTarget.DataContext.CanEdit, RelativeSource={RelativeSource AncestorType=ContextMenu}}" />
+                            <MenuItem Header="Обновить" InputGestureText="Ctrl+R"
+                                      Command="{Binding PlacementTarget.DataContext.RefreshCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}" />
+                            <MenuItem Header="Копировать" InputGestureText="Ctrl+C"
+                                      Command="ApplicationCommands.Copy"
+                                      CommandTarget="{Binding PlacementTarget, RelativeSource={RelativeSource AncestorType=ContextMenu}}" />
+                        </ContextMenu>
+                    </DataGrid.ContextMenu>
+
+                    <DataGrid.Columns>
                                 <DataGridTemplateColumn Header="Материал" Width="*" MinWidth="220">
                                     <DataGridTemplateColumn.CellTemplate>
                                         <DataTemplate>
@@ -226,6 +261,17 @@
                                                 <TextBlock Text="{Binding SectionDisplay}" Style="{StaticResource Caption}"
                                                            FontSize="11" Margin="0,2,0,0" />
                                             </StackPanel>
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
+                                <DataGridTemplateColumn Header="Вид" Width="88">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <Border Style="{StaticResource Badge}" Padding="8,2" HorizontalAlignment="Left"
+                                                    Background="{Binding IsWork, Converter={StaticResource BoolToBrush}, ConverterParameter=PurpleSoftBrush|InfoSoftBrush}">
+                                                <TextBlock Text="{Binding KindDisplay}" FontSize="10.5" FontWeight="SemiBold"
+                                                           Foreground="{Binding IsWork, Converter={StaticResource BoolToBrush}, ConverterParameter=PurpleBrush|InfoBrush}" />
+                                            </Border>
                                         </DataTemplate>
                                     </DataGridTemplateColumn.CellTemplate>
                                 </DataGridTemplateColumn>
@@ -244,14 +290,14 @@
                                                         IsEnabled="{Binding DataContext.CanEdit, RelativeSource={RelativeSource AncestorType=DataGrid}}"
                                                         Command="{Binding DataContext.EditItemCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
                                                         CommandParameter="{Binding}">
-                                                    <Path Data="{StaticResource IconEdit}" Stroke="{StaticResource TextSecondaryBrush}"
+                                                    <Path Data="{StaticResource IconEdit}" Stroke="{DynamicResource TextSecondaryBrush}"
                                                           StrokeThickness="1.6" Width="13" Height="13" Stretch="Uniform" />
                                                 </Button>
                                                 <Button Style="{StaticResource IconButton}" Width="28" Height="28" ToolTip="Удалить"
                                                         IsEnabled="{Binding DataContext.CanEdit, RelativeSource={RelativeSource AncestorType=DataGrid}}"
                                                         Command="{Binding DataContext.DeleteItemCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
                                                         CommandParameter="{Binding}">
-                                                    <Path Data="{StaticResource IconTrash}" Stroke="{StaticResource DangerBrush}"
+                                                    <Path Data="{StaticResource IconTrash}" Stroke="{DynamicResource DangerBrush}"
                                                           StrokeThickness="1.6" Width="13" Height="13" Stretch="Uniform" />
                                                 </Button>
                                             </StackPanel>
@@ -274,7 +320,7 @@
                     </Grid>
 
                     <!-- Итог -->
-                    <Border Grid.Row="3" BorderBrush="{StaticResource BorderBrush}" BorderThickness="0,1,0,0" Padding="20,14">
+                    <Border Grid.Row="3" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0,1,0,0" Padding="20,14">
                         <Grid>
                             <TextBlock Text="Итого по смете (план)" Style="{StaticResource Caption}" FontSize="12.5" VerticalAlignment="Center" />
                             <TextBlock HorizontalAlignment="Right" FontSize="16" FontWeight="Bold"

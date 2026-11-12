@@ -48,6 +48,9 @@ public sealed class EstimateRepository : RepositoryBase<Estimate>, IEstimateRepo
         entity.ProjectId = estimate.ProjectId;
         entity.Status = estimate.Status;
         entity.Note = estimate.Note;
+        entity.MarkupPercent = estimate.MarkupPercent;
+        entity.ProfitPercent = estimate.ProfitPercent;
+        entity.LaborSharePercent = estimate.LaborSharePercent;
 
         await SaveAsync(db, cancellationToken, "Не удалось сохранить смету. Проверьте уникальность номера.");
 
@@ -63,6 +66,9 @@ public sealed class EstimateRepository : RepositoryBase<Estimate>, IEstimateRepo
         {
             EstimateId = item.EstimateId,
             MaterialId = item.MaterialId,
+            IsWork = item.IsWork,
+            WorkName = item.WorkName,
+            WorkUnit = item.WorkUnit,
             Section = item.Section,
             PlannedQuantity = item.PlannedQuantity,
             PlannedUnitPrice = item.PlannedUnitPrice,
@@ -81,6 +87,9 @@ public sealed class EstimateRepository : RepositoryBase<Estimate>, IEstimateRepo
                      ?? throw new StroyControl.Core.Exceptions.AppException("Позиция сметы не найдена или удалена.");
 
         entity.MaterialId = item.MaterialId;
+        entity.IsWork = item.IsWork;
+        entity.WorkName = item.WorkName;
+        entity.WorkUnit = item.WorkUnit;
         entity.Section = item.Section;
         entity.PlannedQuantity = item.PlannedQuantity;
         entity.PlannedUnitPrice = item.PlannedUnitPrice;

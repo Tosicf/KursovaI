@@ -3,13 +3,13 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              x:Name="Root">
     <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" MaxWidth="440" Margin="32">
-        <Border Width="76" Height="76" CornerRadius="22" Background="{StaticResource AccentSoftBrush}" HorizontalAlignment="Center">
-            <Path Data="{Binding Icon, ElementName=Root}" Stroke="{StaticResource AccentBrush}" StrokeThickness="1.6"
+        <Border Width="76" Height="76" CornerRadius="22" Background="{DynamicResource AccentSoftBrush}" HorizontalAlignment="Center">
+            <Path Data="{Binding Icon, ElementName=Root}" Stroke="{DynamicResource AccentBrush}" StrokeThickness="1.6"
                   Width="32" Height="32" Stretch="Uniform" StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeLineJoin="Round" />
         </Border>
         <TextBlock Text="{Binding Title, ElementName=Root}" FontSize="16" FontWeight="SemiBold"
                    HorizontalAlignment="Center" Margin="0,16,0,6" TextAlignment="Center" />
-        <TextBlock Text="{Binding Description, ElementName=Root}" Foreground="{StaticResource TextSecondaryBrush}"
+        <TextBlock Text="{Binding Description, ElementName=Root}" Foreground="{DynamicResource TextSecondaryBrush}"
                    TextWrapping="Wrap" TextAlignment="Center" LineHeight="19" />
         <Button Content="{Binding ActionText, ElementName=Root}"
                 Command="{Binding ActionCommand, ElementName=Root}"

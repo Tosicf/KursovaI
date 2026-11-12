@@ -1,0 +1,47 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <!-- ==================================================================
+         Светлая палитра
+         Ключи совпадают в обеих палитрах: ThemeManager подменяет словарь
+         целиком, а стили ссылаются на кисти через DynamicResource.
+         ================================================================== -->
+
+    <SolidColorBrush x:Key="AppBackgroundBrush" Color="#F4F6FB" />
+    <SolidColorBrush x:Key="SurfaceBrush" Color="#FFFFFF" />
+    <SolidColorBrush x:Key="SurfaceAltBrush" Color="#F8FAFD" />
+    <SolidColorBrush x:Key="BorderBrush" Color="#E4E9F2" />
+    <SolidColorBrush x:Key="BorderStrongBrush" Color="#CBD5E1" />
+    <SolidColorBrush x:Key="TextPrimaryBrush" Color="#0F172A" />
+    <SolidColorBrush x:Key="TextSecondaryBrush" Color="#5B6B84" />
+    <SolidColorBrush x:Key="TextMutedBrush" Color="#94A3B8" />
+    <SolidColorBrush x:Key="TextOnDarkBrush" Color="#E2E8F0" />
+    <SolidColorBrush x:Key="SidebarBrush" Color="#0B1220" />
+    <SolidColorBrush x:Key="SidebarElevatedBrush" Color="#151F33" />
+    <SolidColorBrush x:Key="SidebarHoverBrush" Color="#1B2740" />
+    <SolidColorBrush x:Key="SidebarTextBrush" Color="#A9B7CC" />
+    <SolidColorBrush x:Key="SuccessBrush" Color="#16A34A" />
+    <SolidColorBrush x:Key="SuccessSoftBrush" Color="#E7F8EF" />
+    <SolidColorBrush x:Key="WarningBrush" Color="#D97706" />
+    <SolidColorBrush x:Key="WarningSoftBrush" Color="#FEF3E2" />
+    <SolidColorBrush x:Key="DangerBrush" Color="#DC2626" />
+    <SolidColorBrush x:Key="DangerSoftBrush" Color="#FDECEC" />
+    <SolidColorBrush x:Key="InfoBrush" Color="#0EA5E9" />
+    <SolidColorBrush x:Key="InfoSoftBrush" Color="#E6F6FE" />
+    <SolidColorBrush x:Key="PurpleBrush" Color="#7C3AED" />
+    <SolidColorBrush x:Key="PurpleSoftBrush" Color="#F1EBFE" />
+    <SolidColorBrush x:Key="AccentBrush" Color="#2563EB" />
+    <SolidColorBrush x:Key="AccentDarkBrush" Color="#1D4ED8" />
+    <SolidColorBrush x:Key="AccentSoftBrush" Color="#E8EFFF" />
+
+    <LinearGradientBrush x:Key="AccentGradientBrush" StartPoint="0,0" EndPoint="1,1">
+        <GradientStop Offset="0" Color="#3B82F6" />
+        <GradientStop Offset="1" Color="#1D4ED8" />
+    </LinearGradientBrush>
+
+    <LinearGradientBrush x:Key="SidebarGradientBrush" StartPoint="0,0" EndPoint="0,1">
+        <GradientStop Offset="0" Color="#0B1220" />
+        <GradientStop Offset="1" Color="#111C31" />
+    </LinearGradientBrush>
+
+</ResourceDictionary>

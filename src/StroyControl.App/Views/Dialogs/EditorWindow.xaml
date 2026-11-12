@@ -11,7 +11,7 @@
         ResizeMode="NoResize"
         WindowStartupLocation="CenterOwner"
         ShowInTaskbar="False"
-        Background="{StaticResource SurfaceBrush}"
+        Background="{DynamicResource SurfaceBrush}"
         FontFamily="Segoe UI"
         d:DataContext="{d:DesignInstance Type=vm:EditorViewModelBase}">
 
@@ -31,12 +31,12 @@
             </Grid.ColumnDefinitions>
             <TextBlock Text="{Binding Title}" FontSize="18" FontWeight="SemiBold" VerticalAlignment="Center" />
             <Button Grid.Column="1" Style="{StaticResource IconButton}" Click="OnCloseClick" ToolTip="Закрыть">
-                <Path Data="{StaticResource IconClose}" Stroke="{StaticResource TextSecondaryBrush}" StrokeThickness="1.8"
+                <Path Data="{StaticResource IconClose}" Stroke="{DynamicResource TextSecondaryBrush}" StrokeThickness="1.8"
                       Width="14" Height="14" Stretch="Uniform" StrokeStartLineCap="Round" />
             </Button>
         </Grid>
 
-        <Border Grid.Row="1" Height="1" Background="{StaticResource BorderBrush}" />
+        <Border Grid.Row="1" Height="1" Background="{DynamicResource BorderBrush}" />
 
         <!-- Содержимое формы (шаблон выбирается по типу модели представления) -->
         <ScrollViewer Grid.Row="2" MaxHeight="{Binding ContentMaxHeight}" VerticalScrollBarVisibility="Auto"
@@ -53,7 +53,7 @@
                     <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
 
-                <TextBlock Grid.Column="0" Text="{Binding ErrorMessage}" Foreground="{StaticResource DangerBrush}"
+                <TextBlock Grid.Column="0" Text="{Binding ErrorMessage}" Foreground="{DynamicResource DangerBrush}"
                            VerticalAlignment="Center" TextWrapping="Wrap" Margin="0,0,16,0"
                            Visibility="{Binding ErrorMessage, Converter={StaticResource NullToVisibility}}" />
 

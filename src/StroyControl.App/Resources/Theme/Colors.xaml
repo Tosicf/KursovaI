@@ -1,53 +1,8 @@
 <ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
-    <!-- Палитра приложения -->
-    <Color x:Key="AccentColor">#2563EB</Color>
-    <Color x:Key="AccentDarkColor">#1D4ED8</Color>
-    <Color x:Key="AccentSoftColor">#E8EFFF</Color>
-    <Color x:Key="SidebarColor">#0B1220</Color>
-    <Color x:Key="BackgroundColor">#F4F6FB</Color>
-
-    <SolidColorBrush x:Key="AccentBrush" Color="{StaticResource AccentColor}" />
-    <SolidColorBrush x:Key="AccentDarkBrush" Color="{StaticResource AccentDarkColor}" />
-    <SolidColorBrush x:Key="AccentSoftBrush" Color="{StaticResource AccentSoftColor}" />
-
-    <SolidColorBrush x:Key="AppBackgroundBrush" Color="#F4F6FB" />
-    <SolidColorBrush x:Key="SurfaceBrush" Color="#FFFFFF" />
-    <SolidColorBrush x:Key="SurfaceAltBrush" Color="#F8FAFD" />
-    <SolidColorBrush x:Key="BorderBrush" Color="#E4E9F2" />
-    <SolidColorBrush x:Key="BorderStrongBrush" Color="#CBD5E1" />
-
-    <SolidColorBrush x:Key="TextPrimaryBrush" Color="#0F172A" />
-    <SolidColorBrush x:Key="TextSecondaryBrush" Color="#5B6B84" />
-    <SolidColorBrush x:Key="TextMutedBrush" Color="#94A3B8" />
-    <SolidColorBrush x:Key="TextOnDarkBrush" Color="#E2E8F0" />
-
-    <SolidColorBrush x:Key="SidebarBrush" Color="#0B1220" />
-    <SolidColorBrush x:Key="SidebarElevatedBrush" Color="#151F33" />
-    <SolidColorBrush x:Key="SidebarHoverBrush" Color="#1B2740" />
-    <SolidColorBrush x:Key="SidebarTextBrush" Color="#A9B7CC" />
-
-    <SolidColorBrush x:Key="SuccessBrush" Color="#16A34A" />
-    <SolidColorBrush x:Key="SuccessSoftBrush" Color="#E7F8EF" />
-    <SolidColorBrush x:Key="WarningBrush" Color="#D97706" />
-    <SolidColorBrush x:Key="WarningSoftBrush" Color="#FEF3E2" />
-    <SolidColorBrush x:Key="DangerBrush" Color="#DC2626" />
-    <SolidColorBrush x:Key="DangerSoftBrush" Color="#FDECEC" />
-    <SolidColorBrush x:Key="InfoBrush" Color="#0EA5E9" />
-    <SolidColorBrush x:Key="InfoSoftBrush" Color="#E6F6FE" />
-    <SolidColorBrush x:Key="PurpleBrush" Color="#7C3AED" />
-    <SolidColorBrush x:Key="PurpleSoftBrush" Color="#F1EBFE" />
-
-    <LinearGradientBrush x:Key="AccentGradientBrush" StartPoint="0,0" EndPoint="1,1">
-        <GradientStop Offset="0" Color="#3B82F6" />
-        <GradientStop Offset="1" Color="#1D4ED8" />
-    </LinearGradientBrush>
-
-    <LinearGradientBrush x:Key="SidebarGradientBrush" StartPoint="0,0" EndPoint="0,1">
-        <GradientStop Offset="0" Color="#0B1220" />
-        <GradientStop Offset="1" Color="#111C31" />
-    </LinearGradientBrush>
+    <!-- Цвета вынесены в палитры Palette.Light.xaml / Palette.Dark.xaml,
+         здесь остаются только геометрии иконок (стиль Feather, лицензия MIT). -->
 
     <!-- Иконки (геометрии в стиле Feather, лицензия MIT) -->
     <Geometry x:Key="IconDashboard">M3 3h7v9H3z M14 3h7v5h-7z M14 12h7v9h-7z M3 16h7v5H3z</Geometry>
@@ -79,6 +34,9 @@
     <Geometry x:Key="IconFilter">M22 3H2l8 9.46V19l4 2v-8.54z</Geometry>
     <Geometry x:Key="IconTruck">M1 3h15v13H1z M16 8h4l3 3v5h-7V8z M5.5 21a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5z M18.5 21a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5z</Geometry>
     <Geometry x:Key="IconLock">M5 11h14v10H5z M8 11V7a4 4 0 0 1 8 0v4</Geometry>
+    <Geometry x:Key="IconMoon">M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z</Geometry>
+    <Geometry x:Key="IconSun">M12 17a5 5 0 1 0 0-10 5 5 0 0 0 0 10z M12 1v2 M12 21v2 M4.22 4.22l1.42 1.42 M18.36 18.36l1.42 1.42 M1 12h2 M21 12h2 M4.22 19.78l1.42-1.42 M18.36 5.64l1.42-1.42</Geometry>
+    <Geometry x:Key="IconReport">M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z M14 2v6h6 M8 13h8 M8 17h5</Geometry>
     <Geometry x:Key="IconUser">M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2 M12 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8z</Geometry>
 
 </ResourceDictionary>

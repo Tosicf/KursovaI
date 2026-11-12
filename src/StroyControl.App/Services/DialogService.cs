@@ -1,4 +1,5 @@
 using System.Windows;
+using StroyControl.App.ViewModels;
 using StroyControl.App.ViewModels.Editors;
 using StroyControl.App.Views.Dialogs;
 using StroyControl.Core.Entities;
@@ -81,6 +82,16 @@ public sealed class DialogService : IDialogService
     {
         var vm = new UsageEditorViewModel(usage, projects, materials, estimates, currentUserId);
         return ShowEditor(vm) ? vm.BuildEntity() : null;
+    }
+
+    public void ShowEstimateReport(Estimate estimate)
+    {
+        var window = new EstimateReportWindow(new EstimateReportViewModel(estimate));
+        var owner = Application.Current?.MainWindow;
+        if (owner is not null && owner.IsVisible)
+            window.Owner = owner;
+
+        window.ShowDialog();
     }
 
     public UserEditorViewModel? EditUser(User? user)

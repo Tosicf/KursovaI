@@ -59,6 +59,8 @@ public static class DemoDataSeeder
             {
                 if (item.Material is null) continue;
 
+                var materialId = item.Material.Id;
+
                 var factor = QuantityFactors[documentIndex % QuantityFactors.Length];
                 var priceFactor = PriceFactors[documentIndex % PriceFactors.Length];
                 var total = Math.Round(item.PlannedQuantity * factor, 3);
@@ -82,7 +84,7 @@ public static class DemoDataSeeder
                     var usage = new MaterialUsage
                     {
                         ProjectId = estimate.ProjectId,
-                        MaterialId = item.MaterialId,
+                        MaterialId = materialId,
                         EstimateId = estimate.Id,
                         Quantity = quantity,
                         UnitPrice = unitPrice,
@@ -94,8 +96,8 @@ public static class DemoDataSeeder
 
                     usages.Add(usage);
 
-                    if (!deliveryDateByMaterial.TryGetValue(item.MaterialId, out var existing) || usage.Date < existing)
-                        deliveryDateByMaterial[item.MaterialId] = usage.Date;
+                    if (!deliveryDateByMaterial.TryGetValue(materialId, out var existing) || usage.Date < existing)
+                        deliveryDateByMaterial[materialId] = usage.Date;
 
                     documentIndex++;
                 }
@@ -236,6 +238,7 @@ public static class DemoDataSeeder
                 Customer = "ОАО «Городской квартал»",
                 ManagerName = "Дорошевич С. К.",
                 ContractSum = 4_850_000m,
+                TotalArea = 8_640m,
                 StartDate = today.AddMonths(-8),
                 PlannedEndDate = today.AddMonths(10),
                 Status = ProjectStatus.InProgress,
@@ -250,6 +253,7 @@ public static class DemoDataSeeder
                 Customer = "УКС Борисовского райисполкома",
                 ManagerName = "Ковалёва Е. В.",
                 ContractSum = 6_200_000m,
+                TotalArea = 7_250m,
                 StartDate = today.AddMonths(-10),
                 PlannedEndDate = today.AddMonths(7),
                 Status = ProjectStatus.InProgress,
@@ -264,6 +268,7 @@ public static class DemoDataSeeder
                 Customer = "ООО «ЛогоПарк»",
                 ManagerName = "Романов Д. О.",
                 ContractSum = 3_400_000m,
+                TotalArea = 11_800m,
                 StartDate = today.AddMonths(-16),
                 PlannedEndDate = today.AddMonths(2),
                 Status = ProjectStatus.InProgress,
@@ -278,6 +283,7 @@ public static class DemoDataSeeder
                 Customer = "РУП «Полоцктеплоэнерго»",
                 ManagerName = "Иванов А. П.",
                 ContractSum = 1_150_000m,
+                TotalArea = 1_240m,
                 StartDate = today.AddMonths(2),
                 PlannedEndDate = today.AddMonths(14),
                 Status = ProjectStatus.Planning,
@@ -285,6 +291,34 @@ public static class DemoDataSeeder
                 Note = "Сметная документация передана на проверку, работы не начаты."
             }
         };
+    }
+
+    /// <summary>Типовые работы для демонстрационных смет (по разделам).</summary>
+    private static List<(string Name, string Unit, string Section, decimal Quantity, decimal Price)> WorksFor(
+        IReadOnlyList<string> sections)
+    {
+        var works = new List<(string Name, string Unit, string Section, decimal Quantity, decimal Price)>();
+
+        if (sections.Contains("Фундамент"))
+        {
+            works.Add(("Разработка грунта экскаватором", "м3", "Фундамент", 420m, 12.40m));
+            works.Add(("Устройство бетонной подготовки", "м3", "Фундамент", 68m, 96.00m));
+            works.Add(("Армирование фундаментной плиты", "т", "Фундамент", 12.5m, 640.00m));
+        }
+
+        if (sections.Contains("Стены"))
+        {
+            works.Add(("Кладка наружных стен из блоков", "м3", "Стены", 310m, 78.50m));
+            works.Add(("Монтаж перемычек", "шт", "Стены", 96m, 24.00m));
+        }
+
+        if (sections.Contains("Кровля"))
+            works.Add(("Устройство пароизоляции кровли", "м2", "Кровля", 640m, 6.30m));
+
+        if (works.Count == 0)
+            works.Add(("Общестроительные работы", "раб.", "Общестроительные работы", 1m, 1500.00m));
+
+        return works;
     }
 
     private static List<Estimate> BuildEstimates(List<Project> projects, List<Material> materials, Random random)
@@ -311,6 +345,21 @@ public static class DemoDataSeeder
                     Section = item.Section,
                     PlannedQuantity = item.Quantity,
                     PlannedUnitPrice = Math.Round(material.Price * (0.96m + (decimal)random.NextDouble() * 0.08m), 2)
+                });
+            }
+
+            // Работы: в демо-данных они идут отдельными позициями, чтобы отчёт
+            // по смете показывал и работы, и материалы (как в специализированных программах).
+            foreach (var work in WorksFor(items.Select(i => i.Section).Distinct().ToList()))
+            {
+                estimate.Items.Add(new EstimateItem
+                {
+                    IsWork = true,
+                    WorkName = work.Name,
+                    WorkUnit = work.Unit,
+                    Section = work.Section,
+                    PlannedQuantity = work.Quantity,
+                    PlannedUnitPrice = work.Price
                 });
             }
 

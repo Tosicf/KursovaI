@@ -180,12 +180,17 @@
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*" />
                     <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
                 </Grid.ColumnDefinitions>
                 <StackPanel Margin="0,0,12,0">
                     <TextBlock Text="Договорная стоимость, BYN" Style="{StaticResource FieldLabel}" />
                     <TextBox Text="{Binding ContractSum, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource NumericTextBox}" />
                 </StackPanel>
-                <StackPanel Grid.Column="1">
+                <StackPanel Grid.Column="1" Margin="0,0,12,0">
+                    <TextBlock Text="Площадь строения, м²" Style="{StaticResource FieldLabel}" />
+                    <TextBox Text="{Binding TotalArea, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource NumericTextBox}" />
+                </StackPanel>
+                <StackPanel Grid.Column="2">
                     <TextBlock Text="Статус" Style="{StaticResource FieldLabel}" />
                     <ComboBox ItemsSource="{Binding Statuses}" SelectedItem="{Binding SelectedStatus, Mode=TwoWay}"
                               DisplayMemberPath="Display" />
@@ -254,6 +259,33 @@
                 </StackPanel>
             </Grid>
 
+            <Border Background="{DynamicResource SurfaceAltBrush}" CornerRadius="12" Padding="14" Margin="0,16,0,0">
+                <StackPanel>
+                    <TextBlock Text="Параметры расчёта отчёта" FontWeight="SemiBold" Margin="0,0,0,10" />
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Margin="0,0,12,0">
+                            <TextBlock Text="Наценка, %" Style="{StaticResource FieldLabel}" />
+                            <TextBox Text="{Binding MarkupPercent, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource NumericTextBox}" />
+                        </StackPanel>
+                        <StackPanel Grid.Column="1" Margin="0,0,12,0">
+                            <TextBlock Text="Прибыль, %" Style="{StaticResource FieldLabel}" />
+                            <TextBox Text="{Binding ProfitPercent, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource NumericTextBox}" />
+                        </StackPanel>
+                        <StackPanel Grid.Column="2">
+                            <TextBlock Text="Доля ЗП рабочих, %" Style="{StaticResource FieldLabel}" />
+                            <TextBox Text="{Binding LaborSharePercent, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource NumericTextBox}" />
+                        </StackPanel>
+                    </Grid>
+                    <TextBlock Text="Применяются в отчёте по смете: цена с наценкой, прибыль и зарплата рабочих."
+                               Style="{StaticResource Caption}" FontSize="11" Margin="2,8,0,0" TextWrapping="Wrap" />
+                </StackPanel>
+            </Border>
+
             <StackPanel Margin="0,16,0,0">
                 <TextBlock Text="Примечание" Style="{StaticResource FieldLabel}" />
                 <TextBox Text="{Binding Note, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource MultilineTextBox}" />
@@ -264,10 +296,36 @@
     <!-- ==================== Позиция сметы ==================== -->
     <DataTemplate DataType="{x:Type editors:EstimateItemEditorViewModel}">
         <StackPanel>
-            <TextBlock Text="Материал *" Style="{StaticResource FieldLabel}" />
-            <ComboBox ItemsSource="{Binding Materials}" SelectedItem="{Binding SelectedMaterial, Mode=TwoWay}"
-                      DisplayMemberPath="Name" />
-            <TextBlock Text="{Binding StockHint}" Style="{StaticResource Caption}" FontSize="11" Margin="2,6,0,0" />
+            <CheckBox Content="Это работа (выполняется рабочими, со склада не списывается)"
+                      IsChecked="{Binding IsWork, Mode=TwoWay}" Margin="2,0,0,14" />
+
+            <!-- Материал из справочника -->
+            <StackPanel Visibility="{Binding IsWork, Converter={StaticResource BoolToVisibility}, ConverterParameter=invert}">
+                <TextBlock Text="Материал *" Style="{StaticResource FieldLabel}" />
+                <ComboBox ItemsSource="{Binding Materials}" SelectedItem="{Binding SelectedMaterial, Mode=TwoWay}"
+                          DisplayMemberPath="Name" />
+                <TextBlock Text="{Binding StockHint}" Style="{StaticResource Caption}" FontSize="11" Margin="2,6,0,0" />
+                <TextBlock Text="{Binding CataloguePriceHint}" Style="{StaticResource Caption}" FontSize="11" Margin="2,2,0,0" />
+            </StackPanel>
+
+            <!-- Работа -->
+            <StackPanel Visibility="{Binding IsWork, Converter={StaticResource BoolToVisibility}}">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="2*" />
+                        <ColumnDefinition Width="1*" />
+                    </Grid.ColumnDefinitions>
+                    <StackPanel Margin="0,0,12,0">
+                        <TextBlock Text="Наименование работы *" Style="{StaticResource FieldLabel}" />
+                        <TextBox Text="{Binding WorkName, UpdateSourceTrigger=PropertyChanged}" />
+                    </StackPanel>
+                    <StackPanel Grid.Column="1">
+                        <TextBlock Text="Единица измерения *" Style="{StaticResource FieldLabel}" />
+                        <TextBox Text="{Binding WorkUnit, UpdateSourceTrigger=PropertyChanged}" />
+                    </StackPanel>
+                </Grid>
+                <TextBlock Text="{Binding StockHint}" Style="{StaticResource Caption}" FontSize="11" Margin="2,6,0,0" />
+            </StackPanel>
 
             <Grid Margin="0,16,0,0">
                 <Grid.ColumnDefinitions>
@@ -275,7 +333,7 @@
                     <ColumnDefinition Width="*" />
                 </Grid.ColumnDefinitions>
                 <StackPanel Margin="0,0,12,0">
-                    <TextBlock Text="Раздел сметы" Style="{StaticResource FieldLabel}" />
+                    <TextBlock Text="Раздел сметы *" Style="{StaticResource FieldLabel}" />
                     <TextBox Text="{Binding Section, UpdateSourceTrigger=PropertyChanged}" />
                 </StackPanel>
                 <StackPanel Grid.Column="1">
@@ -300,7 +358,7 @@
                 </StackPanel>
                 <StackPanel Grid.Column="1">
                     <TextBlock Text="Плановая стоимость" Style="{StaticResource FieldLabel}" />
-                    <Border Background="{StaticResource SurfaceAltBrush}" CornerRadius="10" Height="40" Padding="12,0">
+                    <Border Background="{DynamicResource SurfaceAltBrush}" CornerRadius="10" Height="40" Padding="12,0">
                         <TextBlock Text="{Binding PlannedCost, StringFormat={}{0:N2} BYN}" FontSize="13" FontWeight="SemiBold"
                                    VerticalAlignment="Center" HorizontalAlignment="Right" />
                     </Border>
@@ -359,15 +417,15 @@
                 <Button HorizontalAlignment="Right" Style="{StaticResource GhostButton}" Height="30" Padding="10,0"
                         Command="{Binding AddItemCommand}">
                     <StackPanel Orientation="Horizontal">
-                        <Path Data="{StaticResource IconPlus}" Stroke="{StaticResource AccentBrush}" StrokeThickness="2"
+                        <Path Data="{StaticResource IconPlus}" Stroke="{DynamicResource AccentBrush}" StrokeThickness="2"
                               Width="12" Height="12" Stretch="Uniform" VerticalAlignment="Center" />
-                        <TextBlock Text="Добавить строку" Foreground="{StaticResource AccentBrush}" Margin="6,0,0,0"
+                        <TextBlock Text="Добавить строку" Foreground="{DynamicResource AccentBrush}" Margin="6,0,0,0"
                                    FontSize="12" VerticalAlignment="Center" />
                     </StackPanel>
                 </Button>
             </Grid>
 
-            <Border BorderBrush="{StaticResource BorderBrush}" BorderThickness="1" CornerRadius="10" Padding="6">
+            <Border BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="10" Padding="6">
                 <DataGrid ItemsSource="{Binding Items}" AutoGenerateColumns="False" CanUserAddRows="False"
                           HeadersVisibility="Column" RowHeight="50" GridLinesVisibility="None" Background="Transparent"
                           BorderThickness="0" IsReadOnly="True" MaxHeight="220">
@@ -426,7 +484,7 @@
                                     <Button Style="{StaticResource IconButton}" Width="28" Height="28" ToolTip="Удалить строку"
                                             Command="{Binding DataContext.RemoveItemCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
                                             CommandParameter="{Binding}">
-                                        <Path Data="{StaticResource IconTrash}" Stroke="{StaticResource DangerBrush}"
+                                        <Path Data="{StaticResource IconTrash}" Stroke="{DynamicResource DangerBrush}"
                                               StrokeThickness="1.6" Width="13" Height="13" Stretch="Uniform" />
                                     </Button>
                                 </DataTemplate>
@@ -469,16 +527,16 @@
                 </StackPanel>
             </Grid>
 
-            <Border Background="{StaticResource SurfaceAltBrush}" CornerRadius="10" Padding="12,9" Margin="0,12,0,0">
+            <Border Background="{DynamicResource SurfaceAltBrush}" CornerRadius="10" Padding="12,9" Margin="0,12,0,0">
                 <TextBlock Text="{Binding StockHint}" Style="{StaticResource Caption}" />
             </Border>
 
-            <Border Background="{StaticResource WarningSoftBrush}" CornerRadius="10" Padding="12,9" Margin="0,8,0,0"
+            <Border Background="{DynamicResource WarningSoftBrush}" CornerRadius="10" Padding="12,9" Margin="0,8,0,0"
                     Visibility="{Binding IsOverStock, Converter={StaticResource BoolToVisibility}}">
                 <StackPanel Orientation="Horizontal">
-                    <Path Data="{StaticResource IconAlert}" Stroke="{StaticResource WarningBrush}" StrokeThickness="1.7"
+                    <Path Data="{StaticResource IconAlert}" Stroke="{DynamicResource WarningBrush}" StrokeThickness="1.7"
                           Width="15" Height="15" Stretch="Uniform" VerticalAlignment="Top" />
-                    <TextBlock Text="{Binding OverStockMessage}" Foreground="{StaticResource WarningBrush}" TextWrapping="Wrap"
+                    <TextBlock Text="{Binding OverStockMessage}" Foreground="{DynamicResource WarningBrush}" TextWrapping="Wrap"
                                FontSize="12" Margin="8,0,0,0" />
                 </StackPanel>
             </Border>

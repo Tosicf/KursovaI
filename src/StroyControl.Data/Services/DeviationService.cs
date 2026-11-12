@@ -47,9 +47,11 @@ public sealed class DeviationService : IDeviationService
         // Плановые показатели агрегируются по паре «объект — материал», чтобы один
         // материал, встречающийся в нескольких сметах, не учитывался дважды.
         var plannedGroups = estimates
-            .SelectMany(e => e.Items.Select(i => new { Estimate = e, Item = i }))
+            .SelectMany(e => e.Items
+                .Where(i => !i.IsWork && i.MaterialId is not null)
+                .Select(i => new { Estimate = e, Item = i }))
             .Where(x => x.Estimate.Project is not null)
-            .GroupBy(x => new { ProjectId = x.Estimate.ProjectId, x.Item.MaterialId })
+            .GroupBy(x => new { ProjectId = x.Estimate.ProjectId, MaterialId = x.Item.MaterialId!.Value })
             .ToList();
 
         var rows = new List<DeviationRow>(plannedGroups.Count);

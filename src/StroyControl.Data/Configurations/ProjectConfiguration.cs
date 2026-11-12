@@ -18,6 +18,7 @@ public sealed class ProjectConfiguration : IEntityTypeConfiguration<Project>
         builder.Property(p => p.Customer).HasMaxLength(200);
         builder.Property(p => p.ManagerName).HasMaxLength(150);
         builder.Property(p => p.ContractSum).HasPrecision(18, 2);
+        builder.Property(p => p.TotalArea).HasPrecision(12, 2);
         builder.Property(p => p.ProgressPercent);
         builder.Property(p => p.Status).HasConversion<int>();
         builder.Property(p => p.Note).HasMaxLength(500);
