@@ -342,6 +342,12 @@ return await strategy.ExecuteAsync(async () =>
 
 Публичные методы (`CreateDeliveryAsync`, `UpdateDeliveryAsync`, `DeleteDeliveryAsync`, `CreateUsageAsync`, `UpdateUsageAsync`, `DeleteUsageAsync`) — тонкие обёртки, вся работа с данными вынесена в `...CoreAsync(db, transaction, ...)`. Контекст создаётся заново на каждую попытку, поэтому повтор не тащит за собой уже отслеживаемые сущности (иначе остатки изменились бы дважды). Для демо-режима (InMemory) транзакция не открывается (`IsRelational() == false`).
 
+### Нумерация приходных накладных
+
+Номер формирует `DeliveryNumbers` (`src/StroyControl.Core/Services/DeliveryNumbers.cs`): `ПН-{yy}-{MMdd}-{NNN}`, где `NNN` — следующий свободный порядковый номер за день. Список уже занятых номеров отдаёт `IDeliveryRepository.GetNumbersAsync(date)`; результат передаётся в редактор как `suggestedNumber`. Прежняя схема `ПН-{yy}-{MMddHH}` использовала час вместо последовательности, поэтому две накладные, созданные в один час, получали одинаковый номер и падали на уникальном индексе `IX_deliveries_Number`.
+
+Дополнительно `InventoryService.SaveAsync` распознаёт нарушения уникального индекса SQL Server (ошибки 2601/2627) и отдаёт понятное сообщение «Номер документа уже используется. Измените номер и повторите сохранение» вместо общего текста про сохранение. Логика номера покрыта тестами `DeliveryNumbersTests`.
+
 ## 14. Товарный чек
 
 `Views/Reports/PurchaseReceiptDocument` собирает `FlowDocument` формата A5: заголовок с номером и датой, реквизиты продавца (наименование, УНП, адрес, телефон) и покупателя (организация из `AppEnvironment.Organization` + объект или «общий склад»), основание (накладная и ТТН), таблица позиций с итогом, сумма к оплате и подписи. Тот же документ показывается в `PurchaseReceiptWindow` (предпросмотр) и печатается — печать в PDF выполняется через принтер «Microsoft Print to PDF», как и в отчёте по смете.

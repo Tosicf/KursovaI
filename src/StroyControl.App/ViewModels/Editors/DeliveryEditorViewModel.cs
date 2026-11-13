@@ -17,14 +17,20 @@ public sealed partial class DeliveryEditorViewModel : EditorViewModelBase
         IReadOnlyList<Supplier> suppliers,
         IReadOnlyList<Project> projects,
         IReadOnlyList<Material> materials,
-        IReadOnlyList<Material>? suggested = null)
+        IReadOnlyList<Material>? suggested = null,
+        string? suggestedNumber = null)
     {
         _source = source;
         Suppliers = suppliers;
         Projects = projects;
         Materials = materials;
 
-        Number = source?.Number ?? $"ПН-{DateTime.Now:yy}-{DateTime.Now:MMddHH}";
+        // Номер приходит из списка документов за день (DeliveryNumbers.Next).
+        // Если подсказки нет, в номер добавляем время — он останется уникальным.
+        Number = source?.Number
+                 ?? (string.IsNullOrWhiteSpace(suggestedNumber)
+                     ? $"ПН-{DateTime.Now:yy}-{DateTime.Now:MMdd}-{DateTime.Now:HHmmss}"
+                     : suggestedNumber);
         Date = source?.Date ?? DateTime.Today;
         SelectedSupplier = suppliers.FirstOrDefault(s => s.Id == source?.SupplierId) ?? suppliers.FirstOrDefault();
         SelectedProject = projects.FirstOrDefault(p => p.Id == source?.ProjectId);
