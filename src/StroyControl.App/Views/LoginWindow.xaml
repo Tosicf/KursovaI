@@ -15,7 +15,7 @@
 
     <Border CornerRadius="20" Background="{DynamicResource SurfaceBrush}">
         <Border.Effect>
-            <DropShadowEffect BlurRadius="40" ShadowDepth="10" Opacity="0.22" Color="#0D1318" />
+            <DropShadowEffect BlurRadius="40" ShadowDepth="10" Opacity="0.22" Color="#0E0A15" />
         </Border.Effect>
         <Grid>
             <Grid.ColumnDefinitions>
@@ -27,8 +27,8 @@
             <Border Grid.Column="0" CornerRadius="20,0,0,20" MouseLeftButtonDown="OnWindowMouseDown">
                 <Border.Background>
                     <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
-                        <GradientStop Offset="0" Color="#101B24" />
-                        <GradientStop Offset="1" Color="#1B2C3A" />
+                        <GradientStop Offset="0" Color="#160F23" />
+                        <GradientStop Offset="1" Color="#31254D" />
                     </LinearGradientBrush>
                 </Border.Background>
 
@@ -46,7 +46,7 @@
                         </Border>
                         <StackPanel Margin="14,0,0,0" VerticalAlignment="Center">
                             <TextBlock Text="СтройКонтроль" FontSize="19" FontWeight="SemiBold" Foreground="White" />
-                            <TextBlock Text="сетевое управление материалами" FontSize="11.5" Foreground="#A6B4C0" />
+                            <TextBlock Text="сетевое управление материалами" FontSize="11.5" Foreground="#B3AAC4" />
                         </StackPanel>
                     </StackPanel>
 
@@ -54,47 +54,47 @@
                         <TextBlock Text="Материалы, сметы и отклонения — в одной системе"
                                    FontSize="27" FontWeight="Bold" Foreground="White" TextWrapping="Wrap" LineHeight="34" />
                         <TextBlock Text="Клиент-серверное приложение для инженеров ПТО, снабженцев и прорабов строительной организации."
-                                   Foreground="#B7C2CC" TextWrapping="Wrap" Margin="0,14,20,26" LineHeight="20" />
+                                   Foreground="#C3BAD6" TextWrapping="Wrap" Margin="0,14,20,26" LineHeight="20" />
 
                         <StackPanel>
                             <StackPanel Orientation="Horizontal" Margin="0,0,0,14">
-                                <Border Width="22" Height="22" CornerRadius="11" Background="#26394A">
-                                    <Path Data="{StaticResource IconCheck}" Stroke="#FF9A5C" StrokeThickness="2" Width="11" Height="11" Stretch="Uniform" />
+                                <Border Width="22" Height="22" CornerRadius="11" Background="#37284F">
+                                    <Path Data="{StaticResource IconCheck}" Stroke="#C4A6FF" StrokeThickness="2" Width="11" Height="11" Stretch="Uniform" />
                                 </Border>
-                                <TextBlock Text="Учёт материалов, поставщиков и поступлений" Foreground="#D8E0E7" Margin="12,0,0,0" VerticalAlignment="Center" />
+                                <TextBlock Text="Учёт материалов, поставщиков и поступлений" Foreground="#E1DAEE" Margin="12,0,0,0" VerticalAlignment="Center" />
                             </StackPanel>
                             <StackPanel Orientation="Horizontal" Margin="0,0,0,14">
-                                <Border Width="22" Height="22" CornerRadius="11" Background="#26394A">
-                                    <Path Data="{StaticResource IconCheck}" Stroke="#FF9A5C" StrokeThickness="2" Width="11" Height="11" Stretch="Uniform" />
+                                <Border Width="22" Height="22" CornerRadius="11" Background="#37284F">
+                                    <Path Data="{StaticResource IconCheck}" Stroke="#C4A6FF" StrokeThickness="2" Width="11" Height="11" Stretch="Uniform" />
                                 </Border>
-                                <TextBlock Text="Сметы и фактические списания по объектам" Foreground="#D8E0E7" Margin="12,0,0,0" VerticalAlignment="Center" />
+                                <TextBlock Text="Сметы и фактические списания по объектам" Foreground="#E1DAEE" Margin="12,0,0,0" VerticalAlignment="Center" />
                             </StackPanel>
                             <StackPanel Orientation="Horizontal" Margin="0,0,0,14">
-                                <Border Width="22" Height="22" CornerRadius="11" Background="#26394A">
-                                    <Path Data="{StaticResource IconCheck}" Stroke="#FF9A5C" StrokeThickness="2" Width="11" Height="11" Stretch="Uniform" />
+                                <Border Width="22" Height="22" CornerRadius="11" Background="#37284F">
+                                    <Path Data="{StaticResource IconCheck}" Stroke="#C4A6FF" StrokeThickness="2" Width="11" Height="11" Stretch="Uniform" />
                                 </Border>
-                                <TextBlock Text="Анализ отклонений от сметы в реальном времени" Foreground="#D8E0E7" Margin="12,0,0,0" VerticalAlignment="Center" />
+                                <TextBlock Text="Анализ отклонений от сметы в реальном времени" Foreground="#E1DAEE" Margin="12,0,0,0" VerticalAlignment="Center" />
                             </StackPanel>
                             <StackPanel Orientation="Horizontal">
-                                <Border Width="22" Height="22" CornerRadius="11" Background="#26394A">
-                                    <Path Data="{StaticResource IconCheck}" Stroke="#FF9A5C" StrokeThickness="2" Width="11" Height="11" Stretch="Uniform" />
+                                <Border Width="22" Height="22" CornerRadius="11" Background="#37284F">
+                                    <Path Data="{StaticResource IconCheck}" Stroke="#C4A6FF" StrokeThickness="2" Width="11" Height="11" Stretch="Uniform" />
                                 </Border>
-                                <TextBlock Text="Разграничение прав доступа по ролям" Foreground="#D8E0E7" Margin="12,0,0,0" VerticalAlignment="Center" />
+                                <TextBlock Text="Разграничение прав доступа по ролям" Foreground="#E1DAEE" Margin="12,0,0,0" VerticalAlignment="Center" />
                             </StackPanel>
                         </StackPanel>
                     </StackPanel>
 
-                    <Border Grid.Row="2" CornerRadius="12" Background="#182632" Padding="16,12">
+                    <Border Grid.Row="2" CornerRadius="12" Background="#231A33" Padding="16,12">
                         <Grid>
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="Auto" />
                                 <ColumnDefinition Width="*" />
                             </Grid.ColumnDefinitions>
-                            <Path Data="{StaticResource IconDatabase}" Stroke="#FF9A5C" StrokeThickness="1.6" Width="20" Height="20"
+                            <Path Data="{StaticResource IconDatabase}" Stroke="#C4A6FF" StrokeThickness="1.6" Width="20" Height="20"
                                   Stretch="Uniform" VerticalAlignment="Center" StrokeStartLineCap="Round" />
                             <StackPanel Grid.Column="1" Margin="12,0,0,0">
-                                <TextBlock Text="{Binding Environment.ProviderDisplay}" Foreground="#D8E0E7" FontSize="12" />
-                                <TextBlock Text="{Binding Environment.ServerDisplay}" Foreground="#93A1AE" FontSize="11" Margin="0,2,0,0" />
+                                <TextBlock Text="{Binding Environment.ProviderDisplay}" Foreground="#E1DAEE" FontSize="12" />
+                                <TextBlock Text="{Binding Environment.ServerDisplay}" Foreground="#9A90AD" FontSize="11" Margin="0,2,0,0" />
                             </StackPanel>
                         </Grid>
                     </Border>

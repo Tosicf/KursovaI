@@ -19,10 +19,10 @@ public sealed class InventoryService : IInventoryService
 
     public Task<Delivery> CreateDeliveryAsync(Delivery delivery, CancellationToken cancellationToken = default) =>
         RunInTransactionAsync(
-            (db, transaction) => CreateDeliveryAsyncCore(delivery, db, transaction, cancellationToken),
+            (db, transaction, _) => CreateDeliveryAsyncCore(delivery, db, transaction, cancellationToken),
             cancellationToken);
 
-    private async Task<Delivery> CreateDeliveryAsyncCore(Delivery delivery, AppDbContext db, IDbContextTransaction? transaction, CancellationToken cancellationToken)
+    private static async Task<Delivery> CreateDeliveryAsyncCore(Delivery delivery, AppDbContext db, IDbContextTransaction? transaction, CancellationToken cancellationToken)
     {
         var items = NormalizeItems(delivery);
         if (items.Count == 0)
@@ -66,10 +66,10 @@ public sealed class InventoryService : IInventoryService
 
     public Task UpdateDeliveryAsync(Delivery delivery, CancellationToken cancellationToken = default) =>
         RunInTransactionAsync(
-            (db, transaction) => UpdateDeliveryAsyncCore(delivery, db, transaction, cancellationToken),
+            (db, transaction, _) => UpdateDeliveryAsyncCore(delivery, db, transaction, cancellationToken),
             cancellationToken);
 
-    private async Task UpdateDeliveryAsyncCore(Delivery delivery, AppDbContext db, IDbContextTransaction? transaction, CancellationToken cancellationToken)
+    private static async Task UpdateDeliveryAsyncCore(Delivery delivery, AppDbContext db, IDbContextTransaction? transaction, CancellationToken cancellationToken)
     {
         var items = NormalizeItems(delivery);
         if (items.Count == 0)
@@ -121,10 +121,10 @@ public sealed class InventoryService : IInventoryService
 
     public Task DeleteDeliveryAsync(int deliveryId, CancellationToken cancellationToken = default) =>
         RunInTransactionAsync(
-            (db, transaction) => DeleteDeliveryAsyncCore(deliveryId, db, transaction, cancellationToken),
+            (db, transaction, _) => DeleteDeliveryAsyncCore(deliveryId, db, transaction, cancellationToken),
             cancellationToken);
 
-    private async Task DeleteDeliveryAsyncCore(int deliveryId, AppDbContext db, IDbContextTransaction? transaction, CancellationToken cancellationToken)
+    private static async Task DeleteDeliveryAsyncCore(int deliveryId, AppDbContext db, IDbContextTransaction? transaction, CancellationToken cancellationToken)
     {
         try
         {
@@ -150,10 +150,10 @@ public sealed class InventoryService : IInventoryService
 
     public Task<MaterialUsage> CreateUsageAsync(MaterialUsage usage, CancellationToken cancellationToken = default) =>
         RunInTransactionAsync(
-            (db, transaction) => CreateUsageAsyncCore(usage, db, transaction, cancellationToken),
+            (db, transaction, _) => CreateUsageAsyncCore(usage, db, transaction, cancellationToken),
             cancellationToken);
 
-    private async Task<MaterialUsage> CreateUsageAsyncCore(MaterialUsage usage, AppDbContext db, IDbContextTransaction? transaction, CancellationToken cancellationToken)
+    private static async Task<MaterialUsage> CreateUsageAsyncCore(MaterialUsage usage, AppDbContext db, IDbContextTransaction? transaction, CancellationToken cancellationToken)
     {
         ValidateUsage(usage);
 
@@ -190,10 +190,10 @@ public sealed class InventoryService : IInventoryService
 
     public Task UpdateUsageAsync(MaterialUsage usage, CancellationToken cancellationToken = default) =>
         RunInTransactionAsync(
-            (db, transaction) => UpdateUsageAsyncCore(usage, db, transaction, cancellationToken),
+            (db, transaction, _) => UpdateUsageAsyncCore(usage, db, transaction, cancellationToken),
             cancellationToken);
 
-    private async Task UpdateUsageAsyncCore(MaterialUsage usage, AppDbContext db, IDbContextTransaction? transaction, CancellationToken cancellationToken)
+    private static async Task UpdateUsageAsyncCore(MaterialUsage usage, AppDbContext db, IDbContextTransaction? transaction, CancellationToken cancellationToken)
     {
         ValidateUsage(usage);
 
@@ -231,10 +231,10 @@ public sealed class InventoryService : IInventoryService
 
     public Task DeleteUsageAsync(int usageId, CancellationToken cancellationToken = default) =>
         RunInTransactionAsync(
-            (db, transaction) => DeleteUsageAsyncCore(usageId, db, transaction, cancellationToken),
+            (db, transaction, _) => DeleteUsageAsyncCore(usageId, db, transaction, cancellationToken),
             cancellationToken);
 
-    private async Task DeleteUsageAsyncCore(int usageId, AppDbContext db, IDbContextTransaction? transaction, CancellationToken cancellationToken)
+    private static async Task DeleteUsageAsyncCore(int usageId, AppDbContext db, IDbContextTransaction? transaction, CancellationToken cancellationToken)
     {
         try
         {
