@@ -1,3 +1,4 @@
+using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
 using StroyControl.Core.Entities;
@@ -339,6 +340,18 @@ public sealed class InventoryService : IInventoryService
     private static async Task<IDbContextTransaction?> BeginAsync(AppDbContext db, CancellationToken cancellationToken)
         => await db.Database.BeginTransactionAsync(cancellationToken);
 
+    /// <summary>Нарушение уникального индекса SQL Server (2601/2627).</summary>
+    private static bool IsDuplicateKey(DbUpdateException ex)
+    {
+        for (Exception? current = ex; current is not null; current = current.InnerException)
+        {
+            if (current is SqlException sql && sql.Number is 2601 or 2627)
+                return true;
+        }
+
+        return false;
+    }
+
     private static async Task SaveAsync(AppDbContext db, CancellationToken cancellationToken, string message)
     {
         try
@@ -348,6 +361,12 @@ public sealed class InventoryService : IInventoryService
         catch (DbUpdateConcurrencyException)
         {
             throw new AppException("Документ уже изменён другим пользователем. Обновите список и повторите попытку.");
+        }
+        catch (DbUpdateException ex) when (IsDuplicateKey(ex))
+        {
+            // Нарушение уникального индекса (номер документа занят) — самая частая
+            // причина DbUpdateException, поэтому подсказываем, что именно делать.
+            throw new AppException("Номер документа уже используется. Измените номер и повторите сохранение.", ex);
         }
         catch (DbUpdateException ex)
         {

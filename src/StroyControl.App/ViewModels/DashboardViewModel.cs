@@ -3,6 +3,7 @@ using CommunityToolkit.Mvvm.Input;
 using StroyControl.App.Services;
 using StroyControl.Core.Dtos;
 using StroyControl.Core.Interfaces;
+using StroyControl.Core.Services;
 
 namespace StroyControl.App.ViewModels;
 
@@ -125,7 +126,10 @@ public sealed partial class DashboardViewModel : ViewModelBase
             var suppliers = await _suppliers.GetAllAsync();
             var projects = await _projects.GetAllAsync();
 
-            var delivery = _dialogs.EditDelivery(null, suppliers, projects, materials, deficit);
+            var numbers = await _deliveries.GetNumbersAsync(DateTime.Today);
+            var number = DeliveryNumbers.Next(numbers, DateTime.Today);
+
+            var delivery = _dialogs.EditDelivery(null, suppliers, projects, materials, deficit, number);
             if (delivery is null) return;
 
             var saved = await _inventory.CreateDeliveryAsync(delivery);

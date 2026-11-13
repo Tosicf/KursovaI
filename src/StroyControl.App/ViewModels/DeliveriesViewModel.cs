@@ -6,6 +6,7 @@ using CommunityToolkit.Mvvm.Input;
 using StroyControl.App.Services;
 using StroyControl.Core.Entities;
 using StroyControl.Core.Interfaces;
+using StroyControl.Core.Services;
 
 namespace StroyControl.App.ViewModels;
 
@@ -162,7 +163,9 @@ public sealed partial class DeliveriesViewModel : ViewModelBase
             return;
         }
 
-        var entity = _dialogs.EditDelivery(null, Suppliers, Projects, Materials);
+        var number = await NextDeliveryNumberAsync();
+
+        var entity = _dialogs.EditDelivery(null, Suppliers, Projects, Materials, suggestedNumber: number);
         if (entity is null) return;
 
         AttachReferences(entity);
@@ -180,6 +183,23 @@ public sealed partial class DeliveriesViewModel : ViewModelBase
         catch (Exception ex)
         {
             _toasts.Error("Не удалось сохранить поступление", ex.Message);
+        }
+    }
+
+    /// <summary>Следующий номер накладной на сегодня (последовательность внутри дня).</summary>
+    private async Task<string> NextDeliveryNumberAsync()
+    {
+        var today = DateTime.Today;
+
+        try
+        {
+            var numbers = await _deliveries.GetNumbersAsync(today);
+            return DeliveryNumbers.Next(numbers, today);
+        }
+        catch
+        {
+            // Подсказка номера не критична: без неё редактор сгенерирует номер со временем.
+            return DeliveryNumbers.Next(Array.Empty<string>(), today);
         }
     }
 

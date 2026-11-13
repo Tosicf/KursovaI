@@ -82,9 +82,10 @@ public sealed class DialogService : IDialogService
         IReadOnlyList<Supplier> suppliers,
         IReadOnlyList<Project> projects,
         IReadOnlyList<Material> materials,
-        IReadOnlyList<Material>? suggested = null)
+        IReadOnlyList<Material>? suggested = null,
+        string? suggestedNumber = null)
     {
-        var vm = new DeliveryEditorViewModel(delivery, suppliers, projects, materials, suggested);
+        var vm = new DeliveryEditorViewModel(delivery, suppliers, projects, materials, suggested, suggestedNumber);
         return ShowEditor(vm) ? vm.BuildEntity() : null;
     }
 

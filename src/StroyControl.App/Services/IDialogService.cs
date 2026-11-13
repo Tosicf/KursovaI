@@ -32,7 +32,8 @@ public interface IDialogService
         IReadOnlyList<Supplier> suppliers,
         IReadOnlyList<Project> projects,
         IReadOnlyList<Material> materials,
-        IReadOnlyList<Material>? suggested = null);
+        IReadOnlyList<Material>? suggested = null,
+        string? suggestedNumber = null);
 
     MaterialUsage? EditUsage(MaterialUsage? usage, IReadOnlyList<Project> projects, IReadOnlyList<Material> materials, IReadOnlyList<Estimate> estimates, int? currentUserId);
 
