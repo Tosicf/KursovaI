@@ -36,7 +36,9 @@ public abstract class ChartBase : FrameworkElement
 
     protected Brush PaletteColor(int index)
     {
-        string[] colors = { "#3B82F6", "#22C55E", "#F59E0B", "#A855F7", "#EF4444", "#14B8A6", "#64748B" };
+        // Палитра в духе Procore: оранжевый акцент первым, далее синий, зелёный,
+        // жёлтый, фиолетовый, красный и нейтральный серый.
+        string[] colors = { "#F26C21", "#2684FF", "#36B37E", "#FFAB00", "#6554C0", "#FF7452", "#6B778C" };
         var color = (Color)ColorConverter.ConvertFromString(colors[Math.Abs(index) % colors.Length]);
         return new SolidColorBrush(color);
     }

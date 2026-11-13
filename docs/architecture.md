@@ -298,6 +298,10 @@ sequenceDiagram
 
 ## 12. Темы оформления и контекстные меню
 
+Обе палитры выдержаны в стиле Procore: светлая — серый холст, белые карточки, тёмно-синяя навигация и оранжевый акцент `#F26C21`; тёмная — графитовый холст с тем же оранжевым акцентом. Основные действия (`.PrimaryButton`) окрашены акцентом, карточки — радиус 10, кнопки — радиус 6.
+
+`DatePicker` получил собственный шаблон: поле даты (`DatePickerTextBox`) больше не рисуется системным белым прямоугольником с чёрным текстом, а календарь (`Calendar`, `CalendarDayButton`, `CalendarButton`) использует кисти темы. Стили `TextBlock` и корня окна задают `Foreground` через `DynamicResource`, поэтому в тёмной теме текст остаётся светлым.
+
 Палитра вынесена в два словаря с одинаковым набором ключей: `Resources/Theme/Palette.Light.xaml` и `Palette.Dark.xaml`. Стили ссылаются на кисти через `DynamicResource`, поэтому `ThemeManager.Apply` просто подменяет словарь в `Application.Resources.MergedDictionaries` — без перезапуска окна. Выбор темы сохраняется в `%APPDATA%\StroyControl\ui.json` и применяется в `App.StartAsync` до показа окна входа.
 
 Компоновка: в боковом меню остались восемь рабочих разделов, а «Сотрудники» (только администратор) и «Настройки» переехали в верхнюю панель — рядом с переключателем темы, кнопкой обновления и профилем.
@@ -315,7 +319,34 @@ sequenceDiagram
 
 Контекстное меню добавлено ко всем таблицам (`DataGrid.ContextMenu`). Команды не дублируются: пункты привязываются к тем же `Edit/Delete/Add/Refresh/ExportCommand` модели представления через `PlacementTarget.DataContext`, а `IsEnabled` — к правам роли (`CanEdit`, `CanManage`, `CanExport`). «Копировать» использует `ApplicationCommands.Copy`, то есть штатное копирование ячеек DataGrid.
 
-## 13. Закупка по дефициту
+## 13. Транзакции и стратегия выполнения EF Core
+
+Провайдер SQL Server настроен с `EnableRetryOnFailure` (`StroyControl.Data/ServiceCollectionExtensions.cs`), поэтому EF использует `SqlServerRetryingExecutionStrategy`. Такая стратегия **запрещает** открывать транзакцию вручную (`Database.BeginTransactionAsync`) вне `ExecuteAsync` — операция должна повторяться целиком.
+
+Поэтому `InventoryService` работает через общий помощник:
+
+```csharp
+await using var probe = await _factory.CreateDbContextAsync(ct);
+var strategy = probe.Database.CreateExecutionStrategy();
+
+return await strategy.ExecuteAsync(async () =>
+{
+    await using var db = await _factory.CreateDbContextAsync(ct);   // новый контекст на каждую попытку
+    var transaction = await BeginTransactionAsync(db, ct);
+    try { return await body(db, transaction, ct); }
+    finally { if (transaction is not null) await transaction.DisposeAsync(); }
+});
+```
+
+Публичные методы (`CreateDeliveryAsync`, `UpdateDeliveryAsync`, `DeleteDeliveryAsync`, `CreateUsageAsync`, `UpdateUsageAsync`, `DeleteUsageAsync`) — тонкие обёртки, вся работа с данными вынесена в `...CoreAsync(db, transaction, ...)`. Контекст создаётся заново на каждую попытку, поэтому повтор не тащит за собой уже отслеживаемые сущности (иначе остатки изменились бы дважды). Для демо-режима (InMemory) транзакция не открывается (`IsRelational() == false`).
+
+## 14. Товарный чек
+
+`Views/Reports/PurchaseReceiptDocument` собирает `FlowDocument` формата A5: заголовок с номером и датой, реквизиты продавца (наименование, УНП, адрес, телефон) и покупателя (организация из `AppEnvironment.Organization` + объект или «общий склад»), основание (накладная и ТТН), таблица позиций с итогом, сумма к оплате и подписи. Тот же документ показывается в `PurchaseReceiptWindow` (предпросмотр) и печатается — печать в PDF выполняется через принтер «Microsoft Print to PDF», как и в отчёте по смете.
+
+Точки входа: пункт «Товарный чек» в контекстном меню и кнопка в панели «Поступлений» (`PrintReceiptCommand`), а также автоматический показ чека после сохранения закупки по дефициту — накладная перечитывается через `IDeliveryRepository.GetWithItemsAsync`, чтобы в документ попали наименования материалов, поставщик и объект.
+
+## 15. Закупка по дефициту
 
 `PurchasePlanner` (`src/StroyControl.Core/Dtos/PurchasePlanner.cs`) — чистая логика без БД, покрыта тестами
 `tests/StroyControl.Core.Tests/PurchasePlannerTests.cs`:
@@ -333,7 +364,7 @@ sequenceDiagram
 первого материала, — а затем сохраняют документ через `IInventoryService.CreateDeliveryAsync`, то есть тем же
 транзакционным путём, что и обычное поступление.
 
-## 14. Миграция схемы при обновлении
+## 16. Миграция схемы при обновлении
 
 Схема создаётся `EnsureCreated`, который не изменяет существующую базу, поэтому добавленные поля догоняются идемпотентными командами:
 

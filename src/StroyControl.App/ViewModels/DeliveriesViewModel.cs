@@ -244,6 +244,29 @@ public sealed partial class DeliveriesViewModel : ViewModelBase
         }
     }
 
+    /// <summary>
+    /// Печать товарного чека по выбранной накладной (или по переданной контекстным меню).
+    /// </summary>
+    [RelayCommand]
+    private void PrintReceipt(Delivery? delivery)
+    {
+        delivery ??= SelectedDelivery;
+        if (delivery is null)
+        {
+            _toasts.Info("Не выбрана накладная", "Выберите поступление в списке.");
+            return;
+        }
+
+        try
+        {
+            _dialogs.ShowPurchaseReceipt(delivery);
+        }
+        catch (Exception ex)
+        {
+            _toasts.Error("Не удалось сформировать чек", ex.Message);
+        }
+    }
+
     private void AttachReferences(Delivery delivery)
     {
         delivery.Supplier = Suppliers.FirstOrDefault(s => s.Id == delivery.SupplierId);
