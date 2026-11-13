@@ -599,6 +599,8 @@
         <Setter Property="HeadersVisibility" Value="Column" />
         <Setter Property="RowHeaderWidth" Value="0" />
         <Setter Property="Background" Value="Transparent" />
+        <Setter Property="RowBackground" Value="Transparent" />
+        <Setter Property="AlternatingRowBackground" Value="Transparent" />
         <Setter Property="BorderThickness" Value="0" />
         <Setter Property="RowHeight" Value="46" />
         <Setter Property="ColumnHeaderHeight" Value="42" />
