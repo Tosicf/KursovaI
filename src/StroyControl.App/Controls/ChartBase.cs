@@ -28,17 +28,17 @@ public abstract class ChartBase : FrameworkElement
 
     protected Brush PrimaryTextBrush => Resource("TextPrimaryBrush", Color.FromRgb(0x0F, 0x17, 0x2A));
 
-    protected Brush AccentBrush => Resource("AccentBrush", Color.FromRgb(0x25, 0x63, 0xEB));
+    protected Brush AccentBrush => Resource("AccentBrush", Color.FromRgb(0x7C, 0x3A, 0xED));
 
-    protected Brush AccentSoftBrush => Resource("AccentSoftBrush", Color.FromRgb(0xE8, 0xEF, 0xFF));
+    protected Brush AccentSoftBrush => Resource("AccentSoftBrush", Color.FromRgb(0xEE, 0xE8, 0xFD));
 
     protected Brush SuccessBrush => Resource("SuccessBrush", Color.FromRgb(0x16, 0xA3, 0x4A));
 
     protected Brush PaletteColor(int index)
     {
-        // Палитра в духе Procore: оранжевый акцент первым, далее синий, зелёный,
-        // жёлтый, фиолетовый, красный и нейтральный серый.
-        string[] colors = { "#F26C21", "#2684FF", "#36B37E", "#FFAB00", "#6554C0", "#FF7452", "#6B778C" };
+        // Фиолетовая палитра: акцент первым, далее бирюзовый, зелёный, янтарный,
+        // синий, коралловый и нейтральный серый.
+        string[] colors = { "#7C3AED", "#22B8CF", "#2FA36B", "#F0A020", "#3B82F6", "#E4637C", "#6E6880" };
         var color = (Color)ColorConverter.ConvertFromString(colors[Math.Abs(index) % colors.Length]);
         return new SolidColorBrush(color);
     }

@@ -2,48 +2,49 @@
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
     <!-- ==================================================================
-         Тёмная палитра в той же логике, что и светлая: тёмный холст,
-         графитовые поверхности и тот же оранжевый акцент Procore.
-         Ключи совпадают в обеих палитрах: ThemeManager подменяет словарь
-         целиком, а стили ссылаются на кисти через DynamicResource.
+         Тёмная палитра в фиолетовой гамме: почти чёрный лиловый холст,
+         графитовые поверхности с фиолетовым подтоном и светлый фиолетовый
+         акцент. Ключи совпадают со светлой палитрой.
          ================================================================== -->
 
-    <SolidColorBrush x:Key="AppBackgroundBrush" Color="#12161A" />
-    <SolidColorBrush x:Key="SurfaceBrush" Color="#1A1F25" />
-    <SolidColorBrush x:Key="SurfaceAltBrush" Color="#20262E" />
-    <SolidColorBrush x:Key="BorderBrush" Color="#2B333D" />
-    <SolidColorBrush x:Key="BorderStrongBrush" Color="#3C4753" />
-    <SolidColorBrush x:Key="TextPrimaryBrush" Color="#E9ECF1" />
-    <SolidColorBrush x:Key="TextSecondaryBrush" Color="#AEB7C2" />
-    <SolidColorBrush x:Key="TextMutedBrush" Color="#7D8794" />
-    <SolidColorBrush x:Key="TextOnDarkBrush" Color="#F5F7FA" />
-    <SolidColorBrush x:Key="SidebarBrush" Color="#0D1216" />
-    <SolidColorBrush x:Key="SidebarElevatedBrush" Color="#151B22" />
-    <SolidColorBrush x:Key="SidebarHoverBrush" Color="#1D252E" />
-    <SolidColorBrush x:Key="SidebarTextBrush" Color="#AEB7C2" />
-    <SolidColorBrush x:Key="SuccessBrush" Color="#3CC98A" />
-    <SolidColorBrush x:Key="SuccessSoftBrush" Color="#123024" />
-    <SolidColorBrush x:Key="WarningBrush" Color="#FFB020" />
-    <SolidColorBrush x:Key="WarningSoftBrush" Color="#33260F" />
-    <SolidColorBrush x:Key="DangerBrush" Color="#FF7A6B" />
-    <SolidColorBrush x:Key="DangerSoftBrush" Color="#3A1E1B" />
-    <SolidColorBrush x:Key="InfoBrush" Color="#4C9AFF" />
-    <SolidColorBrush x:Key="InfoSoftBrush" Color="#12233A" />
-    <SolidColorBrush x:Key="PurpleBrush" Color="#A78BFA" />
-    <SolidColorBrush x:Key="PurpleSoftBrush" Color="#241B3A" />
+    <SolidColorBrush x:Key="AppBackgroundBrush" Color="#131019" />
+    <SolidColorBrush x:Key="SurfaceBrush" Color="#1A1622" />
+    <SolidColorBrush x:Key="SurfaceAltBrush" Color="#221C2D" />
+    <SolidColorBrush x:Key="BorderBrush" Color="#2E2739" />
+    <SolidColorBrush x:Key="BorderStrongBrush" Color="#443A57" />
+    <SolidColorBrush x:Key="TextPrimaryBrush" Color="#ECE7F5" />
+    <SolidColorBrush x:Key="TextSecondaryBrush" Color="#B3AAC4" />
+    <SolidColorBrush x:Key="TextMutedBrush" Color="#837A96" />
+    <SolidColorBrush x:Key="TextOnDarkBrush" Color="#F3EFFA" />
 
-    <SolidColorBrush x:Key="AccentBrush" Color="#FF7A33" />
-    <SolidColorBrush x:Key="AccentDarkBrush" Color="#F26C21" />
-    <SolidColorBrush x:Key="AccentSoftBrush" Color="#3A2418" />
+    <SolidColorBrush x:Key="SidebarBrush" Color="#0F0B16" />
+    <SolidColorBrush x:Key="SidebarElevatedBrush" Color="#171122" />
+    <SolidColorBrush x:Key="SidebarHoverBrush" Color="#241B33" />
+    <SolidColorBrush x:Key="SidebarTextBrush" Color="#B3AAC4" />
+
+    <SolidColorBrush x:Key="SuccessBrush" Color="#3CC98A" />
+    <SolidColorBrush x:Key="SuccessSoftBrush" Color="#122C22" />
+    <SolidColorBrush x:Key="WarningBrush" Color="#FBBF24" />
+    <SolidColorBrush x:Key="WarningSoftBrush" Color="#33260F" />
+    <SolidColorBrush x:Key="DangerBrush" Color="#FF7A8A" />
+    <SolidColorBrush x:Key="DangerSoftBrush" Color="#3A1B25" />
+    <SolidColorBrush x:Key="InfoBrush" Color="#8B93FF" />
+    <SolidColorBrush x:Key="InfoSoftBrush" Color="#1E1B3A" />
+    <SolidColorBrush x:Key="PurpleBrush" Color="#C4B5FD" />
+    <SolidColorBrush x:Key="PurpleSoftBrush" Color="#2A2143" />
+
+    <SolidColorBrush x:Key="AccentBrush" Color="#A78BFA" />
+    <SolidColorBrush x:Key="AccentDarkBrush" Color="#8B5CF6" />
+    <SolidColorBrush x:Key="AccentSoftBrush" Color="#2E2148" />
 
     <LinearGradientBrush x:Key="AccentGradientBrush" StartPoint="0,0" EndPoint="1,1">
-        <GradientStop Offset="0" Color="#FF9A5C" />
-        <GradientStop Offset="1" Color="#E0550B" />
+        <GradientStop Offset="0" Color="#C4A6FF" />
+        <GradientStop Offset="1" Color="#7C3AED" />
     </LinearGradientBrush>
 
     <LinearGradientBrush x:Key="SidebarGradientBrush" StartPoint="0,0" EndPoint="0,1">
-        <GradientStop Offset="0" Color="#0B0F13" />
-        <GradientStop Offset="1" Color="#141A20" />
+        <GradientStop Offset="0" Color="#0B0810" />
+        <GradientStop Offset="1" Color="#1A1326" />
     </LinearGradientBrush>
 
 </ResourceDictionary>
