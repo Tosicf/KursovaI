@@ -23,7 +23,16 @@ public interface IDialogService
 
     EstimateItem? EditEstimateItem(EstimateItem? item, int estimateId, IReadOnlyList<Material> materials);
 
-    Delivery? EditDelivery(Delivery? delivery, IReadOnlyList<Supplier> suppliers, IReadOnlyList<Project> projects, IReadOnlyList<Material> materials);
+    /// <summary>
+    /// Диалог поступления. Если передан <paramref name="suggested"/> (материалы ниже минимума),
+    /// строки нового документа заполняются автоматически с рекомендованным количеством.
+    /// </summary>
+    Delivery? EditDelivery(
+        Delivery? delivery,
+        IReadOnlyList<Supplier> suppliers,
+        IReadOnlyList<Project> projects,
+        IReadOnlyList<Material> materials,
+        IReadOnlyList<Material>? suggested = null);
 
     MaterialUsage? EditUsage(MaterialUsage? usage, IReadOnlyList<Project> projects, IReadOnlyList<Material> materials, IReadOnlyList<Estimate> estimates, int? currentUserId);
 

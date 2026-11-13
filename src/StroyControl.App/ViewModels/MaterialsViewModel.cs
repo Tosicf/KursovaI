@@ -4,6 +4,7 @@ using System.Windows.Data;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using StroyControl.App.Services;
+using StroyControl.Core.Dtos;
 using StroyControl.Core.Entities;
 using StroyControl.Core.Interfaces;
 
@@ -20,6 +21,8 @@ public sealed partial class MaterialsViewModel : ViewModelBase
 
     private readonly IMaterialRepository _materials;
     private readonly ISupplierRepository _suppliers;
+    private readonly IProjectRepository _projects;
+    private readonly IInventoryService _inventory;
     private readonly IDialogService _dialogs;
     private readonly IToastService _toasts;
     private readonly ISessionService _session;
@@ -27,12 +30,16 @@ public sealed partial class MaterialsViewModel : ViewModelBase
     public MaterialsViewModel(
         IMaterialRepository materials,
         ISupplierRepository suppliers,
+        IProjectRepository projects,
+        IInventoryService inventory,
         IDialogService dialogs,
         IToastService toasts,
         ISessionService session)
     {
         _materials = materials;
         _suppliers = suppliers;
+        _projects = projects;
+        _inventory = inventory;
         _dialogs = dialogs;
         _toasts = toasts;
         _session = session;
@@ -60,6 +67,10 @@ public sealed partial class MaterialsViewModel : ViewModelBase
     public ICollectionView ItemsView { get; }
 
     public bool CanEdit => _session.CanEditMaterials;
+
+    /// <summary>Оформлять поступления могут снабженец, прораб, администратор и инженер.</summary>
+    public bool CanPurchase => _session.CanEditDeliveries;
+
 
     public bool IsEmpty => Items.Count == 0;
 
@@ -119,10 +130,17 @@ public sealed partial class MaterialsViewModel : ViewModelBase
             foreach (var supplier in suppliers)
                 SupplierOptions.Add(supplier);
 
+            // Очистка списка обнуляет SelectedCategory (привязка ComboBox TwoWay) — возвращаем выбор.
+            var previousCategory = SelectedCategory;
+
             Categories.Clear();
             Categories.Add(AllCategories);
             foreach (var category in categories.Where(c => !string.IsNullOrWhiteSpace(c)))
                 Categories.Add(category);
+
+            SelectedCategory = !string.IsNullOrWhiteSpace(previousCategory) && Categories.Contains(previousCategory)
+                ? previousCategory
+                : AllCategories;
 
             UpdateStatistics();
         }, "Не удалось загрузить справочник материалов.");
@@ -131,6 +149,47 @@ public sealed partial class MaterialsViewModel : ViewModelBase
 
         if (!ok && ErrorMessage is not null)
             _toasts.Error("Материалы", ErrorMessage);
+    }
+
+    /// <summary>
+    /// Оформляет поступление по материалам, которые ниже минимума: строки накладной
+    /// уже заполнены, количество рассчитано до двух минимумов.
+    /// </summary>
+    [RelayCommand]
+    private async Task PurchaseDeficitAsync()
+    {
+        if (!CanPurchase)
+        {
+            _toasts.Info("Недостаточно прав", "Оформлять поступления может снабженец, прораб или администратор.");
+            return;
+        }
+
+        try
+        {
+            var materials = await _materials.GetAllWithSupplierAsync();
+            var deficit = PurchasePlanner.Deficit(materials);
+
+            if (deficit.Count == 0)
+            {
+                _toasts.Info("Дефицита нет", "Все материалы обеспечены запасом не ниже минимума.");
+                return;
+            }
+
+            var suppliers = await _suppliers.GetAllAsync();
+            var projects = await _projects.GetAllAsync();
+
+            var delivery = _dialogs.EditDelivery(null, suppliers, projects, materials, deficit);
+            if (delivery is null) return;
+
+            var saved = await _inventory.CreateDeliveryAsync(delivery);
+
+            _toasts.Success("Поступление оформлено", $"{saved.Number} · {saved.ItemsCount} поз. · {saved.Total:N2} BYN");
+            await LoadAsync();
+        }
+        catch (Exception ex)
+        {
+            _toasts.Error("Не удалось оформить поступление", ex.Message);
+        }
     }
 
     [RelayCommand]
@@ -263,7 +322,8 @@ public sealed partial class MaterialsViewModel : ViewModelBase
             if (!matches) return false;
         }
 
-        if (SelectedCategory != AllCategories &&
+        if (!string.IsNullOrWhiteSpace(SelectedCategory) &&
+            !string.Equals(SelectedCategory, AllCategories, StringComparison.OrdinalIgnoreCase) &&
             !string.Equals(material.Category, SelectedCategory, StringComparison.OrdinalIgnoreCase))
             return false;
 

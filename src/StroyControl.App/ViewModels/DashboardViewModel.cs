@@ -1,4 +1,5 @@
 using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
 using StroyControl.App.Services;
 using StroyControl.Core.Dtos;
 using StroyControl.Core.Interfaces;
@@ -11,12 +12,30 @@ public sealed partial class DashboardViewModel : ViewModelBase
     private readonly IDashboardService _dashboardService;
     private readonly IToastService _toasts;
     private readonly ISessionService _session;
+    private readonly IMaterialRepository _materials;
+    private readonly ISupplierRepository _suppliers;
+    private readonly IProjectRepository _projects;
+    private readonly IInventoryService _inventory;
+    private readonly IDialogService _dialogs;
 
-    public DashboardViewModel(IDashboardService dashboardService, IToastService toasts, ISessionService session)
+    public DashboardViewModel(
+        IDashboardService dashboardService,
+        IToastService toasts,
+        ISessionService session,
+        IMaterialRepository materials,
+        ISupplierRepository suppliers,
+        IProjectRepository projects,
+        IInventoryService inventory,
+        IDialogService dialogs)
     {
         _dashboardService = dashboardService;
         _toasts = toasts;
         _session = session;
+        _materials = materials;
+        _suppliers = suppliers;
+        _projects = projects;
+        _inventory = inventory;
+        _dialogs = dialogs;
     }
 
     public override string Title => "Панель управления";
@@ -72,6 +91,50 @@ public sealed partial class DashboardViewModel : ViewModelBase
     public string MaterialsSummary => Data is null
         ? string.Empty
         : $"{Data.MaterialsCount} позиций · {Data.UsagesCount} списаний · {Data.DeliveriesCount} поступлений";
+
+    /// <summary>Роль может оформлять поступления (Снабженец, Прораб, Администратор, Инженер).</summary>
+    public bool CanPurchase => _session.CanEditDeliveries;
+
+    /// <summary>
+    /// Закупка по дефициту: открывает накладную с уже заполненными строками —
+    /// материалы ниже минимума и количество до двух минимумов.
+    /// </summary>
+    [RelayCommand]
+    private async Task PurchaseDeficitAsync()
+    {
+        if (!CanPurchase)
+        {
+            _toasts.Info("Недостаточно прав", "Оформлять поступления может снабженец, прораб или администратор.");
+            return;
+        }
+
+        try
+        {
+            var materials = await _materials.GetAllWithSupplierAsync();
+            var deficit = PurchasePlanner.Deficit(materials);
+
+            if (deficit.Count == 0)
+            {
+                _toasts.Info("Дефицита нет", "Все материалы обеспечены запасом не ниже минимума.");
+                return;
+            }
+
+            var suppliers = await _suppliers.GetAllAsync();
+            var projects = await _projects.GetAllAsync();
+
+            var delivery = _dialogs.EditDelivery(null, suppliers, projects, materials, deficit);
+            if (delivery is null) return;
+
+            var saved = await _inventory.CreateDeliveryAsync(delivery);
+
+            _toasts.Success("Поступление оформлено", $"{saved.Number} · {saved.ItemsCount} поз. · {saved.Total:N2} BYN");
+            await LoadAsync();
+        }
+        catch (Exception ex)
+        {
+            _toasts.Error("Не удалось оформить поступление", ex.Message);
+        }
+    }
 
     public override async Task LoadAsync()
     {

@@ -43,7 +43,7 @@ public sealed class DonutChart : ChartBase
         }
 
         var total = rows.Sum(r => r.Cost);
-        var thickness = Math.Max(14, radius * 0.42);
+        var thickness = Math.Max(14, radius * 0.36);
         var innerRadius = radius - thickness;
 
         var startAngle = -90d;
@@ -59,12 +59,24 @@ public sealed class DonutChart : ChartBase
             startAngle += sweep;
         }
 
-        // Центральная подпись.
-        var totalText = Text(Compact(total), 15, PrimaryTextBrush, FontWeights.Bold, TextAlignment.Center);
-        dc.DrawText(totalText, new Point(center.X - totalText.Width / 2, center.Y - totalText.Height + 2));
+        // Подпись итога строго в центре кольца: блок «сумма + BYN» центрируется и по
+        // горизонтали, и по вертикали относительно center; если сумма шире внутреннего
+        // отверстия, кегль уменьшается, чтобы текст не выходил за кольцо.
+        var holeWidth = Math.Max(24d, (innerRadius - 6) * 2);
+        var fontSize = 15d;
+        var totalText = Text(Compact(total), fontSize, PrimaryTextBrush, FontWeights.Bold);
+        while (totalText.Width > holeWidth && fontSize > 9d)
+        {
+            fontSize -= 1d;
+            totalText = Text(Compact(total), fontSize, PrimaryTextBrush, FontWeights.Bold);
+        }
 
-        var unitText = Text("BYN", 9.5, MutedBrush, null, TextAlignment.Center);
-        dc.DrawText(unitText, new Point(center.X - unitText.Width / 2, center.Y + 3));
+        var unitText = Text("BYN", 9.5, MutedBrush);
+        var blockHeight = totalText.Height + unitText.Height - 2;
+        var blockTop = center.Y - blockHeight / 2;
+
+        dc.DrawText(totalText, new Point(center.X - totalText.Width / 2, blockTop));
+        dc.DrawText(unitText, new Point(center.X - unitText.Width / 2, blockTop + totalText.Height - 2));
 
         // Легенда справа.
         var legendLeft = size + 8;

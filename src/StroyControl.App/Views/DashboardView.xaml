@@ -196,6 +196,18 @@
 
                             <TextBlock Text="Все материалы обеспечены запасом" Style="{StaticResource Caption}"
                                        Visibility="{Binding HasStockAlerts, Converter={StaticResource BoolToVisibility}, ConverterParameter=invert}" />
+
+                            <Button Style="{StaticResource PrimaryButton}" Height="36" Margin="0,14,0,0"
+                                    Command="{Binding PurchaseDeficitCommand}"
+                                    IsEnabled="{Binding CanPurchase}"
+                                    ToolTip="Открыть накладную с заполненными строками: материалы ниже минимума и рекомендованное количество">
+                                <StackPanel Orientation="Horizontal">
+                                    <Path Data="{StaticResource IconTruck}" Stroke="White" StrokeThickness="1.7"
+                                          Width="15" Height="15" Stretch="Uniform" VerticalAlignment="Center"
+                                          StrokeStartLineCap="Round" StrokeLineJoin="Round" />
+                                    <TextBlock Text="Оформить закупку" Foreground="White" Margin="8,0,0,0" VerticalAlignment="Center" />
+                                </StackPanel>
+                            </Button>
                         </StackPanel>
                     </Border>
                 </Grid>

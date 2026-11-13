@@ -122,10 +122,18 @@ public sealed partial class DeliveriesViewModel : ViewModelBase
             foreach (var material in materials.Where(m => m.IsActive))
                 Materials.Add(material);
 
+            // Очистка списка обнуляет SelectedProjectFilter (привязка ComboBox TwoWay) —
+            // запоминаем выбор и возвращаем его, иначе таблица фильтруется в пустоту.
+            var previousFilter = SelectedProjectFilter;
+
             ProjectFilterOptions.Clear();
             ProjectFilterOptions.Add(AllProjects);
             foreach (var project in projects)
                 ProjectFilterOptions.Add(project.Name);
+
+            SelectedProjectFilter = !string.IsNullOrWhiteSpace(previousFilter) && ProjectFilterOptions.Contains(previousFilter)
+                ? previousFilter
+                : AllProjects;
 
             SelectedDelivery = Items.FirstOrDefault(d => d.Id == previousId) ?? Items.FirstOrDefault();
             UpdateStatistics();
@@ -259,7 +267,8 @@ public sealed partial class DeliveriesViewModel : ViewModelBase
             if (!matches) return false;
         }
 
-        return SelectedProjectFilter == AllProjects || delivery.ProjectName == SelectedProjectFilter;
+        return string.IsNullOrWhiteSpace(SelectedProjectFilter) || SelectedProjectFilter == AllProjects
+               || delivery.ProjectName == SelectedProjectFilter;
     }
 
     private void ApplyFilter()

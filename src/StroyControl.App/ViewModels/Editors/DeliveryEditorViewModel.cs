@@ -3,6 +3,7 @@ using System.Collections.Specialized;
 using System.ComponentModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using StroyControl.Core.Dtos;
 using StroyControl.Core.Entities;
 
 namespace StroyControl.App.ViewModels.Editors;
@@ -15,7 +16,8 @@ public sealed partial class DeliveryEditorViewModel : EditorViewModelBase
         Delivery? source,
         IReadOnlyList<Supplier> suppliers,
         IReadOnlyList<Project> projects,
-        IReadOnlyList<Material> materials)
+        IReadOnlyList<Material> materials,
+        IReadOnlyList<Material>? suggested = null)
     {
         _source = source;
         Suppliers = suppliers;
@@ -32,6 +34,25 @@ public sealed partial class DeliveryEditorViewModel : EditorViewModelBase
         Items = new ObservableCollection<DeliveryItemDraft>();
         Items.CollectionChanged += OnItemsCollectionChanged;
 
+        // Закупка по дефициту: строки уже заполнены материалами ниже минимума,
+        // количество рассчитано до двух минимумов (PurchasePlanner).
+        if (source is null && suggested is { Count: > 0 })
+        {
+            foreach (var material in suggested)
+            {
+                Items.Add(new DeliveryItemDraft
+                {
+                    Material = material,
+                    Quantity = PurchasePlanner.SuggestedQuantity(material),
+                    UnitPrice = material.Price
+                });
+            }
+
+            var supplierId = suggested[0].SupplierId;
+            if (supplierId is not null)
+                SelectedSupplier = suppliers.FirstOrDefault(s => s.Id == supplierId) ?? SelectedSupplier;
+        }
+
         if (source is not null)
         {
             foreach (var item in source.Items)
@@ -47,6 +68,7 @@ public sealed partial class DeliveryEditorViewModel : EditorViewModelBase
     }
 
     public override string Title => _source is null ? "Новое поступление материалов" : "Поступление материалов";
+
 
     public override double PreferredWidth => 920;
 

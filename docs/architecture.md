@@ -290,6 +290,8 @@ sequenceDiagram
 
 - **План и факт по объектам** — сгруппированные столбики, красный цвет при перерасходе;
 - **Структура затрат** — кольцевая диаграмма по `Material.Category` (топ-5 + «Прочие»), подпись итога в центре;
+  блок «сумма + BYN» центрируется по обеим осям относительно центра кольца, а кегль автоматически
+  уменьшается, если сумма шире внутреннего отверстия (толщина кольца — 0,36 радиуса);
 - **Динамика по месяцам** — две линии (план пунктиром, факт сплошной) и точки.
 
 Данные агрегирует `DashboardService` (`ProjectBudgets`, `CategoryCosts`, `MonthlyCosts`), диаграммы получают готовые DTO. Цвета берутся из ресурсов темы, при переключении темы контролы перерисовываются по событию `ThemeManager.ThemeChanged`.
@@ -300,9 +302,38 @@ sequenceDiagram
 
 Компоновка: в боковом меню остались восемь рабочих разделов, а «Сотрудники» (только администратор) и «Настройки» переехали в верхнюю панель — рядом с переключателем темы, кнопкой обновления и профилем.
 
+Неявный стиль `TextBlock` в `Controls.xaml` задаёт `Foreground="{DynamicResource TextPrimaryBrush}"`: без него
+текст без явного цвета наследовал системный чёрный и в тёмной теме сливался с фоном. Там же `Foreground` получили
+стили `DatePicker` и корень `MainWindow`; печатный отчёт (`EstimateReportDocument`) сознательно остаётся чёрным
+на белом.
+
+**Фильтры по объекту.** `ComboBox` с привязкой `SelectedProjectFilter` в режиме `TwoWay` при `Options.Clear()`
+записывает в модель `null`, после чего предикат `== AllProjects` не пропускал ни одной строки. Поэтому в
+`EstimatesViewModel`, `UsagesViewModel`, `DeliveriesViewModel` выбранное значение сохраняется перед перезагрузкой
+списка и восстанавливается после (с откатом на «Все объекты»), аналогично восстанавливается категория в
+`MaterialsViewModel`; `null` и пустая строка трактуются как «Все объекты».
+
 Контекстное меню добавлено ко всем таблицам (`DataGrid.ContextMenu`). Команды не дублируются: пункты привязываются к тем же `Edit/Delete/Add/Refresh/ExportCommand` модели представления через `PlacementTarget.DataContext`, а `IsEnabled` — к правам роли (`CanEdit`, `CanManage`, `CanExport`). «Копировать» использует `ApplicationCommands.Copy`, то есть штатное копирование ячеек DataGrid.
 
-## 13. Миграция схемы при обновлении
+## 13. Закупка по дефициту
+
+`PurchasePlanner` (`src/StroyControl.Core/Dtos/PurchasePlanner.cs`) — чистая логика без БД, покрыта тестами
+`tests/StroyControl.Core.Tests/PurchasePlannerTests.cs`:
+
+- `Deficit(materials, limit)` — активные материалы с `StockQuantity ≤ MinStock`, сортировка по нехватке,
+  затем по наименованию;
+- `SuggestedQuantity(material)` — `MinStock × TargetFactor − StockQuantity` (`TargetFactor = 2`), не меньше 1,
+  округление до тысячных `AwayFromZero`;
+- `SuggestedCost(material)` — количество × учётная цена.
+
+Точки входа: команда `PurchaseDeficitCommand` в `MaterialsViewModel` (кнопка «Закупить дефицит») и в
+`DashboardViewModel` (кнопка в карточке «Требуют закупки»). Обе проверяют `Session.CanEditDeliveries`, вызывают
+`IDialogService.EditDelivery(null, suppliers, projects, materials, deficit)` — редактор накладной получает
+необязательный список `suggested` и заполняет `Items` строками `DeliveryItemDraft`, подставляя поставщика
+первого материала, — а затем сохраняют документ через `IInventoryService.CreateDeliveryAsync`, то есть тем же
+транзакционным путём, что и обычное поступление.
+
+## 14. Миграция схемы при обновлении
 
 Схема создаётся `EnsureCreated`, который не изменяет существующую базу, поэтому добавленные поля догоняются идемпотентными командами:
 
