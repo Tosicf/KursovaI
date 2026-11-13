@@ -426,8 +426,12 @@
             </Grid>
 
             <Border BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="10" Padding="6">
-                <DataGrid ItemsSource="{Binding Items}" AutoGenerateColumns="False" CanUserAddRows="False"
-                          HeadersVisibility="Column" RowHeight="50" GridLinesVisibility="None" Background="Transparent"
+                <!-- Style обязателен: без него DataGrid берёт системный шаблон строки
+                     (белый фон) и в тёмной теме строка выглядит светлой полосой. -->
+                <DataGrid Style="{StaticResource DataGridStyle}"
+                          ItemsSource="{Binding Items}" AutoGenerateColumns="False" CanUserAddRows="False"
+                          HeadersVisibility="Column" RowHeight="50" GridLinesVisibility="None"
+                          Background="Transparent" RowBackground="Transparent" AlternatingRowBackground="Transparent"
                           BorderThickness="0" IsReadOnly="True" MaxHeight="220">
                     <DataGrid.ColumnHeaderStyle>
                         <Style TargetType="DataGridColumnHeader" BasedOn="{StaticResource GridHeaderStyle}">
