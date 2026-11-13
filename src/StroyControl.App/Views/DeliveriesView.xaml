@@ -30,6 +30,15 @@
                         <TextBlock Text="Обновить" Margin="8,0,0,0" VerticalAlignment="Center" />
                     </StackPanel>
                 </Button>
+                <Button Style="{StaticResource SecondaryButton}" Margin="0,0,10,0"
+                        Command="{Binding PrintReceiptCommand}"
+                        ToolTip="Товарный чек по выбранной накладной: предпросмотр и печать">
+                    <StackPanel Orientation="Horizontal">
+                        <Path Data="{StaticResource IconEstimates}" Stroke="{DynamicResource TextSecondaryBrush}" StrokeThickness="1.7"
+                              Width="15" Height="15" Stretch="Uniform" VerticalAlignment="Center" />
+                        <TextBlock Text="Товарный чек" Margin="8,0,0,0" VerticalAlignment="Center" />
+                    </StackPanel>
+                </Button>
                 <Button Style="{StaticResource PrimaryButton}" Command="{Binding AddCommand}" IsEnabled="{Binding CanEdit}">
                     <StackPanel Orientation="Horizontal">
                         <Path Data="{StaticResource IconIncoming}" Stroke="White" StrokeThickness="1.9"
@@ -122,6 +131,10 @@
                                       Command="{Binding PlacementTarget.DataContext.EditCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
                                   CommandParameter="{Binding PlacementTarget.SelectedItem, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
                                   IsEnabled="{Binding PlacementTarget.DataContext.CanEdit, RelativeSource={RelativeSource AncestorType=ContextMenu}}" />
+                            <MenuItem Header="Товарный чек…"
+                                      Command="{Binding PlacementTarget.DataContext.PrintReceiptCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
+                                  CommandParameter="{Binding PlacementTarget.SelectedItem, RelativeSource={RelativeSource AncestorType=ContextMenu}}" />
+                            <Separator />
                             <MenuItem Header="Удалить" InputGestureText="Del"
                                       Command="{Binding PlacementTarget.DataContext.DeleteCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
                                   CommandParameter="{Binding PlacementTarget.SelectedItem, RelativeSource={RelativeSource AncestorType=ContextMenu}}"

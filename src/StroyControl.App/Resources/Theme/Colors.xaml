@@ -32,6 +32,7 @@
     <Geometry x:Key="IconDownload">M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4 M7 10l5 5 5-5 M12 15V3</Geometry>
     <Geometry x:Key="IconCheck">M20 6L9 17l-5-5</Geometry>
     <Geometry x:Key="IconFilter">M22 3H2l8 9.46V19l4 2v-8.54z</Geometry>
+    <Geometry x:Key="IconCalendar">M3 4h14v14H3z M3 8h14 M7 2v4 M13 2v4 M7 12h2 M11 12h2</Geometry>
     <Geometry x:Key="IconTruck">M1 3h15v13H1z M16 8h4l3 3v5h-7V8z M5.5 21a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5z M18.5 21a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5z</Geometry>
     <Geometry x:Key="IconLock">M5 11h14v10H5z M8 11V7a4 4 0 0 1 8 0v4</Geometry>
     <Geometry x:Key="IconMoon">M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z</Geometry>

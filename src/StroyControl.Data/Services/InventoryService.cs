@@ -17,14 +17,17 @@ public sealed class InventoryService : IInventoryService
 
     public InventoryService(IDbContextFactory<AppDbContext> factory) => _factory = factory;
 
-    public async Task<Delivery> CreateDeliveryAsync(Delivery delivery, CancellationToken cancellationToken = default)
+    public Task<Delivery> CreateDeliveryAsync(Delivery delivery, CancellationToken cancellationToken = default) =>
+        RunInTransactionAsync(
+            (db, transaction) => CreateDeliveryAsyncCore(delivery, db, transaction, cancellationToken),
+            cancellationToken);
+
+    private async Task<Delivery> CreateDeliveryAsyncCore(Delivery delivery, AppDbContext db, IDbContextTransaction? transaction, CancellationToken cancellationToken)
     {
         var items = NormalizeItems(delivery);
         if (items.Count == 0)
             throw new AppException("В поступлении должна быть хотя бы одна строка с материалом и количеством.");
 
-        await using var db = await _factory.CreateDbContextAsync(cancellationToken);
-        var transaction = await BeginTransactionAsync(db, cancellationToken);
         try
         {
             var materials = await LoadMaterialsAsync(db, items.Select(i => i.MaterialId), cancellationToken);
@@ -59,20 +62,19 @@ public sealed class InventoryService : IInventoryService
             if (transaction is not null) await transaction.RollbackAsync(cancellationToken);
             throw new AppException("Не удалось сохранить поступление: возможно, номер документа уже используется.", ex);
         }
-        finally
-        {
-            if (transaction is not null) await transaction.DisposeAsync();
-        }
     }
 
-    public async Task UpdateDeliveryAsync(Delivery delivery, CancellationToken cancellationToken = default)
+    public Task UpdateDeliveryAsync(Delivery delivery, CancellationToken cancellationToken = default) =>
+        RunInTransactionAsync(
+            (db, transaction) => UpdateDeliveryAsyncCore(delivery, db, transaction, cancellationToken),
+            cancellationToken);
+
+    private async Task UpdateDeliveryAsyncCore(Delivery delivery, AppDbContext db, IDbContextTransaction? transaction, CancellationToken cancellationToken)
     {
         var items = NormalizeItems(delivery);
         if (items.Count == 0)
             throw new AppException("В поступлении должна быть хотя бы одна строка с материалом и количеством.");
 
-        await using var db = await _factory.CreateDbContextAsync(cancellationToken);
-        var transaction = await BeginTransactionAsync(db, cancellationToken);
         try
         {
             var existing = await db.Deliveries
@@ -115,16 +117,15 @@ public sealed class InventoryService : IInventoryService
             if (transaction is not null) await transaction.RollbackAsync(cancellationToken);
             throw new AppException("Не удалось изменить поступление: возможно, номер документа уже используется.", ex);
         }
-        finally
-        {
-            if (transaction is not null) await transaction.DisposeAsync();
-        }
     }
 
-    public async Task DeleteDeliveryAsync(int deliveryId, CancellationToken cancellationToken = default)
+    public Task DeleteDeliveryAsync(int deliveryId, CancellationToken cancellationToken = default) =>
+        RunInTransactionAsync(
+            (db, transaction) => DeleteDeliveryAsyncCore(deliveryId, db, transaction, cancellationToken),
+            cancellationToken);
+
+    private async Task DeleteDeliveryAsyncCore(int deliveryId, AppDbContext db, IDbContextTransaction? transaction, CancellationToken cancellationToken)
     {
-        await using var db = await _factory.CreateDbContextAsync(cancellationToken);
-        var transaction = await BeginTransactionAsync(db, cancellationToken);
         try
         {
             var delivery = await db.Deliveries
@@ -145,18 +146,17 @@ public sealed class InventoryService : IInventoryService
             if (transaction is not null) await transaction.RollbackAsync(cancellationToken);
             throw new AppException("Не удалось удалить поступление.", ex);
         }
-        finally
-        {
-            if (transaction is not null) await transaction.DisposeAsync();
-        }
     }
 
-    public async Task<MaterialUsage> CreateUsageAsync(MaterialUsage usage, CancellationToken cancellationToken = default)
+    public Task<MaterialUsage> CreateUsageAsync(MaterialUsage usage, CancellationToken cancellationToken = default) =>
+        RunInTransactionAsync(
+            (db, transaction) => CreateUsageAsyncCore(usage, db, transaction, cancellationToken),
+            cancellationToken);
+
+    private async Task<MaterialUsage> CreateUsageAsyncCore(MaterialUsage usage, AppDbContext db, IDbContextTransaction? transaction, CancellationToken cancellationToken)
     {
         ValidateUsage(usage);
 
-        await using var db = await _factory.CreateDbContextAsync(cancellationToken);
-        var transaction = await BeginTransactionAsync(db, cancellationToken);
         try
         {
             var material = await db.Materials.FirstOrDefaultAsync(m => m.Id == usage.MaterialId, cancellationToken)
@@ -186,18 +186,17 @@ public sealed class InventoryService : IInventoryService
             if (transaction is not null) await transaction.RollbackAsync(cancellationToken);
             throw new AppException("Не удалось сохранить списание материала.", ex);
         }
-        finally
-        {
-            if (transaction is not null) await transaction.DisposeAsync();
-        }
     }
 
-    public async Task UpdateUsageAsync(MaterialUsage usage, CancellationToken cancellationToken = default)
+    public Task UpdateUsageAsync(MaterialUsage usage, CancellationToken cancellationToken = default) =>
+        RunInTransactionAsync(
+            (db, transaction) => UpdateUsageAsyncCore(usage, db, transaction, cancellationToken),
+            cancellationToken);
+
+    private async Task UpdateUsageAsyncCore(MaterialUsage usage, AppDbContext db, IDbContextTransaction? transaction, CancellationToken cancellationToken)
     {
         ValidateUsage(usage);
 
-        await using var db = await _factory.CreateDbContextAsync(cancellationToken);
-        var transaction = await BeginTransactionAsync(db, cancellationToken);
         try
         {
             var existing = await db.MaterialUsages.FirstOrDefaultAsync(u => u.Id == usage.Id, cancellationToken)
@@ -228,16 +227,15 @@ public sealed class InventoryService : IInventoryService
             if (transaction is not null) await transaction.RollbackAsync(cancellationToken);
             throw new AppException("Не удалось изменить списание материала.", ex);
         }
-        finally
-        {
-            if (transaction is not null) await transaction.DisposeAsync();
-        }
     }
 
-    public async Task DeleteUsageAsync(int usageId, CancellationToken cancellationToken = default)
+    public Task DeleteUsageAsync(int usageId, CancellationToken cancellationToken = default) =>
+        RunInTransactionAsync(
+            (db, transaction) => DeleteUsageAsyncCore(usageId, db, transaction, cancellationToken),
+            cancellationToken);
+
+    private async Task DeleteUsageAsyncCore(int usageId, AppDbContext db, IDbContextTransaction? transaction, CancellationToken cancellationToken)
     {
-        await using var db = await _factory.CreateDbContextAsync(cancellationToken);
-        var transaction = await BeginTransactionAsync(db, cancellationToken);
         try
         {
             var usage = await db.MaterialUsages.FirstOrDefaultAsync(u => u.Id == usageId, cancellationToken)
@@ -254,10 +252,6 @@ public sealed class InventoryService : IInventoryService
         {
             if (transaction is not null) await transaction.RollbackAsync(cancellationToken);
             throw new AppException("Не удалось удалить списание материала.", ex);
-        }
-        finally
-        {
-            if (transaction is not null) await transaction.DisposeAsync();
         }
     }
 
@@ -293,6 +287,45 @@ public sealed class InventoryService : IInventoryService
         var materials = await db.Materials.Where(m => ids.Contains(m.Id)).ToListAsync(cancellationToken);
         return materials.ToDictionary(m => m.Id);
     }
+
+    /// <summary>
+    /// Выполняет операцию в транзакции через стратегию выполнения EF Core.
+    /// При включённом <c>EnableRetryOnFailure</c> используется
+    /// <c>SqlServerRetryingExecutionStrategy</c>, которая запрещает открывать транзакцию
+    /// вручную («...does not support user-initiated transactions»). Поэтому транзакция
+    /// и все запросы выполняются внутри <c>ExecuteAsync</c>, а контекст создаётся заново
+    /// на каждую попытку — повтор не тащит за собой уже отслеживаемые сущности.
+    /// </summary>
+    private async Task<T> RunInTransactionAsync<T>(
+        Func<AppDbContext, IDbContextTransaction?, CancellationToken, Task<T>> body,
+        CancellationToken cancellationToken)
+    {
+        await using var probe = await _factory.CreateDbContextAsync(cancellationToken);
+        var strategy = probe.Database.CreateExecutionStrategy();
+
+        return await strategy.ExecuteAsync(async () =>
+        {
+            await using var db = await _factory.CreateDbContextAsync(cancellationToken);
+            var transaction = await BeginTransactionAsync(db, cancellationToken);
+            try
+            {
+                return await body(db, transaction, cancellationToken);
+            }
+            finally
+            {
+                if (transaction is not null) await transaction.DisposeAsync();
+            }
+        });
+    }
+
+    private async Task RunInTransactionAsync(
+        Func<AppDbContext, IDbContextTransaction?, CancellationToken, Task> body,
+        CancellationToken cancellationToken) =>
+        await RunInTransactionAsync<bool>(async (db, transaction, ct) =>
+        {
+            await body(db, transaction, ct);
+            return true;
+        }, cancellationToken);
 
     private static Task<IDbContextTransaction?> BeginTransactionAsync(AppDbContext db, CancellationToken cancellationToken)
     {

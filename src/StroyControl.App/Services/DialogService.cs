@@ -1,4 +1,5 @@
 using System.Windows;
+using StroyControl.App.Startup;
 using StroyControl.App.ViewModels;
 using StroyControl.App.ViewModels.Editors;
 using StroyControl.App.Views.Dialogs;
@@ -8,6 +9,10 @@ namespace StroyControl.App.Services;
 
 public sealed class DialogService : IDialogService
 {
+    private readonly AppEnvironment _environment;
+
+    public DialogService(AppEnvironment environment) => _environment = environment;
+
     public bool ShowEditor(EditorViewModelBase viewModel)
     {
         var window = new EditorWindow { DataContext = viewModel };
@@ -92,6 +97,16 @@ public sealed class DialogService : IDialogService
     public void ShowEstimateReport(Estimate estimate)
     {
         var window = new EstimateReportWindow(new EstimateReportViewModel(estimate));
+        var owner = Application.Current?.MainWindow;
+        if (owner is not null && owner.IsVisible)
+            window.Owner = owner;
+
+        window.ShowDialog();
+    }
+
+    public void ShowPurchaseReceipt(Delivery delivery)
+    {
+        var window = new PurchaseReceiptWindow(delivery, _environment.Organization);
         var owner = Application.Current?.MainWindow;
         if (owner is not null && owner.IsVisible)
             window.Owner = owner;
