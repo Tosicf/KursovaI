@@ -2,9 +2,12 @@
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
     <!-- ==================== Типографика ==================== -->
+    <!-- Неявный стиль: Foreground обязателен через DynamicResource, иначе в тёмной теме
+         текст остаётся системным (чёрным) — например, в ячейках DataGrid и заголовках. -->
     <Style TargetType="TextBlock">
         <Setter Property="FontFamily" Value="Segoe UI" />
         <Setter Property="FontSize" Value="13" />
+        <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}" />
         <Setter Property="TextOptions.TextFormattingMode" Value="Display" />
     </Style>
 
@@ -349,6 +352,7 @@
     <Style TargetType="DatePicker">
         <Setter Property="FontFamily" Value="Segoe UI" />
         <Setter Property="FontSize" Value="13" />
+        <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}" />
         <Setter Property="Height" Value="40" />
         <Setter Property="Background" Value="{DynamicResource SurfaceBrush}" />
         <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}" />

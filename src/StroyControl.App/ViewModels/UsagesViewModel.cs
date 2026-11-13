@@ -124,10 +124,18 @@ public sealed partial class UsagesViewModel : ViewModelBase
             foreach (var estimate in estimates)
                 Estimates.Add(estimate);
 
+            // Очистка списка обнуляет SelectedProjectFilter (привязка ComboBox TwoWay) —
+            // запоминаем выбор и возвращаем его, иначе таблица фильтруется в пустоту.
+            var previousFilter = SelectedProjectFilter;
+
             ProjectFilterOptions.Clear();
             ProjectFilterOptions.Add(AllProjects);
             foreach (var project in projects)
                 ProjectFilterOptions.Add(project.Name);
+
+            SelectedProjectFilter = !string.IsNullOrWhiteSpace(previousFilter) && ProjectFilterOptions.Contains(previousFilter)
+                ? previousFilter
+                : AllProjects;
 
             SelectedUsage = Items.FirstOrDefault(u => u.Id == previousId) ?? Items.FirstOrDefault();
             UpdateStatistics();
@@ -260,7 +268,8 @@ public sealed partial class UsagesViewModel : ViewModelBase
             if (!matches) return false;
         }
 
-        return SelectedProjectFilter == AllProjects || usage.ProjectName == SelectedProjectFilter;
+        return string.IsNullOrWhiteSpace(SelectedProjectFilter) || SelectedProjectFilter == AllProjects
+               || usage.ProjectName == SelectedProjectFilter;
     }
 
     private void ApplyFilter()

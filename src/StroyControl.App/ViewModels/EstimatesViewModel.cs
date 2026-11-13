@@ -141,10 +141,18 @@ public sealed partial class EstimatesViewModel : ViewModelBase
             foreach (var material in materials.Where(m => m.IsActive))
                 Materials.Add(material);
 
+            // Очистка списка обнуляет SelectedProjectFilter (привязка ComboBox TwoWay) —
+            // запоминаем выбор и возвращаем его, иначе таблица фильтруется в пустоту.
+            var previousFilter = SelectedProjectFilter;
+
             ProjectFilterOptions.Clear();
             ProjectFilterOptions.Add(AllProjects);
             foreach (var project in projects)
                 ProjectFilterOptions.Add(project.Name);
+
+            SelectedProjectFilter = !string.IsNullOrWhiteSpace(previousFilter) && ProjectFilterOptions.Contains(previousFilter)
+                ? previousFilter
+                : AllProjects;
 
             SelectedEstimate = Estimates.FirstOrDefault(e => e.Id == previousId) ?? Estimates.FirstOrDefault();
             UpdateStatistics();
@@ -398,7 +406,8 @@ public sealed partial class EstimatesViewModel : ViewModelBase
             if (!matches) return false;
         }
 
-        return SelectedProjectFilter == AllProjects || estimate.ProjectName == SelectedProjectFilter;
+        return string.IsNullOrWhiteSpace(SelectedProjectFilter) || SelectedProjectFilter == AllProjects
+               || estimate.ProjectName == SelectedProjectFilter;
     }
 
     private void ApplyFilter()

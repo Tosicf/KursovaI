@@ -72,9 +72,14 @@ public sealed class DialogService : IDialogService
         return ShowEditor(vm) ? vm.BuildEntity() : null;
     }
 
-    public Delivery? EditDelivery(Delivery? delivery, IReadOnlyList<Supplier> suppliers, IReadOnlyList<Project> projects, IReadOnlyList<Material> materials)
+    public Delivery? EditDelivery(
+        Delivery? delivery,
+        IReadOnlyList<Supplier> suppliers,
+        IReadOnlyList<Project> projects,
+        IReadOnlyList<Material> materials,
+        IReadOnlyList<Material>? suggested = null)
     {
-        var vm = new DeliveryEditorViewModel(delivery, suppliers, projects, materials);
+        var vm = new DeliveryEditorViewModel(delivery, suppliers, projects, materials, suggested);
         return ShowEditor(vm) ? vm.BuildEntity() : null;
     }
 

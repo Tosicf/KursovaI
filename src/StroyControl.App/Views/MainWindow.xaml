@@ -11,6 +11,7 @@
         WindowState="Maximized"
         WindowStartupLocation="CenterScreen"
         Background="{DynamicResource AppBackgroundBrush}"
+        Foreground="{DynamicResource TextPrimaryBrush}"
         FontFamily="Segoe UI"
         TextOptions.TextFormattingMode="Display">
 

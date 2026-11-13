@@ -31,6 +31,16 @@
                         <TextBlock Text="Обновить" Margin="8,0,0,0" VerticalAlignment="Center" />
                     </StackPanel>
                 </Button>
+                <Button Style="{StaticResource SecondaryButton}" Command="{Binding PurchaseDeficitCommand}"
+                        IsEnabled="{Binding CanPurchase}" Margin="0,0,10,0"
+                        ToolTip="Поступление по дефициту: строки заполнятся материалами ниже минимума">
+                    <StackPanel Orientation="Horizontal">
+                        <Path Data="{StaticResource IconTruck}" Stroke="{DynamicResource TextSecondaryBrush}" StrokeThickness="1.7"
+                              Width="15" Height="15" Stretch="Uniform" VerticalAlignment="Center"
+                              StrokeStartLineCap="Round" StrokeLineJoin="Round" />
+                        <TextBlock Text="Закупить дефицит" Margin="8,0,0,0" VerticalAlignment="Center" />
+                    </StackPanel>
+                </Button>
                 <Button Style="{StaticResource PrimaryButton}" Command="{Binding AddCommand}" IsEnabled="{Binding CanEdit}">
                     <StackPanel Orientation="Horizontal">
                         <Path Data="{StaticResource IconPlus}" Stroke="White" StrokeThickness="2"
