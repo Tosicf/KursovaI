@@ -4,38 +4,55 @@ using System.Windows.Threading;
 
 namespace StroyControl.App.Views;
 
+/// <summary>
+/// Форма «Анализ отклонений». Отдельный код нужен из-за особенности WPF: в таблице
+/// с группировкой колонка с Width="*" при первом показе окна получает неверную ширину,
+/// и все столбцы, кроме первого, уезжают за правый край (помогало только свёртывание
+/// и повторное развёртывание окна). Поэтому «Материал» имеет обычную ширину, а растягивается
+/// по фактическому размеру таблицы вручную — см. <see cref="FitNameColumn"/>.
+/// </summary>
 public partial class DeviationsView : UserControl
 {
+    private const double NameColumnMinWidth = 240d;
+    private const double NameColumnMaxWidth = 900d;
+
+    /// <summary>Место под рамку таблицы, отступы и вертикальную полосу прокрутки.</summary>
+    private const double ReservedWidth = 40d;
+
     public DeviationsView()
     {
         InitializeComponent();
-        Loaded += OnLoaded;
+
+        // После полной раскладки окна ширина таблицы уже настоящая — подгоняем колонку.
+        Loaded += (_, _) => Dispatcher.BeginInvoke(new Action(FitNameColumn), DispatcherPriority.Loaded);
     }
 
-    private void OnLoaded(object sender, RoutedEventArgs e) =>
-        Dispatcher.BeginInvoke(new Action(RecalculateColumns), DispatcherPriority.Loaded);
+    private void OnRowsGridSizeChanged(object sender, SizeChangedEventArgs e) => FitNameColumn();
 
     /// <summary>
-    /// WPF при первом показе таблицы с группировкой иногда считает «резиновую» колонку
-    /// по неполной ширине: она забирает всё окно, а остальные столбцы уезжают за край.
-    /// Повторное присвоение звёздной ширины заставляет DataGrid пересчитать ширины всех
-    /// столбцов уже по фактическому размеру таблицы.
+    /// Растягивает колонку «Материал» на всё свободное место таблицы: суммарная ширина
+    /// остальных столбцов вычитается из фактической ширины DataGrid.
     /// </summary>
-    private void RecalculateColumns()
+    private void FitNameColumn()
     {
-        if (RowsGrid.Columns.Count == 0) return;
+        if (RowsGrid is null || RowsGrid.Columns.Count == 0) return;
 
-        var column = RowsGrid.Columns[0];
-        if (column.Width.UnitType != DataGridLengthUnitType.Star) return;
+        var total = RowsGrid.ActualWidth;
+        if (total <= 0) return;
 
-        var min = column.MinWidth;
-        var max = column.MaxWidth;
+        double used = 0;
+        for (var i = 1; i < RowsGrid.Columns.Count; i++)
+        {
+            var column = RowsGrid.Columns[i];
+            used += column.ActualWidth > 0 ? column.ActualWidth : column.Width.Value;
+        }
 
-        column.MinWidth = 0;
-        column.MaxWidth = double.PositiveInfinity;
-        column.Width = new DataGridLength(min > 0 ? min : 240);
-        column.Width = new DataGridLength(1, DataGridLengthUnitType.Star);
-        column.MinWidth = min;
-        column.MaxWidth = max;
+        var available = total - used - ReservedWidth;
+        var target = Math.Max(NameColumnMinWidth, Math.Min(NameColumnMaxWidth, available));
+
+        var nameColumn = RowsGrid.Columns[0];
+        if (nameColumn.Width.IsAbsolute && Math.Abs(nameColumn.Width.Value - target) < 4d) return;
+
+        nameColumn.Width = new DataGridLength(target);
     }
 }
