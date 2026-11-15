@@ -52,7 +52,11 @@
                     <TextBox Text="{Binding StockQuantity, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource NumericTextBox}" />
                 </StackPanel>
                 <StackPanel Grid.Column="1">
-                    <TextBlock Text="Минимальный запас" Style="{StaticResource FieldLabel}" />
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="Минимальный запас" Style="{StaticResource FieldLabel}" />
+                        <TextBlock Style="{StaticResource InfoHint}"
+                                   ToolTip="Страховой порог: когда остаток опускается до него, материал попадает в дефицит. Можно пересчитать по сметам кнопкой «Мин. запас по сметам» на странице «Материалы»: минимум = потребность по сметам − остаток." />
+                    </StackPanel>
                     <TextBox Text="{Binding MinStock, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource NumericTextBox}" />
                 </StackPanel>
             </Grid>

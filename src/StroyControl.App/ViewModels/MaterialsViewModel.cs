@@ -25,6 +25,7 @@ public sealed partial class MaterialsViewModel : ViewModelBase
     private readonly IProjectRepository _projects;
     private readonly IDeliveryRepository _deliveries;
     private readonly IInventoryService _inventory;
+    private readonly IMinStockService _minStock;
     private readonly IDialogService _dialogs;
     private readonly IToastService _toasts;
     private readonly ISessionService _session;
@@ -35,6 +36,7 @@ public sealed partial class MaterialsViewModel : ViewModelBase
         IProjectRepository projects,
         IDeliveryRepository deliveries,
         IInventoryService inventory,
+        IMinStockService minStock,
         IDialogService dialogs,
         IToastService toasts,
         ISessionService session)
@@ -44,6 +46,7 @@ public sealed partial class MaterialsViewModel : ViewModelBase
         _projects = projects;
         _deliveries = deliveries;
         _inventory = inventory;
+        _minStock = minStock;
         _dialogs = dialogs;
         _toasts = toasts;
         _session = session;
@@ -309,6 +312,57 @@ public sealed partial class MaterialsViewModel : ViewModelBase
 
             UpdateStatistics();
             _toasts.Error("Не удалось удалить материал", ex.Message);
+        }
+    }
+
+    /// <summary>
+    /// Пересчитывает минимальный (страховой) запас по потребности смет: минимум равен
+    /// тому, сколько материала ещё нужно под оставшийся объём работ с учётом остатка.
+    /// </summary>
+    [RelayCommand]
+    private async Task RecalculateMinStockAsync()
+    {
+        if (!CanEdit)
+        {
+            _toasts.Info("Недостаточно прав", "Изменять минимальный запас может администратор или инженер.");
+            return;
+        }
+
+        try
+        {
+            var suggestions = await _minStock.BuildSuggestionsAsync();
+            var changes = suggestions.Where(s => s.HasChanges).ToList();
+
+            if (suggestions.Count == 0)
+            {
+                _toasts.Info("Нет данных по сметам", "Ни один материал не встречается в действующих сметах.");
+                return;
+            }
+
+            if (changes.Count == 0)
+            {
+                _toasts.Info("Пересчёт не нужен", $"Минимальный запас соответствует сметам по {suggestions.Count} материалам.");
+                return;
+            }
+
+            var increases = changes.Count(c => c.Delta > 0);
+            var decreases = changes.Count - increases;
+
+            var message =
+                $"Пересчитать минимальный запас по действующим сметам?\n\n" +
+                $"Всего материалов в сметах: {suggestions.Count}\n" +
+                $"Изменится значений: {changes.Count} (увеличится {increases}, уменьшится {decreases})\n\n" +
+                "Минимум = потребность по сметам − остаток на складе.";
+
+            if (!_dialogs.Confirm("Минимальный запас по сметам", message, "Пересчитать")) return;
+
+            var updated = await _minStock.ApplyAsync(changes);
+            _toasts.Success("Минимальный запас обновлён", $"Изменено материалов: {updated}");
+            await LoadAsync();
+        }
+        catch (Exception ex)
+        {
+            _toasts.Error("Не удалось пересчитать минимальный запас", ex.Message);
         }
     }
 

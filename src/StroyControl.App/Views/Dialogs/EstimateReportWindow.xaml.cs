@@ -10,7 +10,7 @@ namespace StroyControl.App.Views.Dialogs;
 
 /// <summary>
 /// Окно отчёта по смете: предпросмотр печатного документа, настройка коэффициентов,
-/// выгрузка в Excel/CSV и печать (в том числе в PDF через «Microsoft Print to PDF»).
+/// выгрузка в Excel/CSV/PDF и печать.
 /// </summary>
 public partial class EstimateReportWindow : Window
 {
@@ -51,12 +51,23 @@ public partial class EstimateReportWindow : Window
 
     private void OnPdfClick(object sender, RoutedEventArgs e)
     {
+        var dialog = new SaveFileDialog
+        {
+            Title = "Сохранить отчёт по смете в PDF",
+            FileName = _exporter.DefaultFileName(_viewModel.Report, "pdf"),
+            Filter = "Файл PDF (*.pdf)|*.pdf|Все файлы (*.*)|*.*",
+            AddExtension = true,
+            OverwritePrompt = true
+        };
+
+        if (dialog.ShowDialog(this) != true) return;
+
         var document = EstimateReportDocument.Build(_viewModel.Report);
 
-        if (PdfPrinter.TryPrint(document, $"Смета {_viewModel.Report.Number}", out var error))
+        if (PdfExporter.TryExport(document, dialog.FileName, out var error))
         {
-            MessageBox.Show(this, "Готово: PDF сохранён через принтер «Microsoft Print to PDF».",
-                "PDF", MessageBoxButton.OK, MessageBoxImage.Information);
+            MessageBox.Show(this, $"PDF сохранён:\n{dialog.FileName}", "PDF",
+                MessageBoxButton.OK, MessageBoxImage.Information);
             return;
         }
 

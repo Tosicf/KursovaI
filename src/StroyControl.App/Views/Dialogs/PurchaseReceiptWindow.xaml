@@ -44,7 +44,10 @@
                         <Button.ContextMenu>
                             <ContextMenu>
                                 <MenuItem Header="Печать…" Click="OnPrintClick" />
+                                <Separator />
                                 <MenuItem Header="PDF" Click="OnPdfClick" />
+                                <MenuItem Header="Excel (.xlsx)" Click="OnExcelClick" />
+                                <MenuItem Header="CSV (.csv)" Click="OnCsvClick" />
                             </ContextMenu>
                         </Button.ContextMenu>
                     </Button>

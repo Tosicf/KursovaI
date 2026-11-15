@@ -19,8 +19,9 @@
 
             <StackPanel>
                 <TextBlock Text="Справочник материалов и остатков на складе" Style="{StaticResource Caption}" FontSize="12.5" />
-                <TextBlock Text="Учётная цена, страховой запас и привязка к поставщику" Style="{StaticResource Caption}"
-                           FontSize="11" Foreground="{DynamicResource TextMutedBrush}" Margin="0,3,0,0" />
+                <TextBlock Text="Учётная цена, страховой запас и привязка к поставщику · минимальный запас считается по сметам"
+                           Style="{StaticResource Caption}" FontSize="11" Foreground="{DynamicResource TextMutedBrush}"
+                           Margin="0,3,0,0" />
             </StackPanel>
 
             <StackPanel Grid.Column="1" Orientation="Horizontal">
@@ -29,6 +30,16 @@
                         <Path Data="{StaticResource IconRefresh}" Stroke="{DynamicResource TextSecondaryBrush}" StrokeThickness="1.7"
                               Width="15" Height="15" Stretch="Uniform" VerticalAlignment="Center" />
                         <TextBlock Text="Обновить" Margin="8,0,0,0" VerticalAlignment="Center" />
+                    </StackPanel>
+                </Button>
+                <Button Style="{StaticResource SecondaryButton}" Command="{Binding RecalculateMinStockCommand}"
+                        IsEnabled="{Binding CanEdit}" Margin="0,0,10,0"
+                        ToolTip="Минимальный запас = потребность по действующим сметам − остаток на складе">
+                    <StackPanel Orientation="Horizontal">
+                        <Path Data="{StaticResource IconEstimates}" Stroke="{DynamicResource TextSecondaryBrush}" StrokeThickness="1.7"
+                              Width="15" Height="15" Stretch="Uniform" VerticalAlignment="Center"
+                              StrokeStartLineCap="Round" StrokeLineJoin="Round" />
+                        <TextBlock Text="Мин. запас по сметам" Margin="8,0,0,0" VerticalAlignment="Center" />
                     </StackPanel>
                 </Button>
                 <Button Style="{StaticResource SecondaryButton}" Command="{Binding PurchaseDeficitCommand}"

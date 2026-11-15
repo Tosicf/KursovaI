@@ -17,7 +17,7 @@ namespace StroyControl.App.Views.Dialogs;
 public partial class DeviationReportWindow : Window
 {
     private readonly DeviationReport _report;
-    private readonly CsvReportExporter _csv = new();
+    private readonly DeviationReportExporter _exporter = new();
 
     public DeviationReportWindow(DeviationReport report)
     {
@@ -61,6 +61,25 @@ public partial class DeviationReportWindow : Window
         menu.IsOpen = true;
     }
 
+    private async void OnExcelClick(object sender, RoutedEventArgs e)
+    {
+        var path = AskPath("Сохранить отчёт в Excel", "xlsx",
+            "Книга Excel (*.xlsx)|*.xlsx|Все файлы (*.*)|*.*");
+
+        if (path is null) return;
+
+        try
+        {
+            await _exporter.ExportXlsxAsync(_report, path);
+            MessageBox.Show(this, $"Отчёт сохранён:\n{path}", "Excel", MessageBoxButton.OK, MessageBoxImage.Information);
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show(this, $"Не удалось сохранить файл.\n\n{ex.Message}", "Excel",
+                MessageBoxButton.OK, MessageBoxImage.Error);
+        }
+    }
+
     private async void OnCsvClick(object sender, RoutedEventArgs e)
     {
         var path = AskPath("Сохранить отчёт в CSV", "csv",
@@ -70,7 +89,7 @@ public partial class DeviationReportWindow : Window
 
         try
         {
-            await _csv.ExportDeviationReportAsync(_report, path);
+            await _exporter.ExportCsvAsync(_report, path);
             MessageBox.Show(this, $"Отчёт сохранён:\n{path}", "CSV", MessageBoxButton.OK, MessageBoxImage.Information);
         }
         catch (Exception ex)
@@ -82,12 +101,14 @@ public partial class DeviationReportWindow : Window
 
     private void OnPdfClick(object sender, RoutedEventArgs e)
     {
+        var path = AskPath("Сохранить отчёт в PDF", "pdf", "Файл PDF (*.pdf)|*.pdf|Все файлы (*.*)|*.*");
+        if (path is null) return;
+
         var document = DeviationReportDocument.Build(_report);
 
-        if (PdfPrinter.TryPrint(document, $"Отклонения {_report.ScopeName}", out var error))
+        if (PdfExporter.TryExport(document, path, out var error))
         {
-            MessageBox.Show(this, "Готово: PDF сохранён через принтер «Microsoft Print to PDF».",
-                "PDF", MessageBoxButton.OK, MessageBoxImage.Information);
+            MessageBox.Show(this, $"PDF сохранён:\n{path}", "PDF", MessageBoxButton.OK, MessageBoxImage.Information);
             return;
         }
 
@@ -127,7 +148,7 @@ public partial class DeviationReportWindow : Window
         var dialog = new SaveFileDialog
         {
             Title = title,
-            FileName = _csv.DefaultFileName(_report).Replace(".csv", "." + extension),
+            FileName = _exporter.DefaultFileName(_report, extension),
             Filter = filter,
             AddExtension = true,
             OverwritePrompt = true

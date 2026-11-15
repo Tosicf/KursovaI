@@ -603,6 +603,8 @@
 
     <Style x:Key="DataGridStyle" TargetType="DataGrid">
         <Setter Property="AutoGenerateColumns" Value="False" />
+        <!-- Столбцы нельзя перетаскивать: порядок задан в разметке и не должен «плыть» -->
+        <Setter Property="CanUserReorderColumns" Value="False" />
         <Setter Property="CanUserAddRows" Value="False" />
         <Setter Property="CanUserDeleteRows" Value="False" />
         <Setter Property="IsReadOnly" Value="True" />
@@ -690,11 +692,34 @@
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="ContextMenu">
-                    <Border Background="{DynamicResource SurfaceBrush}" BorderBrush="{DynamicResource BorderStrongBrush}"
+                    <Border x:Name="Root" Background="{DynamicResource SurfaceBrush}" BorderBrush="{DynamicResource BorderStrongBrush}"
                             BorderThickness="1" CornerRadius="10" Padding="4" MinWidth="196"
-                            SnapsToDevicePixels="True">
+                            SnapsToDevicePixels="True" Opacity="0" RenderTransformOrigin="0.5,0">
+                        <Border.RenderTransform>
+                            <TranslateTransform Y="-10" />
+                        </Border.RenderTransform>
                         <StackPanel IsItemsHost="True" KeyboardNavigation.DirectionalNavigation="Cycle" />
                     </Border>
+                    <ControlTemplate.Triggers>
+                        <!-- Меню «выпадает» сверху: сдвиг вниз с легким отскоком и проявление -->
+                        <Trigger Property="IsOpen" Value="True">
+                            <Trigger.EnterActions>
+                                <BeginStoryboard>
+                                    <Storyboard>
+                                        <DoubleAnimation Storyboard.TargetName="Root" Storyboard.TargetProperty="Opacity"
+                                                         From="0" To="1" Duration="0:0:0.12" />
+                                        <DoubleAnimation Storyboard.TargetName="Root"
+                                                         Storyboard.TargetProperty="(UIElement.RenderTransform).(TranslateTransform.Y)"
+                                                         From="-14" To="0" Duration="0:0:0.22">
+                                            <DoubleAnimation.EasingFunction>
+                                                <BackEase EasingMode="EaseOut" Amplitude="0.35" />
+                                            </DoubleAnimation.EasingFunction>
+                                        </DoubleAnimation>
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </Trigger.EnterActions>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
                 </ControlTemplate>
             </Setter.Value>
         </Setter>
