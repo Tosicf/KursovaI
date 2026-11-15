@@ -8,6 +8,7 @@
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
 
@@ -18,13 +19,11 @@
                 <ColumnDefinition Width="Auto" />
             </Grid.ColumnDefinitions>
 
-            <StackPanel>
+            <StackPanel VerticalAlignment="Center">
                 <TextBlock Text="Отклонения фактического расхода от сметы" Style="{StaticResource Caption}" FontSize="12.5" />
-                <StackPanel Orientation="Horizontal" Margin="0,3,0,0">
-                    <TextBlock Text="Порог внимания — 5 %, критично — 10 % от сметной стоимости позиции" Style="{StaticResource Caption}"
-                               FontSize="11" Foreground="{DynamicResource TextMutedBrush}" />
-                    <TextBlock Style="{StaticResource InfoHint}" FontSize="11.5" ToolTip="Отклонение по количеству = факт − план. Отклонение по цене = фактическая цена − сметная цена; фактическая цена = стоимость списаний ÷ израсходованное количество (средневзвешенная). Отклонение по стоимости = факт − план, процент = отклонение ÷ план × 100 %. Оценка: до 5 % — в норме, 5–10 % — внимание, от 10 % — критично (по модулю процента). Положительное отклонение — перерасход, отрицательное — экономия." />
-                </StackPanel>
+                <TextBlock Text="План сметы против фактических списаний · порог внимания 5 %, критично 10 %"
+                           Style="{StaticResource Caption}" FontSize="11" Foreground="{DynamicResource TextMutedBrush}"
+                           Margin="0,3,0,0" />
             </StackPanel>
 
             <StackPanel Grid.Column="1" Orientation="Horizontal">
@@ -35,17 +34,33 @@
                         <TextBlock Text="Пересчитать" Margin="8,0,0,0" VerticalAlignment="Center" />
                     </StackPanel>
                 </Button>
-                <Button Style="{StaticResource SecondaryButton}" Command="{Binding ExportCommand}"
-                        IsEnabled="{Binding CanExport}" Margin="0,0,10,0"
-                        ToolTip="Быстрая выгрузка в CSV">
+                <Button Style="{StaticResource SecondaryButton}" IsEnabled="{Binding CanExport}" Margin="0,0,10,0"
+                        ToolTip="Выбрать формат файла отчёта">
                     <StackPanel Orientation="Horizontal">
                         <Path Data="{StaticResource IconDownload}" Stroke="{DynamicResource TextSecondaryBrush}" StrokeThickness="1.9"
                               Width="15" Height="15" Stretch="Uniform" VerticalAlignment="Center" />
-                        <TextBlock Text="CSV" Margin="8,0,0,0" VerticalAlignment="Center" />
+                        <TextBlock Text="Экспорт" Margin="8,0,6,0" VerticalAlignment="Center" />
+                        <Path Data="M6 9l6 6 6-6" Stroke="{DynamicResource TextSecondaryBrush}" StrokeThickness="1.8"
+                              Width="10" Height="10" Stretch="Uniform" VerticalAlignment="Center"
+                              StrokeStartLineCap="Round" StrokeLineJoin="Round" />
                     </StackPanel>
+                    <Button.ContextMenu>
+                        <ContextMenu>
+                            <MenuItem Header="Excel (.xlsx)"
+                                      Command="{Binding PlacementTarget.DataContext.ExportExcelCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
+                                      IsEnabled="{Binding PlacementTarget.DataContext.CanExport, RelativeSource={RelativeSource AncestorType=ContextMenu}}" />
+                            <MenuItem Header="CSV (.csv)"
+                                      Command="{Binding PlacementTarget.DataContext.ExportCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
+                                      IsEnabled="{Binding PlacementTarget.DataContext.CanExport, RelativeSource={RelativeSource AncestorType=ContextMenu}}" />
+                            <Separator />
+                            <MenuItem Header="PDF"
+                                      Command="{Binding PlacementTarget.DataContext.ExportPdfCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
+                                      IsEnabled="{Binding PlacementTarget.DataContext.CanExport, RelativeSource={RelativeSource AncestorType=ContextMenu}}" />
+                        </ContextMenu>
+                    </Button.ContextMenu>
                 </Button>
                 <Button Style="{StaticResource PrimaryButton}" Command="{Binding OpenReportCommand}"
-                        ToolTip="Печатный отчёт: предпросмотр, печать, CSV и PDF">
+                        ToolTip="Печатный отчёт: предпросмотр, печать, Excel, CSV и PDF">
                     <StackPanel Orientation="Horizontal">
                         <Path Data="{StaticResource IconEstimates}" Stroke="White" StrokeThickness="1.7"
                               Width="15" Height="15" Stretch="Uniform" VerticalAlignment="Center" />
@@ -55,8 +70,47 @@
             </StackPanel>
         </Grid>
 
+        <!-- Подсказка с формулами: всегда на виду, в самом верху формы -->
+        <Border Grid.Row="1" Style="{StaticResource Card}" Padding="20,14" Margin="0,0,0,14">
+            <StackPanel>
+                <StackPanel Orientation="Horizontal">
+                    <Path Data="{StaticResource IconInfo}" Stroke="{DynamicResource PurpleBrush}" StrokeThickness="1.7"
+                          Width="15" Height="15" Stretch="Uniform" VerticalAlignment="Center"
+                          StrokeStartLineCap="Round" StrokeLineJoin="Round" />
+                    <TextBlock Text="Как считается отклонение" FontSize="12.5" FontWeight="SemiBold" Margin="8,0,0,0"
+                               VerticalAlignment="Center" />
+                </StackPanel>
+
+                <Grid Margin="0,12,0,0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+
+                    <StackPanel Margin="0,0,18,0">
+                        <TextBlock Text="По количеству" Style="{StaticResource FieldLabel}" />
+                        <TextBlock Style="{StaticResource Caption}" FontSize="11.5" TextWrapping="Wrap" Margin="0,4,0,0"
+                                   Text="Отклонение = факт − план. Показывает, больше или меньше материала израсходовано по сравнению со сметой." />
+                    </StackPanel>
+
+                    <StackPanel Grid.Column="1" Margin="0,0,18,0">
+                        <TextBlock Text="По цене" Style="{StaticResource FieldLabel}" />
+                        <TextBlock Style="{StaticResource Caption}" FontSize="11.5" TextWrapping="Wrap" Margin="0,4,0,0"
+                                   Text="Отклонение = фактическая цена − сметная цена, где фактическая цена = стоимость списаний ÷ израсходованное количество (средневзвешенная)." />
+                    </StackPanel>
+
+                    <StackPanel Grid.Column="2">
+                        <TextBlock Text="По стоимости и оценка" Style="{StaticResource FieldLabel}" />
+                        <TextBlock Style="{StaticResource Caption}" FontSize="11.5" TextWrapping="Wrap" Margin="0,4,0,0"
+                                   Text="Отклонение = факт − план, процент = отклонение ÷ план × 100 %. До 5 % — в норме, 5–10 % — внимание, от 10 % — критично (по модулю). «+» — перерасход, «−» — экономия." />
+                    </StackPanel>
+                </Grid>
+            </StackPanel>
+        </Border>
+
         <!-- Сводные карточки -->
-        <WrapPanel Grid.Row="1" Margin="0,0,0,6">
+        <WrapPanel Grid.Row="2" Margin="0,0,0,6">
             <controls:KpiCard Title="План по сметам" Value="{Binding PlannedTotalDisplay}"
                               Caption="{Binding ScopeName}"
                               Icon="{StaticResource IconEstimates}"
@@ -83,7 +137,7 @@
         </WrapPanel>
 
         <!-- Фильтры -->
-        <Border Grid.Row="2" Style="{StaticResource Card}" Padding="20,14" Margin="0,0,0,16">
+        <Border Grid.Row="3" Style="{StaticResource Card}" Padding="20,14" Margin="0,0,0,16">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto" />
@@ -106,12 +160,6 @@
 
                 <StackPanel Grid.Column="2" VerticalAlignment="Bottom" Margin="24,0,0,10">
                     <TextBlock Style="{StaticResource Caption}" Text="{Binding RowsSummary}" />
-                    <Expander Header="Как считается отклонение?" Margin="0,8,0,0" Padding="0"
-                              Foreground="{DynamicResource TextSecondaryBrush}">
-                        <TextBlock Style="{StaticResource Caption}" FontSize="11.5" TextWrapping="Wrap"
-                                   MaxWidth="560" Margin="0,6,0,0" LineHeight="17"
-                                   Text="Отклонение по количеству = факт − план. Отклонение по цене = фактическая цена − сметная цена, где фактическая цена = стоимость списаний ÷ израсходованное количество (средневзвешенная). Отклонение по стоимости = факт − план, процент = отклонение ÷ план × 100 %. Оценка: до 5 % — в норме, 5–10 % — внимание, от 10 % — критично (по модулю процента)." />
-                    </Expander>
                     <TextBlock Style="{StaticResource Caption}" FontSize="11" Margin="0,2,0,0">
                         <Run Text="Внимание: " />
                         <Run Text="{Binding WarningCount, Mode=OneWay}" Foreground="{DynamicResource WarningBrush}" />
@@ -132,7 +180,7 @@
         </Border>
 
         <!-- Таблица отклонений -->
-        <Border Grid.Row="3" Style="{StaticResource Card}" Padding="0">
+        <Border Grid.Row="4" Style="{StaticResource Card}" Padding="0">
             <Grid>
                 <DataGrid Style="{StaticResource DataGridStyle}" ItemsSource="{Binding RowsView}"
                           SelectedItem="{Binding SelectedRow}" Margin="8,6,8,8" RowHeight="54">

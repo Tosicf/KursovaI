@@ -19,7 +19,7 @@ public sealed record ProjectFilterOption(int? Id, string Name)
 
 /// <summary>
 /// Анализ отклонений факта от сметы: сводка по объекту, таблица отклонений
-/// по количеству/цене/стоимости и экспорт отчёта в CSV.
+/// по количеству/цене/стоимости и экспорт отчёта в Excel, CSV и PDF.
 /// </summary>
 public sealed partial class DeviationsViewModel : ViewModelBase
 {
@@ -29,6 +29,7 @@ public sealed partial class DeviationsViewModel : ViewModelBase
     private readonly IToastService _toasts;
     private readonly ISessionService _session;
     private readonly CsvReportExporter _exporter = new();
+    private readonly DeviationReportExporter _reportExporter = new();
     private bool _initialized;
 
     public DeviationsViewModel(
@@ -247,6 +248,52 @@ public sealed partial class DeviationsViewModel : ViewModelBase
             _toasts.Success("Отчёт сохранён", System.IO.Path.GetFileName(path));
         else if (ErrorMessage is not null)
             _toasts.Error("Экспорт", ErrorMessage);
+    }
+
+    [RelayCommand]
+    private async Task ExportExcelAsync()
+    {
+        if (Report is null) return;
+
+        var path = _dialogs.SaveFile(
+            "Сохранить отчёт об отклонениях в Excel",
+            _reportExporter.DefaultFileName(Report, "xlsx"),
+            "Книга Excel (*.xlsx)|*.xlsx|Все файлы (*.*)|*.*");
+
+        if (path is null) return;
+
+        var ok = await ExecuteAsync(
+            () => _reportExporter.ExportXlsxAsync(Report, path),
+            "Не удалось сохранить отчёт в Excel.");
+
+        if (ok)
+            _toasts.Success("Отчёт сохранён", System.IO.Path.GetFileName(path));
+        else if (ErrorMessage is not null)
+            _toasts.Error("Экспорт", ErrorMessage);
+    }
+
+    [RelayCommand]
+    private void ExportPdf()
+    {
+        if (Report is null || Report.Rows.Count == 0)
+        {
+            _toasts.Info("Отчёт пуст", "Нет позиций для формирования отчёта.");
+            return;
+        }
+
+        var path = _dialogs.SaveFile(
+            "Сохранить отчёт об отклонениях в PDF",
+            _reportExporter.DefaultFileName(Report, "pdf"),
+            "Файл PDF (*.pdf)|*.pdf|Все файлы (*.*)|*.*");
+
+        if (path is null) return;
+
+        var document = StroyControl.App.Views.Reports.DeviationReportDocument.Build(Report);
+
+        if (PdfExporter.TryExport(document, path, out var error))
+            _toasts.Success("PDF сохранён", System.IO.Path.GetFileName(path));
+        else
+            _toasts.Error("Не удалось сохранить PDF", error ?? "Неизвестная ошибка.");
     }
 
     private async Task ReloadReportAsync()

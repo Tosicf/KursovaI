@@ -46,6 +46,7 @@ public static class ServiceCollectionExtensions
 
         services.AddSingleton<IInventoryService, InventoryService>();
         services.AddSingleton<IDeviationService, DeviationService>();
+        services.AddSingleton<IMinStockService, MinStockService>();
         services.AddSingleton<IDashboardService, DashboardService>();
         services.AddSingleton<IDatabaseHealthService, DatabaseHealthService>();
 

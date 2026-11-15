@@ -1,20 +1,23 @@
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Documents;
+using Microsoft.Win32;
 using StroyControl.App.Services;
 using StroyControl.App.Views.Reports;
 using StroyControl.Core.Entities;
+using StroyControl.Core.Services;
 
 namespace StroyControl.App.Views.Dialogs;
 
 /// <summary>
 /// Предпросмотр товарного чека по поступлению: тот же FlowDocument печатается
-/// на принтере (PDF — через «Microsoft Print to PDF»).
+/// на принтере и сохраняется в PDF, Excel и CSV.
 /// </summary>
 public partial class PurchaseReceiptWindow : Window
 {
     private readonly Delivery _delivery;
     private readonly string _organization;
+    private readonly ReceiptExporter _exporter = new();
 
     public PurchaseReceiptWindow(Delivery delivery, string organization)
     {
@@ -42,17 +45,68 @@ public partial class PurchaseReceiptWindow : Window
 
     private void OnPdfClick(object sender, RoutedEventArgs e)
     {
+        var path = AskPath("Сохранить чек в PDF", "pdf", "Файл PDF (*.pdf)|*.pdf|Все файлы (*.*)|*.*");
+        if (path is null) return;
+
         var document = PurchaseReceiptDocument.Build(_delivery, _organization);
 
-        if (PdfPrinter.TryPrint(document, $"Товарный чек {_delivery.Number}", out var error))
+        if (PdfExporter.TryExport(document, path, out var error))
         {
-            MessageBox.Show(this, "Готово: PDF сохранён через принтер «Microsoft Print to PDF».",
-                "PDF", MessageBoxButton.OK, MessageBoxImage.Information);
+            MessageBox.Show(this, $"PDF сохранён:\n{path}", "PDF", MessageBoxButton.OK, MessageBoxImage.Information);
             return;
         }
 
         MessageBox.Show(this, error ?? "Не удалось выгрузить чек в PDF.", "PDF",
             MessageBoxButton.OK, MessageBoxImage.Warning);
+    }
+
+    private async void OnExcelClick(object sender, RoutedEventArgs e)
+    {
+        var path = AskPath("Сохранить чек в Excel", "xlsx",
+            "Книга Excel (*.xlsx)|*.xlsx|Все файлы (*.*)|*.*");
+        if (path is null) return;
+
+        try
+        {
+            await _exporter.ExportXlsxAsync(_delivery, _organization, path);
+            MessageBox.Show(this, $"Чек сохранён:\n{path}", "Excel", MessageBoxButton.OK, MessageBoxImage.Information);
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show(this, $"Не удалось сохранить файл.\n\n{ex.Message}", "Excel",
+                MessageBoxButton.OK, MessageBoxImage.Error);
+        }
+    }
+
+    private async void OnCsvClick(object sender, RoutedEventArgs e)
+    {
+        var path = AskPath("Сохранить чек в CSV", "csv", "Файлы CSV (*.csv)|*.csv|Все файлы (*.*)|*.*");
+        if (path is null) return;
+
+        try
+        {
+            await _exporter.ExportCsvAsync(_delivery, _organization, path);
+            MessageBox.Show(this, $"Чек сохранён:\n{path}", "CSV", MessageBoxButton.OK, MessageBoxImage.Information);
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show(this, $"Не удалось сохранить файл.\n\n{ex.Message}", "CSV",
+                MessageBoxButton.OK, MessageBoxImage.Error);
+        }
+    }
+
+    private string? AskPath(string title, string extension, string filter)
+    {
+        var dialog = new SaveFileDialog
+        {
+            Title = title,
+            FileName = _exporter.DefaultFileName(_delivery, extension),
+            Filter = filter,
+            AddExtension = true,
+            OverwritePrompt = true
+        };
+
+        return dialog.ShowDialog(this) == true ? dialog.FileName : null;
     }
 
     private void OnPrintClick(object sender, RoutedEventArgs e)
