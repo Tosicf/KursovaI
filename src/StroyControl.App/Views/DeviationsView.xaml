@@ -184,7 +184,7 @@
             <Grid>
                 <DataGrid x:Name="RowsGrid" Style="{StaticResource DataGridStyle}" ItemsSource="{Binding RowsView}"
                           SelectedItem="{Binding SelectedRow}" Margin="8,6,8,8" RowHeight="54"
-                          CanUserReorderColumns="False"
+                          CanUserReorderColumns="False" SizeChanged="OnRowsGridSizeChanged"
                           ScrollViewer.HorizontalScrollBarVisibility="Auto">
                     <DataGrid.ContextMenu>
                         <ContextMenu>
@@ -224,10 +224,11 @@
                     </DataGrid.GroupStyle>
 
                     <DataGrid.Columns>
-                        <!-- MaxWidth страхует от ошибки WPF: при первом показе таблицы
-                             с группировкой «резиновая» колонка иногда получает всю ширину
-                             окна и выдавливает остальные столбцы за край -->
-                        <DataGridTemplateColumn Header="Материал" Width="*" MinWidth="240" MaxWidth="520">
+                        <!-- Ширина не «звёздная»: в таблице с группировкой WPF при первом
+                             показе окна считает Width="*" неправильно и выдавливает остальные
+                             столбцы за край. Ширину подгоняет DeviationsView.xaml.cs
+                             по фактическому размеру таблицы (FitNameColumn). -->
+                        <DataGridTemplateColumn Header="Материал" Width="360" MinWidth="240">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
                                     <StackPanel VerticalAlignment="Center">
