@@ -69,6 +69,14 @@ public sealed class MinStockService : IMinStockService
             .ToList();
     }
 
+    public async Task<int> RecalculateAsync(int? projectId = null, CancellationToken cancellationToken = default)
+    {
+        var suggestions = await BuildSuggestionsAsync(projectId, cancellationToken);
+        var changes = suggestions.Where(s => s.HasChanges).ToList();
+
+        return changes.Count == 0 ? 0 : await ApplyAsync(changes, cancellationToken);
+    }
+
     public async Task<int> ApplyAsync(IReadOnlyList<MinStockSuggestion> suggestions,
         CancellationToken cancellationToken = default)
     {

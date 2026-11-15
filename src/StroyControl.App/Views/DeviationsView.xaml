@@ -183,7 +183,8 @@
         <Border Grid.Row="4" Style="{StaticResource Card}" Padding="0">
             <Grid>
                 <DataGrid Style="{StaticResource DataGridStyle}" ItemsSource="{Binding RowsView}"
-                          SelectedItem="{Binding SelectedRow}" Margin="8,6,8,8" RowHeight="54">
+                          SelectedItem="{Binding SelectedRow}" Margin="8,6,8,8" RowHeight="54"
+                          CanUserReorderColumns="False" CanUserResizeColumns="False">
                     <DataGrid.ContextMenu>
                         <ContextMenu>
                             <MenuItem Header="Печатный отчёт…"

@@ -13,4 +13,11 @@ public interface IMinStockService
 
     /// <summary>Сохраняет новые значения минимального запаса, возвращает число обновлённых материалов.</summary>
     Task<int> ApplyAsync(IReadOnlyList<MinStockSuggestion> suggestions, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Пересчитывает и сразу сохраняет минимальный запас (без диалогов). Используется
+    /// автоматически после изменения смет, чтобы значения в «Материалах» не отставали.
+    /// Возвращает число обновлённых материалов.
+    /// </summary>
+    Task<int> RecalculateAsync(int? projectId = null, CancellationToken cancellationToken = default);
 }

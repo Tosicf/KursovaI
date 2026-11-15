@@ -603,8 +603,10 @@
 
     <Style x:Key="DataGridStyle" TargetType="DataGrid">
         <Setter Property="AutoGenerateColumns" Value="False" />
-        <!-- Столбцы нельзя перетаскивать: порядок задан в разметке и не должен «плыть» -->
+        <!-- Порядок и ширина столбцов заданы в разметке: перетаскивать их нельзя,
+             иначе таблица «плывёт» и подписи не совпадают с данными -->
         <Setter Property="CanUserReorderColumns" Value="False" />
+        <Setter Property="CanUserResizeColumns" Value="False" />
         <Setter Property="CanUserAddRows" Value="False" />
         <Setter Property="CanUserDeleteRows" Value="False" />
         <Setter Property="IsReadOnly" Value="True" />

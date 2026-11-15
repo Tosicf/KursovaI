@@ -125,6 +125,11 @@ public sealed partial class MaterialsViewModel : ViewModelBase
         IsBusy = true;
         var ok = await ExecuteAsync(async () =>
         {
+            // Минимальный запас — расчётная величина: перед показом списка сверяем его
+            // со сметами и текущими остатками, чтобы пользователь всегда видел актуальные значения.
+            if (CanEdit)
+                await TrySyncMinStockAsync();
+
             var materials = await _materials.GetAllWithSupplierAsync();
             var suppliers = await _suppliers.GetAllAsync();
             var categories = await _materials.GetCategoriesAsync();
@@ -315,9 +320,24 @@ public sealed partial class MaterialsViewModel : ViewModelBase
         }
     }
 
+    /// <summary>Тихая сверка минимального запаса со сметами (без диалогов и сообщений).</summary>
+    private async Task TrySyncMinStockAsync()
+    {
+        try
+        {
+            await _minStock.RecalculateAsync();
+        }
+        catch
+        {
+            // Расчёт запаса не должен мешать открытию справочника: следующая попытка —
+            // при следующем заходе на страницу или по кнопке «Мин. запас по сметам».
+        }
+    }
+
     /// <summary>
     /// Пересчитывает минимальный (страховой) запас по потребности смет: минимум равен
-    /// тому, сколько материала ещё нужно под оставшийся объём работ с учётом остатка.
+    /// большему из двух — недостающему количеству под оставшийся объём работ и
+    /// страховому резерву 10 % потребности.
     /// </summary>
     [RelayCommand]
     private async Task RecalculateMinStockAsync()
@@ -352,7 +372,10 @@ public sealed partial class MaterialsViewModel : ViewModelBase
                 $"Пересчитать минимальный запас по действующим сметам?\n\n" +
                 $"Всего материалов в сметах: {suggestions.Count}\n" +
                 $"Изменится значений: {changes.Count} (увеличится {increases}, уменьшится {decreases})\n\n" +
-                "Минимум = потребность по сметам − остаток на складе.";
+                "Минимум = большее из двух: потребность по сметам − остаток на складе " +
+                "и страховой резерв 10 % потребности.\n" +
+                "Обычно запас пересчитывается автоматически при изменении смет — " +
+                "кнопка нужна для разового пересчёта.";
 
             if (!_dialogs.Confirm("Минимальный запас по сметам", message, "Пересчитать")) return;
 
