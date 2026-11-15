@@ -70,7 +70,11 @@
                     <Border Grid.Column="0" Style="{StaticResource Card}" Margin="0,0,16,0">
                         <StackPanel>
                             <Grid Margin="0,0,0,10">
-                                <TextBlock Text="План и факт по объектам" Style="{StaticResource SectionTitle}" />
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock Text="План и факт по объектам" Style="{StaticResource SectionTitle}" />
+                                    <TextBlock Style="{StaticResource InfoHint}"
+                                               ToolTip="Подпись над столбиками — исполнение бюджета: фактические затраты ÷ сметная стоимость × 100 %, но не более 100 %. Это не то же самое, что готовность объекта из карточки: она вводится вручную." />
+                                </StackPanel>
                                 <TextBlock Text="BYN" Style="{StaticResource Caption}" HorizontalAlignment="Right" VerticalAlignment="Center" />
                             </Grid>
                             <controls:BarChart Items="{Binding Data.ProjectBudgets}" Height="210" />
@@ -106,7 +110,11 @@
                     <Border Grid.Column="0" Style="{StaticResource Card}" Margin="0,0,16,16">
                         <StackPanel>
                             <Grid Margin="0,0,0,16">
-                                <TextBlock Text="Исполнение смет по объектам" Style="{StaticResource SectionTitle}" />
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock Text="Исполнение смет по объектам" Style="{StaticResource SectionTitle}" />
+                                    <TextBlock Style="{StaticResource InfoHint}"
+                                               ToolTip="План — сумма смет объекта, факт — стоимость списанных материалов и поступлений. Отклонение = факт − план, процент = отклонение ÷ план × 100 %." />
+                                </StackPanel>
                                 <TextBlock Text="план / факт, BYN" Style="{StaticResource Caption}" HorizontalAlignment="Right" VerticalAlignment="Center" />
                             </Grid>
 

@@ -76,15 +76,24 @@
                 </StackPanel>
 
                 <StackPanel Grid.Column="5" Orientation="Horizontal" VerticalAlignment="Bottom">
-                    <Button Style="{StaticResource SecondaryButton}" Click="OnCsvClick" Margin="0,0,8,0" Height="36">
-                        <TextBlock Text="CSV" VerticalAlignment="Center" />
-                    </Button>
-                    <Button Style="{StaticResource SecondaryButton}" Click="OnExcelClick" Margin="0,0,8,0" Height="36">
+                    <Button x:Name="ExportButton" Style="{StaticResource SecondaryButton}" Click="OnExportClick"
+                            Margin="0,0,8,0" Height="36" ToolTip="Выбрать формат файла отчёта">
                         <StackPanel Orientation="Horizontal">
                             <Path Data="{StaticResource IconDownload}" Stroke="{DynamicResource TextSecondaryBrush}" StrokeThickness="1.7"
                                   Width="14" Height="14" Stretch="Uniform" VerticalAlignment="Center" />
-                            <TextBlock Text="Excel" Margin="6,0,0,0" VerticalAlignment="Center" />
+                            <TextBlock Text="Экспорт" Margin="6,0,6,0" VerticalAlignment="Center" />
+                            <Path Data="M6 9l6 6 6-6" Stroke="{DynamicResource TextSecondaryBrush}" StrokeThickness="1.8"
+                                  Width="10" Height="10" Stretch="Uniform" VerticalAlignment="Center"
+                                  StrokeStartLineCap="Round" StrokeLineJoin="Round" />
                         </StackPanel>
+                        <Button.ContextMenu>
+                            <ContextMenu>
+                                <MenuItem Header="Excel (.xlsx)" Click="OnExcelClick" />
+                                <MenuItem Header="CSV (.csv)" Click="OnCsvClick" />
+                                <Separator />
+                                <MenuItem Header="PDF" Click="OnPdfClick" />
+                            </ContextMenu>
+                        </Button.ContextMenu>
                     </Button>
                     <Button Style="{StaticResource PrimaryButton}" Click="OnPrintClick" Height="36">
                         <StackPanel Orientation="Horizontal">

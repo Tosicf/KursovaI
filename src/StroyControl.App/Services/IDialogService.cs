@@ -1,4 +1,5 @@
 using StroyControl.App.ViewModels.Editors;
+using StroyControl.Core.Dtos;
 using StroyControl.Core.Entities;
 
 namespace StroyControl.App.Services;
@@ -44,4 +45,7 @@ public interface IDialogService
 
     /// <summary>Предпросмотр и печать товарного чека по поступлению материалов.</summary>
     void ShowPurchaseReceipt(Delivery delivery);
+
+    /// <summary>Печатный отчёт по анализу отклонений: предпросмотр, печать, CSV и PDF.</summary>
+    void ShowDeviationReport(DeviationReport report);
 }

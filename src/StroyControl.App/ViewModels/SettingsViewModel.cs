@@ -8,7 +8,7 @@ using RoleKind = StroyControl.Core.Enums.UserRole;
 
 namespace StroyControl.App.ViewModels;
 
-/// <summary>Настройки клиента: сетевое подключение к SQL Server, текущая учётная запись и права.</summary>
+/// <summary>О программе: версия клиента, сетевое подключение к SQL Server, текущая учётная запись и права.</summary>
 public sealed partial class SettingsViewModel : ViewModelBase
 {
     private readonly IDatabaseHealthService _healthService;
@@ -26,7 +26,7 @@ public sealed partial class SettingsViewModel : ViewModelBase
         Session = session;
     }
 
-    public override string Title => "Настройки";
+    public override string Title => "О программе";
 
     public AppEnvironment Environment { get; }
 
@@ -54,7 +54,7 @@ public sealed partial class SettingsViewModel : ViewModelBase
 
     public string RoleDescription => Session.CurrentUser?.Role switch
     {
-        RoleKind.Admin => "Полный доступ: справочники, сметы, документы, сотрудники и настройки.",
+        RoleKind.Admin => "Полный доступ: справочники, сметы, документы, сотрудники и параметры программы.",
         RoleKind.Engineer => "Сметы и план: справочники, сметы, документы, анализ отклонений и отчёты.",
         RoleKind.SupplyManager => "Закупки: поставщики и поступления; видит смету и остаток бюджета.",
         RoleKind.Foreman => "Факт на объекте: поступления и списания материалов, контроль остатков.",

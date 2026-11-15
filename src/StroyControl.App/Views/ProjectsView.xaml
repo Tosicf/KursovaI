@@ -18,8 +18,12 @@
 
             <StackPanel>
                 <TextBlock Text="Строительные объекты организации" Style="{StaticResource Caption}" FontSize="12.5" />
-                <TextBlock Text="Договорная стоимость, сроки и готовность объектов" Style="{StaticResource Caption}"
-                           FontSize="11" Foreground="{DynamicResource TextMutedBrush}" Margin="0,3,0,0" />
+                <StackPanel Orientation="Horizontal" Margin="0,3,0,0">
+                    <TextBlock Text="Договорная стоимость, сроки и готовность объектов" Style="{StaticResource Caption}"
+                               FontSize="11" Foreground="{DynamicResource TextMutedBrush}" />
+                    <TextBlock Style="{StaticResource InfoHint}" FontSize="11.5"
+                               ToolTip="Готовность — это экспертная оценка физического выполнения работ по объекту: она вводится вручную в карточке объекта (0–100 %) и не вычисляется из документов. Не путайте её с исполнением бюджета: там процент считается автоматически как фактические затраты ÷ сметная стоимость × 100 % и ограничен 100 %." />
+                </StackPanel>
             </StackPanel>
 
             <StackPanel Grid.Column="1" Orientation="Horizontal">
@@ -122,7 +126,14 @@
                         <DataGridTextColumn Header="Договор, BYN" Binding="{Binding ContractSum, StringFormat='{}{0:N0}', Mode=OneWay}" Width="130"
                                             ElementStyle="{StaticResource NumericCell}" />
 
-                        <DataGridTemplateColumn Header="Готовность" Width="150">
+                        <DataGridTemplateColumn Width="150">
+                            <DataGridTemplateColumn.Header>
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock Text="Готовность" />
+                                    <TextBlock Style="{StaticResource InfoHint}" FontSize="11"
+                                               ToolTip="Готовность — это экспертная оценка физического выполнения работ по объекту: она вводится вручную в карточке объекта (0–100 %) и не вычисляется из документов. Не путайте её с исполнением бюджета: там процент считается автоматически как фактические затраты ÷ сметная стоимость × 100 % и ограничен 100 %." />
+                                </StackPanel>
+                            </DataGridTemplateColumn.Header>
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
                                     <StackPanel VerticalAlignment="Center">

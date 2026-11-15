@@ -1,6 +1,7 @@
 using System.Windows;
 using System.Windows.Documents;
 using Microsoft.Win32;
+using StroyControl.App.Services;
 using StroyControl.App.ViewModels;
 using StroyControl.App.Views.Reports;
 using StroyControl.Core.Services;
@@ -38,6 +39,30 @@ public partial class EstimateReportWindow : Window
     private void RefreshDocument() => Viewer.Document = EstimateReportDocument.Build(_viewModel.Report);
 
     private void OnResetClick(object sender, RoutedEventArgs e) => _viewModel.ResetCoefficientsCommand.Execute(null);
+
+    private void OnExportClick(object sender, RoutedEventArgs e)
+    {
+        if (ExportButton.ContextMenu is not { } menu) return;
+
+        menu.PlacementTarget = ExportButton;
+        menu.Placement = System.Windows.Controls.Primitives.PlacementMode.Bottom;
+        menu.IsOpen = true;
+    }
+
+    private void OnPdfClick(object sender, RoutedEventArgs e)
+    {
+        var document = EstimateReportDocument.Build(_viewModel.Report);
+
+        if (PdfPrinter.TryPrint(document, $"Смета {_viewModel.Report.Number}", out var error))
+        {
+            MessageBox.Show(this, "Готово: PDF сохранён через принтер «Microsoft Print to PDF».",
+                "PDF", MessageBoxButton.OK, MessageBoxImage.Information);
+            return;
+        }
+
+        MessageBox.Show(this, error ?? "Не удалось выгрузить отчёт в PDF.", "PDF",
+            MessageBoxButton.OK, MessageBoxImage.Warning);
+    }
 
     private void OnCloseClick(object sender, RoutedEventArgs e) => Close();
 

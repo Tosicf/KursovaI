@@ -138,6 +138,23 @@ public sealed partial class DeviationsViewModel : ViewModelBase
 
     partial void OnSelectedFilterChanged(string value) => ApplyFilter();
 
+    /// <summary>
+    /// Группирует таблицу по объекту (когда выбрано «Все объекты») и по разделу сметы —
+    /// так отчёт читается как в печатной форме: раздел → позиции.
+    /// </summary>
+    private void ApplyGrouping()
+    {
+        using (RowsView.DeferRefresh())
+        {
+            RowsView.GroupDescriptions.Clear();
+
+            if (SelectedProject?.Id is null)
+                RowsView.GroupDescriptions.Add(new PropertyGroupDescription(nameof(DeviationRow.ProjectName)));
+
+            RowsView.GroupDescriptions.Add(new PropertyGroupDescription(nameof(DeviationRow.Section)));
+        }
+    }
+
     partial void OnReportChanged(DeviationReport? value)
     {
         Rows.Clear();
@@ -146,6 +163,8 @@ public sealed partial class DeviationsViewModel : ViewModelBase
             foreach (var row in value.Rows)
                 Rows.Add(row);
         }
+
+        ApplyGrouping();
 
         OnPropertyChanged(nameof(IsEmpty));
         OnPropertyChanged(nameof(ScopeName));
@@ -193,6 +212,19 @@ public sealed partial class DeviationsViewModel : ViewModelBase
 
         if (!ok && ErrorMessage is not null)
             _toasts.Error("Анализ отклонений", ErrorMessage);
+    }
+
+    /// <summary>Печатный отчёт: предпросмотр, печать, CSV, PDF.</summary>
+    [RelayCommand]
+    private void OpenReport()
+    {
+        if (Report is null || Report.Rows.Count == 0)
+        {
+            _toasts.Info("Отчёт пуст", "Нет позиций для формирования отчёта.");
+            return;
+        }
+
+        _dialogs.ShowDeviationReport(Report);
     }
 
     [RelayCommand]
