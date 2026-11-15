@@ -117,6 +117,9 @@ public sealed class EstimateReportBuilderTests
         Assert.Equal(4040.96m, report.TotalCost);       // прямые затраты + прибыль
         Assert.Equal(40.41m, report.CostPerSquareMeter);
         Assert.Equal(4.33m, report.ProfitPerSquareMeter);
+        Assert.Equal(22.00m, report.MaterialsCostPerSquareMeter);  // 2200 / 100
+        Assert.Equal(14.08m, report.WorksCostPerSquareMeter);      // 1408 / 100
+        Assert.Equal(4.93m, report.LaborCostPerSquareMeter);       // 492,80 / 100
     }
 
     [Fact]
@@ -126,6 +129,9 @@ public sealed class EstimateReportBuilderTests
 
         Assert.Equal(0m, report.CostPerSquareMeter);
         Assert.Equal(0m, report.ProfitPerSquareMeter);
+        Assert.Equal(0m, report.MaterialsCostPerSquareMeter);
+        Assert.Equal(0m, report.WorksCostPerSquareMeter);
+        Assert.Equal(0m, report.LaborCostPerSquareMeter);
     }
 
     [Fact]

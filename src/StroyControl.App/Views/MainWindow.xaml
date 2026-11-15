@@ -142,8 +142,8 @@
                                   Width="17" Height="17" Stretch="Uniform" StrokeStartLineCap="Round" StrokeLineJoin="Round" />
                         </Button>
 
-                        <!-- Настройки -->
-                        <Button Style="{StaticResource IconButton}" Command="{Binding OpenSettingsCommand}" ToolTip="Настройки" Margin="0,0,4,0">
+                        <!-- О программе -->
+                        <Button Style="{StaticResource IconButton}" Command="{Binding OpenSettingsCommand}" ToolTip="О программе" Margin="0,0,4,0">
                             <Path Data="{StaticResource IconSettings}" Stroke="{DynamicResource TextSecondaryBrush}" StrokeThickness="1.7"
                                   Width="17" Height="17" Stretch="Uniform" StrokeStartLineCap="Round" StrokeLineJoin="Round" />
                         </Button>

@@ -76,10 +76,21 @@ public static class EstimateReportDocument
         doc.Blocks.Add(BuildTable(report));
 
         doc.Blocks.Add(new Paragraph(new Run(
+                "Площадь строения, м² — единый измеритель сметы, к которому приводятся удельные показатели: " +
+                "стоимость 1 м², прибыль от 1 м², материалы, работы и зарплата рабочих на 1 м². " +
+                "Площадь берётся из карточки объекта или задаётся в форме отчёта; при нулевой площади " +
+                "удельные строки не рассчитываются, а стоимостные — считаются полностью."))
+        {
+            FontSize = 9.5,
+            Foreground = Brushes.DimGray,
+            Margin = new Thickness(0, 10, 0, 0)
+        });
+
+        doc.Blocks.Add(new Paragraph(new Run(
                 $"Расчёт: наценка {report.MarkupPercent:N2} %, прибыль {report.ProfitPercent:N2} %, " +
                 $"доля зарплаты рабочих {report.LaborSharePercent:N2} %. " +
                 (report.Area > 0m
-                    ? $"Площадь строения {report.Area:N2} м², стоимость 1 м² — {report.CostPerSquareMeter:N2} BYN, прибыль от 1 м² — {report.ProfitPerSquareMeter:N2} BYN."
+                    ? $"Площадь строения {report.Area:N2} м² — 1 м² стоит {report.CostPerSquareMeter:N2} BYN, в том числе прибыль {report.ProfitPerSquareMeter:N2} BYN."
                     : "Площадь строения не задана — удельные показатели не рассчитываются.")))
         {
             FontSize = 9.5,
@@ -96,7 +107,7 @@ public static class EstimateReportDocument
 
         AddRow(table,
             Cell("Всего затрат, BYN", bold: true), Cell(Money(report.TotalCost), TextAlignment.Right, bold: true),
-            Cell("S строения общая, м²", bold: true), Cell(Number(report.Area), TextAlignment.Right, bold: true));
+            Cell("Площадь строения, м²", bold: true), Cell(Number(report.Area), TextAlignment.Right, bold: true));
 
         AddRow(table,
             Cell("Стоимость материалов, BYN"), Cell(Money(report.MaterialsCost), TextAlignment.Right),
@@ -113,6 +124,14 @@ public static class EstimateReportDocument
         AddRow(table,
             Cell("Прибыль, BYN"), Cell(Money(report.Profit), TextAlignment.Right),
             Cell("Прибыль, %"), Cell(Number(report.ProfitPercent), TextAlignment.Right));
+
+        AddRow(table,
+            Cell("Материалы на 1 м², BYN"), Cell(Money(report.MaterialsCostPerSquareMeter), TextAlignment.Right),
+            Cell("Работы на 1 м², BYN"), Cell(Money(report.WorksCostPerSquareMeter), TextAlignment.Right));
+
+        AddRow(table,
+            Cell("Зарплата рабочих на 1 м², BYN"), Cell(Money(report.LaborCostPerSquareMeter), TextAlignment.Right),
+            Cell(string.Empty), Cell(string.Empty));
 
         AddRow(table,
             Cell($"Позиций в смете: {report.PositionsCount}"),

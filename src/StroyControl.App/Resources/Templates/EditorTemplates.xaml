@@ -212,7 +212,11 @@
                     <DatePicker SelectedDate="{Binding PlannedEndDate, Mode=TwoWay}" />
                 </StackPanel>
                 <StackPanel Grid.Column="2">
-                    <TextBlock Text="Готовность, %" Style="{StaticResource FieldLabel}" />
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="Готовность, %" Style="{StaticResource FieldLabel}" />
+                        <TextBlock Style="{StaticResource InfoHint}" FontSize="11" Margin="4,0,0,6"
+                                   ToolTip="Готовность — это экспертная оценка физического выполнения работ по объекту: она вводится вручную в карточке объекта (0–100 %) и не вычисляется из документов. Не путайте её с исполнением бюджета: там процент считается автоматически как фактические затраты ÷ сметная стоимость × 100 % и ограничен 100 %." />
+                    </StackPanel>
                     <TextBox Text="{Binding ProgressPercent, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource NumericTextBox}" />
                 </StackPanel>
             </Grid>

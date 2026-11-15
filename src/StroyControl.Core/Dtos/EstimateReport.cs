@@ -114,6 +114,15 @@ public sealed class EstimateReport
 
     public decimal ProfitPerSquareMeter => Area <= 0m ? 0m : Round(Profit / Area);
 
+    /// <summary>Стоимость материалов на 1 м² площади строения.</summary>
+    public decimal MaterialsCostPerSquareMeter => Area <= 0m ? 0m : Round(MaterialsCost / Area);
+
+    /// <summary>Стоимость работ на 1 м² площади строения.</summary>
+    public decimal WorksCostPerSquareMeter => Area <= 0m ? 0m : Round(WorksCost / Area);
+
+    /// <summary>Зарплата рабочих на 1 м² площади строения.</summary>
+    public decimal LaborCostPerSquareMeter => Area <= 0m ? 0m : Round(LaborCost / Area);
+
     public int PositionsCount => Rows.Count;
 
     public bool HasRows => Rows.Count > 0;

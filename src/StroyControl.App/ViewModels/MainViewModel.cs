@@ -137,7 +137,7 @@ public sealed partial class MainViewModel : ObservableObject
         await ShowStandaloneAsync<UsersViewModel>();
     }
 
-    /// <summary>Раздел «Настройки» открывается из шапки.</summary>
+    /// <summary>Раздел «О программе» открывается из шапки.</summary>
     [RelayCommand]
     private Task OpenSettingsAsync() => ShowStandaloneAsync<SettingsViewModel>();
 
@@ -170,7 +170,7 @@ public sealed partial class MainViewModel : ObservableObject
         NavigationItems.Add(CreateItem<UsagesViewModel>("usages", "Списания", "IconOutgoing"));
         NavigationItems.Add(CreateItem<DeviationsViewModel>("deviations", "Анализ отклонений", "IconDeviations"));
 
-        // «Сотрудники» и «Настройки» вынесены в верхнюю панель (см. разметку MainWindow).
+        // «Сотрудники» и «О программе» вынесены в верхнюю панель (см. разметку MainWindow).
     }
 
     private NavigationItem CreateItem<TPage>(string key, string title, string iconKey)

@@ -3,6 +3,7 @@ using StroyControl.App.Startup;
 using StroyControl.App.ViewModels;
 using StroyControl.App.ViewModels.Editors;
 using StroyControl.App.Views.Dialogs;
+using StroyControl.Core.Dtos;
 using StroyControl.Core.Entities;
 
 namespace StroyControl.App.Services;
@@ -108,6 +109,16 @@ public sealed class DialogService : IDialogService
     public void ShowPurchaseReceipt(Delivery delivery)
     {
         var window = new PurchaseReceiptWindow(delivery, _environment.Organization);
+        var owner = Application.Current?.MainWindow;
+        if (owner is not null && owner.IsVisible)
+            window.Owner = owner;
+
+        window.ShowDialog();
+    }
+
+    public void ShowDeviationReport(DeviationReport report)
+    {
+        var window = new DeviationReportWindow(report);
         var owner = Application.Current?.MainWindow;
         if (owner is not null && owner.IsVisible)
             window.Owner = owner;

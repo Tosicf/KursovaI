@@ -31,13 +31,22 @@
                 </StackPanel>
 
                 <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
-                    <Button Style="{StaticResource PrimaryButton}" Click="OnPrintClick" Height="36" Margin="0,0,10,0"
-                            ToolTip="Печать документа. PDF — через принтер «Microsoft Print to PDF»">
+                    <Button x:Name="ExportButton" Style="{StaticResource PrimaryButton}" Click="OnExportClick"
+                            Height="36" Margin="0,0,10,0" ToolTip="Печать чека или сохранение в PDF">
                         <StackPanel Orientation="Horizontal">
                             <Path Data="{StaticResource IconDownload}" Stroke="White" StrokeThickness="1.7"
                                   Width="14" Height="14" Stretch="Uniform" VerticalAlignment="Center" />
-                            <TextBlock Text="Печать / PDF" Foreground="White" Margin="8,0,0,0" VerticalAlignment="Center" />
+                            <TextBlock Text="Печать / PDF" Foreground="White" Margin="8,0,6,0" VerticalAlignment="Center" />
+                            <Path Data="M6 9l6 6 6-6" Stroke="White" StrokeThickness="1.8"
+                                  Width="10" Height="10" Stretch="Uniform" VerticalAlignment="Center"
+                                  StrokeStartLineCap="Round" StrokeLineJoin="Round" />
                         </StackPanel>
+                        <Button.ContextMenu>
+                            <ContextMenu>
+                                <MenuItem Header="Печать…" Click="OnPrintClick" />
+                                <MenuItem Header="PDF" Click="OnPdfClick" />
+                            </ContextMenu>
+                        </Button.ContextMenu>
                     </Button>
                     <Button Style="{StaticResource IconButton}" Click="OnCloseClick" ToolTip="Закрыть">
                         <Path Data="{StaticResource IconClose}" Stroke="{DynamicResource TextSecondaryBrush}" StrokeThickness="1.7"

@@ -13,9 +13,9 @@
                         <ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
                     <StackPanel>
-                        <TextBlock Text="Настройки рабочего места" Style="{StaticResource Caption}" FontSize="12.5" />
-                        <TextBlock Text="Параметры сетевого подключения и полномочия текущей роли" Style="{StaticResource Caption}"
-                                   FontSize="11" Foreground="{DynamicResource TextMutedBrush}" Margin="0,3,0,0" />
+                        <TextBlock Text="О программе" FontSize="19" FontWeight="SemiBold" />
+                        <TextBlock Text="Версия, сетевое подключение к SQL Server и права текущей роли" Style="{StaticResource Caption}"
+                                   FontSize="11.5" Foreground="{DynamicResource TextMutedBrush}" Margin="0,3,0,0" />
                     </StackPanel>
                     <Button Grid.Column="1" Style="{StaticResource SecondaryButton}" Command="{Binding CheckConnectionCommand}"
                             IsEnabled="{Binding IsChecking, Converter={StaticResource InverseBoolean}}">

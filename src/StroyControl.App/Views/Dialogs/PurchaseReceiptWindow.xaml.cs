@@ -1,6 +1,7 @@
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Documents;
+using StroyControl.App.Services;
 using StroyControl.App.Views.Reports;
 using StroyControl.Core.Entities;
 
@@ -29,6 +30,30 @@ public partial class PurchaseReceiptWindow : Window
     /// <summary>Подпись под заголовком окна (используется в привязке).</summary>
     public string Caption =>
         $"{_delivery.Number} от {_delivery.DateDisplay} · {_delivery.SupplierName} · {_delivery.Total:N2} BYN";
+
+    private void OnExportClick(object sender, RoutedEventArgs e)
+    {
+        if (ExportButton.ContextMenu is not { } menu) return;
+
+        menu.PlacementTarget = ExportButton;
+        menu.Placement = System.Windows.Controls.Primitives.PlacementMode.Bottom;
+        menu.IsOpen = true;
+    }
+
+    private void OnPdfClick(object sender, RoutedEventArgs e)
+    {
+        var document = PurchaseReceiptDocument.Build(_delivery, _organization);
+
+        if (PdfPrinter.TryPrint(document, $"Товарный чек {_delivery.Number}", out var error))
+        {
+            MessageBox.Show(this, "Готово: PDF сохранён через принтер «Microsoft Print to PDF».",
+                "PDF", MessageBoxButton.OK, MessageBoxImage.Information);
+            return;
+        }
+
+        MessageBox.Show(this, error ?? "Не удалось выгрузить чек в PDF.", "PDF",
+            MessageBoxButton.OK, MessageBoxImage.Warning);
+    }
 
     private void OnPrintClick(object sender, RoutedEventArgs e)
     {
