@@ -182,9 +182,10 @@
         <!-- Таблица отклонений -->
         <Border Grid.Row="4" Style="{StaticResource Card}" Padding="0">
             <Grid>
-                <DataGrid Style="{StaticResource DataGridStyle}" ItemsSource="{Binding RowsView}"
+                <DataGrid x:Name="RowsGrid" Style="{StaticResource DataGridStyle}" ItemsSource="{Binding RowsView}"
                           SelectedItem="{Binding SelectedRow}" Margin="8,6,8,8" RowHeight="54"
-                          CanUserReorderColumns="False">
+                          CanUserReorderColumns="False"
+                          ScrollViewer.HorizontalScrollBarVisibility="Auto">
                     <DataGrid.ContextMenu>
                         <ContextMenu>
                             <MenuItem Header="Печатный отчёт…"
@@ -223,7 +224,10 @@
                     </DataGrid.GroupStyle>
 
                     <DataGrid.Columns>
-                        <DataGridTemplateColumn Header="Материал" Width="*" MinWidth="240">
+                        <!-- MaxWidth страхует от ошибки WPF: при первом показе таблицы
+                             с группировкой «резиновая» колонка иногда получает всю ширину
+                             окна и выдавливает остальные столбцы за край -->
+                        <DataGridTemplateColumn Header="Материал" Width="*" MinWidth="240" MaxWidth="520">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
                                     <StackPanel VerticalAlignment="Center">
