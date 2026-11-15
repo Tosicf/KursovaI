@@ -243,7 +243,7 @@
                             </DataGridTemplateColumn.CellTemplate>
                         </DataGridTemplateColumn>
 
-                        <DataGridTemplateColumn Header="Количество (факт / план)" Width="170">
+                        <DataGridTemplateColumn Header="Количество, факт / план" Width="196">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
                                     <StackPanel VerticalAlignment="Center">
@@ -263,7 +263,7 @@
                             </DataGridTemplateColumn.CellTemplate>
                         </DataGridTemplateColumn>
 
-                        <DataGridTemplateColumn Header="Цена (факт / план)" Width="150">
+                        <DataGridTemplateColumn Header="Цена, факт / план" Width="156">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
                                     <StackPanel VerticalAlignment="Center">
@@ -281,7 +281,7 @@
                             </DataGridTemplateColumn.CellTemplate>
                         </DataGridTemplateColumn>
 
-                        <DataGridTemplateColumn Header="Стоимость (факт / план), BYN" Width="190">
+                        <DataGridTemplateColumn Header="Стоимость, BYN, факт / план" Width="222">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
                                     <StackPanel VerticalAlignment="Center">
@@ -301,7 +301,7 @@
                             </DataGridTemplateColumn.CellTemplate>
                         </DataGridTemplateColumn>
 
-                        <DataGridTemplateColumn Header="Отклонение" Width="112">
+                        <DataGridTemplateColumn Header="Отклонение" Width="118">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
                                     <TextBlock Text="{Binding DeviationPercent, StringFormat={}{0:+0.0;-0.0;0} %}"
@@ -311,7 +311,7 @@
                             </DataGridTemplateColumn.CellTemplate>
                         </DataGridTemplateColumn>
 
-                        <DataGridTemplateColumn Header="Оценка" Width="130">
+                        <DataGridTemplateColumn Header="Оценка" Width="124">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
                                     <Border Style="{StaticResource Badge}"
