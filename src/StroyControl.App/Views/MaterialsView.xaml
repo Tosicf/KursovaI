@@ -19,7 +19,7 @@
 
             <StackPanel>
                 <TextBlock Text="Справочник материалов и остатков на складе" Style="{StaticResource Caption}" FontSize="12.5" />
-                <TextBlock Text="Учётная цена, страховой запас и привязка к поставщику · минимальный запас считается по сметам"
+                <TextBlock Text="Учётная цена, страховой запас и привязка к поставщику · минимальный запас рассчитывается по сметам автоматически"
                            Style="{StaticResource Caption}" FontSize="11" Foreground="{DynamicResource TextMutedBrush}"
                            Margin="0,3,0,0" />
             </StackPanel>
@@ -34,7 +34,7 @@
                 </Button>
                 <Button Style="{StaticResource SecondaryButton}" Command="{Binding RecalculateMinStockCommand}"
                         IsEnabled="{Binding CanEdit}" Margin="0,0,10,0"
-                        ToolTip="Минимальный запас = потребность по действующим сметам − остаток на складе">
+                        ToolTip="Пересчитать вручную. Обычно минимальный запас пересчитывается сам при изменении смет: минимум = max(потребность − остаток; 10 % потребности)">
                     <StackPanel Orientation="Horizontal">
                         <Path Data="{StaticResource IconEstimates}" Stroke="{DynamicResource TextSecondaryBrush}" StrokeThickness="1.7"
                               Width="15" Height="15" Stretch="Uniform" VerticalAlignment="Center"
@@ -161,7 +161,7 @@
                                             ElementStyle="{StaticResource NumericCell}" />
                         <DataGridTextColumn Header="Остаток" Binding="{Binding StockDisplay, Mode=OneWay}" Width="118"
                                             ElementStyle="{StaticResource NumericCell}" />
-                        <DataGridTextColumn Header="Мин. запас" Binding="{Binding MinStock, StringFormat='{}{0:N0}', Mode=OneWay}" Width="96"
+                        <DataGridTextColumn Header="Мин. запас" Binding="{Binding MinStock, StringFormat='{}{0:N2}', Mode=OneWay}" Width="96"
                                             ElementStyle="{StaticResource NumericCell}" />
                         <DataGridTemplateColumn Header="Статус" Width="132">
                             <DataGridTemplateColumn.CellTemplate>

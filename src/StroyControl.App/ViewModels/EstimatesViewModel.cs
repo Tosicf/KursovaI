@@ -20,6 +20,7 @@ public sealed partial class EstimatesViewModel : ViewModelBase
     private readonly IEstimateRepository _estimates;
     private readonly IProjectRepository _projects;
     private readonly IMaterialRepository _materials;
+    private readonly IMinStockService _minStock;
     private readonly IDialogService _dialogs;
     private readonly IToastService _toasts;
     private readonly ISessionService _session;
@@ -28,6 +29,7 @@ public sealed partial class EstimatesViewModel : ViewModelBase
         IEstimateRepository estimates,
         IProjectRepository projects,
         IMaterialRepository materials,
+        IMinStockService minStock,
         IDialogService dialogs,
         IToastService toasts,
         ISessionService session)
@@ -35,6 +37,7 @@ public sealed partial class EstimatesViewModel : ViewModelBase
         _estimates = estimates;
         _projects = projects;
         _materials = materials;
+        _minStock = minStock;
         _dialogs = dialogs;
         _toasts = toasts;
         _session = session;
@@ -194,6 +197,7 @@ public sealed partial class EstimatesViewModel : ViewModelBase
             ApplyFilter();
 
             _toasts.Success("Смета создана", $"{entity.Number} · {entity.Name}");
+            await SyncMinStockAsync();
         }
         catch (Exception ex)
         {
@@ -231,6 +235,7 @@ public sealed partial class EstimatesViewModel : ViewModelBase
             ApplyFilter();
 
             _toasts.Success("Смета обновлена", updated.Number);
+            await SyncMinStockAsync();
         }
         catch (Exception ex)
         {
@@ -263,6 +268,7 @@ public sealed partial class EstimatesViewModel : ViewModelBase
         {
             await _estimates.DeleteAsync(estimate.Id);
             _toasts.Success("Смета удалена", estimate.Number);
+            await SyncMinStockAsync();
         }
         catch (Exception ex)
         {
@@ -322,6 +328,7 @@ public sealed partial class EstimatesViewModel : ViewModelBase
             SelectedEstimate?.Items.Add(saved);
             UpdateTotals();
             _toasts.Success("Позиция добавлена", $"{entity.MaterialName} · {entity.PlannedCost:N2} BYN");
+            await SyncMinStockAsync();
         }
         catch (Exception ex)
         {
@@ -353,6 +360,7 @@ public sealed partial class EstimatesViewModel : ViewModelBase
         {
             await _estimates.UpdateItemAsync(updated);
             _toasts.Success("Позиция обновлена", updated.MaterialName);
+            await SyncMinStockAsync();
         }
         catch (Exception ex)
         {
@@ -382,6 +390,7 @@ public sealed partial class EstimatesViewModel : ViewModelBase
         {
             await _estimates.DeleteItemAsync(item.Id);
             _toasts.Success("Позиция удалена", item.MaterialName);
+            await SyncMinStockAsync();
         }
         catch (Exception ex)
         {
@@ -390,6 +399,25 @@ public sealed partial class EstimatesViewModel : ViewModelBase
 
             UpdateTotals();
             _toasts.Error("Не удалось удалить позицию", ex.Message);
+        }
+    }
+
+    /// <summary>
+    /// Минимальный запас материалов считается из смет, поэтому после любого изменения
+    /// сметы или её позиции он пересчитывается сразу — без отдельной кнопки.
+    /// Ошибка пересчёта не отменяет сохранение сметы: показываем сообщение и продолжаем.
+    /// </summary>
+    private async Task SyncMinStockAsync()
+    {
+        try
+        {
+            var updated = await _minStock.RecalculateAsync();
+            if (updated > 0)
+                _toasts.Info("Минимальный запас пересчитан", $"Обновлено материалов: {updated}");
+        }
+        catch (Exception ex)
+        {
+            _toasts.Error("Не удалось пересчитать минимальный запас", ex.Message);
         }
     }
 

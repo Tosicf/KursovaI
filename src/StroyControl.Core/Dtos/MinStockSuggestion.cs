@@ -27,17 +27,28 @@ public sealed record MinStockSuggestion(
 /// </summary>
 public static class MinStockCalculator
 {
+    /// <summary>Страховой резерв от потребности по смете, %.</summary>
+    public const decimal ReservePercent = 10m;
+
     /// <summary>
-    /// Минимальный запас = потребность по сметам минус текущий остаток, но не меньше нуля.
-    /// Смысл: порог, при котором на складе ещё хватает материала на оставшийся объём работ.
-    /// Материалы, которых нет ни в одной смете, не пересчитываются — для них запас остаётся
-    /// экспертным, введённым вручную.
+    /// Минимальный запас считается из сметы и всегда реагирует на её изменение:
+    /// берётся большее из двух значений — непокрытая остатком потребность
+    /// (потребность − остаток) и страховой резерв (10 % потребности).
+    /// <para>
+    /// Примеры: потребность 100, остаток 40 → 60; потребность 100, остаток 500 → 10
+    /// (резерв, а не ноль); потребность 200 при том же остатке 500 → 20.
+    /// </para>
+    /// Материалы, которых нет ни в одной смете, не пересчитываются — для них запас
+    /// остаётся экспертным, введённым вручную.
     /// </summary>
     public static decimal SuggestedMinStock(decimal plannedNeed, decimal stockQuantity)
     {
         if (plannedNeed <= 0m) return 0m;
 
-        var remaining = plannedNeed - stockQuantity;
-        return remaining <= 0m ? 0m : Math.Round(remaining, 3, MidpointRounding.AwayFromZero);
+        var uncovered = plannedNeed - stockQuantity;
+        var reserve = plannedNeed * ReservePercent / 100m;
+        var result = Math.Max(uncovered, reserve);
+
+        return result <= 0m ? 0m : Math.Round(result, 3, MidpointRounding.AwayFromZero);
     }
 }
