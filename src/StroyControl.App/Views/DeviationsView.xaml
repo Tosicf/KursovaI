@@ -184,7 +184,7 @@
             <Grid>
                 <DataGrid Style="{StaticResource DataGridStyle}" ItemsSource="{Binding RowsView}"
                           SelectedItem="{Binding SelectedRow}" Margin="8,6,8,8" RowHeight="54"
-                          CanUserReorderColumns="False" CanUserResizeColumns="False">
+                          CanUserReorderColumns="False">
                     <DataGrid.ContextMenu>
                         <ContextMenu>
                             <MenuItem Header="Печатный отчёт…"
