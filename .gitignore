@@ -18,3 +18,5 @@ Thumbs.db
 
 # Локальные секреты
 appsettings.Development.json
+
+__pycache__/
