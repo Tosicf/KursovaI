@@ -34,6 +34,28 @@ public class Estimate : EntityBase
 
     public string StatusDisplay => Status.ToDisplayName();
 
+    /// <summary>
+    /// Смета изменяема только в состоянии «Черновик». После подтверждения состав
+    /// и суммы фиксируются, поэтому перерасход нельзя «подогнать» под факт.
+    /// </summary>
+    public bool IsEditable => Status == EstimateStatus.Draft;
+
+    /// <summary>Смета подтверждена или отправлена в архив — правки запрещены.</summary>
+    public bool IsFixed => Status != EstimateStatus.Draft;
+
+    /// <summary>Смета снята с учёта и показывается только во вкладке «Архив».</summary>
+    public bool IsArchived => Status == EstimateStatus.Archived;
+
+    /// <summary>Подсказка для интерфейса о текущем режиме работы со сметой.</summary>
+    public string LockDisplay => Status switch
+    {
+        EstimateStatus.Draft => "Черновик: состав и суммы можно изменять",
+        EstimateStatus.OnReview => "Смета на проверке: изменения запрещены",
+        EstimateStatus.Approved => "Смета утверждена (подтверждена): изменения запрещены",
+        EstimateStatus.Archived => "Смета в архиве: только просмотр и отчёты",
+        _ => string.Empty
+    };
+
     public string ProjectName => Project?.Name ?? "—";
 
     public override string ToString() => $"{Number} · {Name}";

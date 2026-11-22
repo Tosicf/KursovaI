@@ -17,4 +17,15 @@ public interface IEstimateRepository : IRepository<Estimate>
     Task UpdateItemAsync(EstimateItem item, CancellationToken cancellationToken = default);
 
     Task DeleteItemAsync(int itemId, CancellationToken cancellationToken = default);
+
+    /// <summary>Сметы, снятые с учёта (вкладка «Архив»), с позициями.</summary>
+    Task<IReadOnlyList<Estimate>> GetArchivedAsync(CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Подтверждает черновик: состав и суммы фиксируются, дальнейшие правки запрещены.
+    /// </summary>
+    Task ConfirmAsync(int estimateId, CancellationToken cancellationToken = default);
+
+    /// <summary>Отправляет подтверждённую смету в архив после завершения работ.</summary>
+    Task ArchiveAsync(int estimateId, CancellationToken cancellationToken = default);
 }

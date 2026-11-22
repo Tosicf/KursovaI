@@ -5,6 +5,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using StroyControl.App.Services;
 using StroyControl.Core.Entities;
+using StroyControl.Core.Enums;
 using StroyControl.Core.Interfaces;
 
 namespace StroyControl.App.ViewModels;
@@ -64,6 +65,21 @@ public sealed partial class EstimatesViewModel : ViewModelBase
 
     public bool CanEdit => _session.CanEditEstimates;
 
+    /// <summary>Правки разрешены только для выбранного черновика.</summary>
+    public bool CanEditSelected => CanEdit && SelectedEstimate?.IsEditable == true;
+
+    /// <summary>Подтвердить можно черновик, в котором есть хотя бы одна позиция.</summary>
+    public bool CanConfirmSelected => CanEditSelected && Items.Count > 0;
+
+    /// <summary>В архив отправляется только подтверждённая смета.</summary>
+    public bool CanArchiveSelected => CanEdit && SelectedEstimate?.Status == EstimateStatus.Approved;
+
+    /// <summary>Выбранная смета зафиксирована — состав и суммы менять нельзя.</summary>
+    public bool IsSelectedFixed => SelectedEstimate?.IsFixed == true;
+
+    /// <summary>Подсказка о режиме работы с выбранной сметой.</summary>
+    public string StatusHint => SelectedEstimate?.LockDisplay ?? "Выберите смету из списка";
+
     /// <summary>Отчёт содержит финансовые показатели — доступен ролям с правом просмотра финансов.</summary>
     public bool CanViewReport => _session.CanViewFinance;
 
@@ -116,6 +132,7 @@ public sealed partial class EstimatesViewModel : ViewModelBase
         OnPropertyChanged(nameof(HasItems));
         OnPropertyChanged(nameof(IsItemsEmpty));
         OnPropertyChanged(nameof(SelectionHint));
+        RaiseEstimateStateChanged();
         UpdateTotals();
     }
 
@@ -133,7 +150,7 @@ public sealed partial class EstimatesViewModel : ViewModelBase
             var previousId = SelectedEstimate?.Id;
 
             Estimates.Clear();
-            foreach (var estimate in estimates)
+            foreach (var estimate in estimates.Where(e => e.Status != EstimateStatus.Archived))
                 Estimates.Add(estimate);
 
             Projects.Clear();
@@ -212,6 +229,12 @@ public sealed partial class EstimatesViewModel : ViewModelBase
     {
         if (!CanEdit || estimate is null) return;
 
+        if (!estimate.IsEditable)
+        {
+            _toasts.Info("Смета зафиксирована", estimate.LockDisplay);
+            return;
+        }
+
         var updated = _dialogs.EditEstimate(estimate, Projects);
         if (updated is null) return;
 
@@ -249,6 +272,12 @@ public sealed partial class EstimatesViewModel : ViewModelBase
     private async Task DeleteEstimateAsync(Estimate? estimate)
     {
         if (!CanEdit || estimate is null) return;
+
+        if (!estimate.IsEditable)
+        {
+            _toasts.Info("Удаление запрещено", "Удалить можно только черновик: подтверждённая смета хранит историю плана.");
+            return;
+        }
 
         var confirmed = _dialogs.Confirm(
             "Удалить смету?",
@@ -302,7 +331,13 @@ public sealed partial class EstimatesViewModel : ViewModelBase
     [RelayCommand]
     private async Task AddItemAsync()
     {
-        if (!CanEdit || SelectedEstimate is null) return;
+        if (SelectedEstimate is null) return;
+
+        if (!CanEditSelected)
+        {
+            _toasts.Info("Смета зафиксирована", SelectedEstimate.LockDisplay);
+            return;
+        }
 
         await RefreshMaterialsAsync();
 
@@ -341,7 +376,13 @@ public sealed partial class EstimatesViewModel : ViewModelBase
     [RelayCommand]
     private async Task EditItemAsync(EstimateItem? item)
     {
-        if (!CanEdit || item is null || SelectedEstimate is null) return;
+        if (item is null || SelectedEstimate is null) return;
+
+        if (!CanEditSelected)
+        {
+            _toasts.Info("Смета зафиксирована", SelectedEstimate.LockDisplay);
+            return;
+        }
 
         await RefreshMaterialsAsync();
 
@@ -373,7 +414,13 @@ public sealed partial class EstimatesViewModel : ViewModelBase
     [RelayCommand]
     private async Task DeleteItemAsync(EstimateItem? item)
     {
-        if (!CanEdit || item is null) return;
+        if (item is null) return;
+
+        if (!CanEditSelected)
+        {
+            _toasts.Info("Смета зафиксирована", SelectedEstimate?.LockDisplay ?? "Изменения запрещены");
+            return;
+        }
 
         var confirmed = _dialogs.Confirm(
             "Удалить позицию сметы?",
@@ -399,6 +446,87 @@ public sealed partial class EstimatesViewModel : ViewModelBase
 
             UpdateTotals();
             _toasts.Error("Не удалось удалить позицию", ex.Message);
+        }
+    }
+
+    /// <summary>
+    /// Подтверждение черновика: состав и суммы фиксируются, дальнейшие правки
+    /// запрещены и на экране, и в репозитории.
+    /// </summary>
+    [RelayCommand]
+    private async Task ConfirmEstimateAsync()
+    {
+        if (!CanEdit || SelectedEstimate is null) return;
+
+        if (!SelectedEstimate.IsEditable)
+        {
+            _toasts.Info("Смета уже зафиксирована", SelectedEstimate.LockDisplay);
+            return;
+        }
+
+        if (Items.Count == 0)
+        {
+            _toasts.Error("Пустая смета", "Добавьте хотя бы одну позицию — подтверждать нечего.");
+            return;
+        }
+
+        var confirmed = _dialogs.Confirm(
+            "Подтвердить смету?",
+            $"Смета «{SelectedEstimate.Number} · {SelectedEstimate.Name}» будет зафиксирована: "
+            + "изменить реквизиты, позиции и суммы станет нельзя, удалить её тоже нельзя. "
+            + "Отменить подтверждение невозможно.",
+            "Подтвердить смету");
+
+        if (!confirmed) return;
+
+        var number = SelectedEstimate.Number;
+
+        try
+        {
+            await _estimates.ConfirmAsync(SelectedEstimate.Id);
+            _toasts.Success("Смета подтверждена", $"{number}: состав и суммы зафиксированы");
+            await LoadAsync();
+            await SyncMinStockAsync();
+        }
+        catch (Exception ex)
+        {
+            _toasts.Error("Не удалось подтвердить смету", ex.Message);
+        }
+    }
+
+    /// <summary>Завершённая смета уходит в архив — отдельную вкладку только для чтения.</summary>
+    [RelayCommand]
+    private async Task ArchiveEstimateAsync()
+    {
+        if (!CanEdit || SelectedEstimate is null) return;
+
+        if (SelectedEstimate.Status != EstimateStatus.Approved)
+        {
+            _toasts.Info("Сначала подтвердите смету",
+                "В архив отправляется только подтверждённая смета — так сохраняется история плана.");
+            return;
+        }
+
+        var confirmed = _dialogs.Confirm(
+            "Отправить смету в архив?",
+            $"Смета «{SelectedEstimate.Number} · {SelectedEstimate.Name}» завершена и будет перенесена "
+            + "во вкладку «Архив». В работе со сметами она больше не участвует; вернуть её нельзя.",
+            "В архив");
+
+        if (!confirmed) return;
+
+        var number = SelectedEstimate.Number;
+
+        try
+        {
+            await _estimates.ArchiveAsync(SelectedEstimate.Id);
+            _toasts.Success("Смета в архиве", $"{number}: перенесена во вкладку «Архив»");
+            await LoadAsync();
+            await SyncMinStockAsync();
+        }
+        catch (Exception ex)
+        {
+            _toasts.Error("Не удалось отправить смету в архив", ex.Message);
         }
     }
 
@@ -451,8 +579,19 @@ public sealed partial class EstimatesViewModel : ViewModelBase
         OnPropertyChanged(nameof(IsFilteredEmpty));
     }
 
+    /// <summary>Состояние выбранной сметы влияет на доступность команд — сообщаем об этом разметке.</summary>
+    private void RaiseEstimateStateChanged()
+    {
+        OnPropertyChanged(nameof(CanEditSelected));
+        OnPropertyChanged(nameof(CanConfirmSelected));
+        OnPropertyChanged(nameof(CanArchiveSelected));
+        OnPropertyChanged(nameof(IsSelectedFixed));
+        OnPropertyChanged(nameof(StatusHint));
+    }
+
     private void UpdateTotals()
     {
+        OnPropertyChanged(nameof(CanConfirmSelected));
         OnPropertyChanged(nameof(ItemsTotal));
         OnPropertyChanged(nameof(ItemsTotalDisplay));
         OnPropertyChanged(nameof(ItemsCount));

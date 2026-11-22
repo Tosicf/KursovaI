@@ -5,9 +5,11 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using StroyControl.App.Services;
 using StroyControl.App.Startup;
+using StroyControl.Core.Diagnostics;
 using StroyControl.App.ViewModels;
 using StroyControl.App.Views;
 using StroyControl.Core.Interfaces;
+using StroyControl.Core.Services;
 using StroyControl.Data;
 using StroyControl.Data.Seed;
 
@@ -20,6 +22,7 @@ namespace StroyControl.App;
 public partial class App : Application
 {
     private ServiceProvider? _services;
+    private IServerLog? _serverLog;
 
     protected override async void OnStartup(StartupEventArgs e)
     {
@@ -27,6 +30,8 @@ public partial class App : Application
 
         ConfigureCulture();
         DispatcherUnhandledException += OnDispatcherUnhandledException;
+        AppDomain.CurrentDomain.UnhandledException += OnDomainUnhandledException;
+        TaskScheduler.UnobservedTaskException += OnUnobservedTaskException;
 
         try
         {
@@ -34,6 +39,8 @@ public partial class App : Application
         }
         catch (Exception ex)
         {
+            if (_serverLog is not null)
+                _serverLog.Error("Ошибка", $"Запуск прерван: {ex.GetBaseException().Message}");
             var error = ex.GetBaseException();   // ← достаём настоящую причину
             MessageBox.Show(
                 $"Не удалось запустить приложение «СтройКонтроль».\n\n" +
@@ -65,8 +72,27 @@ public partial class App : Application
         var demoModeAllowed = configuration.GetValue("Application:DemoModeAllowed", true);
         var organization = configuration["Application:Organization"] ?? "СУ-14, г. Минск";
 
+        // Консоль серверной части создаётся до первого обращения к базе,
+        // чтобы в ней были видны и проверка подключения, и создание схемы.
+        var serverLog = new ServerLog();
+        _serverLog = serverLog;
+
+        var showConsole = configuration.GetValue("Application:ShowServerConsole", true);
+        var consoleOpened = showConsole && ServerConsole.Attach(serverLog, "СтройКонтроль — серверный журнал");
+
+        serverLog.Info("Запуск", $"Приложение запущено · организация: {organization}");
+        serverLog.Info("Запуск", consoleOpened
+            ? "Консоль серверного журнала открыта"
+            : "Консоль не открыта (отключена в appsettings.json или недоступна) — журнал хранится в памяти");
+
         var demoMode = false;
         var probe = await SqlServerProbe.TryConnectAsync(connectionString);
+
+        serverLog.Write(probe.Success ? StroyControl.Core.Enums.ServerLogLevel.Info
+                                      : StroyControl.Core.Enums.ServerLogLevel.Warning,
+            "Подключение", probe.Success
+                ? "SQL Server доступен — проверка подключения пройдена"
+                : $"SQL Server недоступен: {probe.Error}");
 
         if (!probe.Success)
         {
@@ -103,13 +129,16 @@ public partial class App : Application
         var services = new ServiceCollection();
         services.AddSingleton<IConfiguration>(configuration);
         services.AddSingleton(environment);
+        services.AddSingleton<IServerLog>(serverLog);
 
-        services.AddStroyControlData(connectionString, demoMode);
+        services.AddStroyControlData(connectionString, demoMode, serverLog);
         RegisterApplicationServices(services);
 
         _services = services.BuildServiceProvider();
 
+        serverLog.Info("База данных", "Проверка схемы и загрузка демонстрационных данных…");
         await DatabaseInitializer.InitializeAsync(_services);
+        serverLog.Info("База данных", "Схема проверена, приложение готово к работе");
         _services.GetRequiredService<IApplicationController>().ShowLoginAndStart();
     }
 
@@ -133,6 +162,7 @@ public partial class App : Application
         services.AddSingleton<DeliveriesViewModel>();
         services.AddSingleton<UsagesViewModel>();
         services.AddSingleton<DeviationsViewModel>();
+        services.AddSingleton<ArchiveViewModel>();
         services.AddSingleton<UsersViewModel>();
         services.AddSingleton<SettingsViewModel>();
     }
@@ -150,8 +180,11 @@ public partial class App : Application
             new FrameworkPropertyMetadata(XmlLanguage.GetLanguage(culture.IetfLanguageTag)));
     }
 
-    private static void OnDispatcherUnhandledException(object sender, System.Windows.Threading.DispatcherUnhandledExceptionEventArgs e)
+    private void OnDispatcherUnhandledException(object sender, System.Windows.Threading.DispatcherUnhandledExceptionEventArgs e)
     {
+        if (_serverLog is not null)
+            _serverLog.Error("Ошибка", $"Необработанное исключение интерфейса: {e.Exception.GetBaseException().Message}");
+
         MessageBox.Show(
             $"Произошла непредвиденная ошибка.\n\n{e.Exception.Message}",
             "СтройКонтроль",
@@ -159,5 +192,29 @@ public partial class App : Application
             MessageBoxImage.Error);
 
         e.Handled = true;
+    }
+
+    private void OnDomainUnhandledException(object sender, UnhandledExceptionEventArgs e)
+    {
+        var message = (e.ExceptionObject as Exception)?.GetBaseException().Message ?? "неизвестная ошибка";
+        if (_serverLog is not null)
+            _serverLog.Error("Ошибка", $"Критическая ошибка процесса: {message}");
+
+        try
+        {
+            if (_serverLog is not null)
+                _serverLog.Info("Ошибка", "Приложение завершает работу");
+        }
+        catch
+        {
+            // Журнал может быть уже недоступен при аварийном завершении.
+        }
+    }
+
+    private void OnUnobservedTaskException(object? sender, UnobservedTaskExceptionEventArgs e)
+    {
+        if (_serverLog is not null)
+            _serverLog.Error("Ошибка", $"Ошибка фоновой задачи: {e.Exception.GetBaseException().Message}");
+        e.SetObserved();
     }
 }

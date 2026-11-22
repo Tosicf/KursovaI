@@ -159,6 +159,16 @@
                             <TextBlock Text="{Binding SelectedEstimate.Name, TargetNullValue=Выберите смету}" FontSize="17"
                                        FontWeight="SemiBold" TextTrimming="CharacterEllipsis" />
                             <TextBlock Style="{StaticResource Caption}" Margin="0,4,0,0" Text="{Binding SelectionHint}" />
+                            <Border Style="{StaticResource Badge}" HorizontalAlignment="Left" Margin="0,8,0,0" Padding="10,3"
+                                    Background="{DynamicResource SurfaceAltBrush}"
+                                    Visibility="{Binding IsSelectedFixed, Converter={StaticResource BoolToVisibility}}">
+                                <StackPanel Orientation="Horizontal">
+                                    <Path Data="{StaticResource IconLock}" Stroke="{DynamicResource WarningBrush}" StrokeThickness="1.6"
+                                          Width="11" Height="11" Stretch="Uniform" VerticalAlignment="Center" />
+                                    <TextBlock Text="{Binding StatusHint}" Margin="6,0,0,0" FontSize="10.5"
+                                               Foreground="{DynamicResource TextSecondaryBrush}" VerticalAlignment="Center" />
+                                </StackPanel>
+                            </Border>
                         </StackPanel>
 
                         <StackPanel Grid.Column="1" Orientation="Horizontal">
@@ -172,19 +182,38 @@
                                 </StackPanel>
                             </Button>
                             <Button Style="{StaticResource SecondaryButton}" Height="36" Command="{Binding AddItemCommand}"
-                                    CommandParameter="{Binding SelectedEstimate}" IsEnabled="{Binding CanEdit}" Margin="0,0,8,0">
+                                    CommandParameter="{Binding SelectedEstimate}" IsEnabled="{Binding CanEditSelected}" Margin="0,0,8,0"
+                                    ToolTip="Добавить позицию в черновик сметы (после подтверждения правки запрещены)">
                                 <StackPanel Orientation="Horizontal">
                                     <Path Data="{StaticResource IconPlus}" Stroke="{DynamicResource TextSecondaryBrush}" StrokeThickness="2"
                                           Width="13" Height="13" Stretch="Uniform" VerticalAlignment="Center" />
                                     <TextBlock Text="Позиция" Margin="6,0,0,0" VerticalAlignment="Center" />
                                 </StackPanel>
                             </Button>
-                            <Button Style="{StaticResource IconButton}" ToolTip="Изменить смету" IsEnabled="{Binding CanEdit}"
+                            <Button Style="{StaticResource SecondaryButton}" Height="36" Command="{Binding ConfirmEstimateCommand}"
+                                    IsEnabled="{Binding CanConfirmSelected}" Margin="0,0,8,0"
+                                    ToolTip="Подтвердить создание сметы: состав, количества и цены фиксируются без возможности изменения">
+                                <StackPanel Orientation="Horizontal">
+                                    <Path Data="{StaticResource IconCheck}" Stroke="{DynamicResource SuccessBrush}" StrokeThickness="2"
+                                          Width="14" Height="14" Stretch="Uniform" VerticalAlignment="Center" />
+                                    <TextBlock Text="Подтвердить" Margin="6,0,0,0" VerticalAlignment="Center" />
+                                </StackPanel>
+                            </Button>
+                            <Button Style="{StaticResource SecondaryButton}" Height="36" Command="{Binding ArchiveEstimateCommand}"
+                                    IsEnabled="{Binding CanArchiveSelected}" Margin="0,0,8,0"
+                                    ToolTip="Работы завершены: подтверждённая смета переносится во вкладку «Архив» (только чтение)">
+                                <StackPanel Orientation="Horizontal">
+                                    <Path Data="{StaticResource IconBox}" Stroke="{DynamicResource TextSecondaryBrush}" StrokeThickness="1.7"
+                                          Width="14" Height="14" Stretch="Uniform" VerticalAlignment="Center" />
+                                    <TextBlock Text="В архив" Margin="6,0,0,0" VerticalAlignment="Center" />
+                                </StackPanel>
+                            </Button>
+                            <Button Style="{StaticResource IconButton}" ToolTip="Изменить реквизиты черновика" IsEnabled="{Binding CanEditSelected}"
                                     Command="{Binding EditEstimateCommand}" CommandParameter="{Binding SelectedEstimate}">
                                 <Path Data="{StaticResource IconEdit}" Stroke="{DynamicResource TextSecondaryBrush}" StrokeThickness="1.6"
                                       Width="15" Height="15" Stretch="Uniform" />
                             </Button>
-                            <Button Style="{StaticResource IconButton}" ToolTip="Удалить смету" IsEnabled="{Binding CanEdit}"
+                            <Button Style="{StaticResource IconButton}" ToolTip="Удалить черновик сметы" IsEnabled="{Binding CanEditSelected}"
                                     Command="{Binding DeleteEstimateCommand}" CommandParameter="{Binding SelectedEstimate}">
                                 <Path Data="{StaticResource IconTrash}" Stroke="{DynamicResource DangerBrush}" StrokeThickness="1.6"
                                       Width="15" Height="15" Stretch="Uniform" />
@@ -235,15 +264,15 @@
                             <MenuItem Header="Изменить позицию…" InputGestureText="F2"
                                       Command="{Binding PlacementTarget.DataContext.EditItemCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
                                       CommandParameter="{Binding PlacementTarget.SelectedItem, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
-                                      IsEnabled="{Binding PlacementTarget.DataContext.CanEdit, RelativeSource={RelativeSource AncestorType=ContextMenu}}" />
+                                      IsEnabled="{Binding PlacementTarget.DataContext.CanEditSelected, RelativeSource={RelativeSource AncestorType=ContextMenu}}" />
                             <MenuItem Header="Удалить позицию" InputGestureText="Del"
                                       Command="{Binding PlacementTarget.DataContext.DeleteItemCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
                                       CommandParameter="{Binding PlacementTarget.SelectedItem, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
-                                      IsEnabled="{Binding PlacementTarget.DataContext.CanEdit, RelativeSource={RelativeSource AncestorType=ContextMenu}}" />
+                                      IsEnabled="{Binding PlacementTarget.DataContext.CanEditSelected, RelativeSource={RelativeSource AncestorType=ContextMenu}}" />
                             <Separator />
                             <MenuItem Header="Добавить позицию"
                                       Command="{Binding PlacementTarget.DataContext.AddItemCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
-                                      IsEnabled="{Binding PlacementTarget.DataContext.CanEdit, RelativeSource={RelativeSource AncestorType=ContextMenu}}" />
+                                      IsEnabled="{Binding PlacementTarget.DataContext.CanEditSelected, RelativeSource={RelativeSource AncestorType=ContextMenu}}" />
                             <MenuItem Header="Обновить" InputGestureText="Ctrl+R"
                                       Command="{Binding PlacementTarget.DataContext.RefreshCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}" />
                             <MenuItem Header="Копировать" InputGestureText="Ctrl+C"
@@ -286,15 +315,15 @@
                                     <DataGridTemplateColumn.CellTemplate>
                                         <DataTemplate>
                                             <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                                                <Button Style="{StaticResource IconButton}" Width="28" Height="28" ToolTip="Изменить"
-                                                        IsEnabled="{Binding DataContext.CanEdit, RelativeSource={RelativeSource AncestorType=DataGrid}}"
+                                                <Button Style="{StaticResource IconButton}" Width="28" Height="28" ToolTip="Изменить позицию"
+                                                        IsEnabled="{Binding DataContext.CanEditSelected, RelativeSource={RelativeSource AncestorType=DataGrid}}"
                                                         Command="{Binding DataContext.EditItemCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
                                                         CommandParameter="{Binding}">
                                                     <Path Data="{StaticResource IconEdit}" Stroke="{DynamicResource TextSecondaryBrush}"
                                                           StrokeThickness="1.6" Width="13" Height="13" Stretch="Uniform" />
                                                 </Button>
-                                                <Button Style="{StaticResource IconButton}" Width="28" Height="28" ToolTip="Удалить"
-                                                        IsEnabled="{Binding DataContext.CanEdit, RelativeSource={RelativeSource AncestorType=DataGrid}}"
+                                                <Button Style="{StaticResource IconButton}" Width="28" Height="28" ToolTip="Удалить позицию"
+                                                        IsEnabled="{Binding DataContext.CanEditSelected, RelativeSource={RelativeSource AncestorType=DataGrid}}"
                                                         Command="{Binding DataContext.DeleteItemCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
                                                         CommandParameter="{Binding}">
                                                     <Path Data="{StaticResource IconTrash}" Stroke="{DynamicResource DangerBrush}"
