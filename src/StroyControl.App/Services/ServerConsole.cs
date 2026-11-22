@@ -1,3 +1,4 @@
+using System.IO;
 using System.Runtime.InteropServices;
 using System.Text;
 using StroyControl.Core.Diagnostics;
@@ -121,9 +122,14 @@ public static class ServerConsole
         }
     }
 
+    // Импорт оставлен классическим (DllImport), а не LibraryImport: генератор
+    // последнего создаёт unsafe-код и требует AllowUnsafeBlocks, что для двух
+    // вызовов ядра избыточно. Предложения анализатора SYSLIB1054 здесь не нужны.
+#pragma warning disable SYSLIB1054
     [DllImport("kernel32.dll", SetLastError = true)]
     private static extern bool AllocConsole();
 
     [DllImport("kernel32.dll")]
     private static extern IntPtr GetConsoleWindow();
+#pragma warning restore SYSLIB1054
 }
