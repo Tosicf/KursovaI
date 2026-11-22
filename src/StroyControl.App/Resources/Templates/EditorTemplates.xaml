@@ -261,9 +261,10 @@
                               DisplayMemberPath="Name" />
                 </StackPanel>
                 <StackPanel Grid.Column="1">
-                    <TextBlock Text="Статус" Style="{StaticResource FieldLabel}" />
-                    <ComboBox ItemsSource="{Binding Statuses}" SelectedItem="{Binding SelectedStatus, Mode=TwoWay}"
-                              DisplayMemberPath="Display" />
+                    <TextBlock Text="Состояние документа" Style="{StaticResource FieldLabel}" />
+                    <TextBlock Text="Черновик" FontWeight="SemiBold" VerticalAlignment="Center" Margin="0,0,0,2" />
+                    <TextBlock Text="Статус меняется кнопками «Подтвердить» и «В архив» на странице смет."
+                               Style="{StaticResource Caption}" FontSize="11" TextWrapping="Wrap" />
                 </StackPanel>
             </Grid>
 

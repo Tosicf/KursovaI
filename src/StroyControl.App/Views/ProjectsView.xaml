@@ -3,6 +3,15 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:controls="clr-namespace:StroyControl.App.Controls">
 
+    <UserControl.Resources>
+        <!-- Заголовок с подсказкой: содержимое — обычная строка, иначе ContentTemplate
+             из GridHeaderStyle выводит вместо текста имя типа (System.Windows.Controls.StackPanel). -->
+        <Style x:Key="ProgressHeaderStyle" TargetType="DataGridColumnHeader" BasedOn="{StaticResource GridHeaderStyle}">
+            <Setter Property="ToolTip"
+                    Value="Готовность — экспертная оценка физического выполнения работ (0–100 %), вводится вручную в карточке объекта. Не путайте её с исполнением бюджета: там процент считается как факт ÷ план × 100 %." />
+        </Style>
+    </UserControl.Resources>
+
     <Grid Margin="24,18,24,24">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
@@ -126,14 +135,8 @@
                         <DataGridTextColumn Header="Договор, BYN" Binding="{Binding ContractSum, StringFormat='{}{0:N0}', Mode=OneWay}" Width="130"
                                             ElementStyle="{StaticResource NumericCell}" />
 
-                        <DataGridTemplateColumn Width="150">
-                            <DataGridTemplateColumn.Header>
-                                <StackPanel Orientation="Horizontal">
-                                    <TextBlock Text="Готовность" />
-                                    <TextBlock Style="{StaticResource InfoHint}" FontSize="11"
-                                               ToolTip="Готовность — это экспертная оценка физического выполнения работ по объекту: она вводится вручную в карточке объекта (0–100 %) и не вычисляется из документов. Не путайте её с исполнением бюджета: там процент считается автоматически как фактические затраты ÷ сметная стоимость × 100 % и ограничен 100 %." />
-                                </StackPanel>
-                            </DataGridTemplateColumn.Header>
+                        <DataGridTemplateColumn Header="Готовность, %" Width="150"
+                                                HeaderStyle="{StaticResource ProgressHeaderStyle}">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
                                     <StackPanel VerticalAlignment="Center">

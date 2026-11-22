@@ -169,6 +169,7 @@ public sealed partial class MainViewModel : ObservableObject
         NavigationItems.Add(CreateItem<DeliveriesViewModel>("deliveries", "Поступления", "IconIncoming"));
         NavigationItems.Add(CreateItem<UsagesViewModel>("usages", "Списания", "IconOutgoing"));
         NavigationItems.Add(CreateItem<DeviationsViewModel>("deviations", "Анализ отклонений", "IconDeviations"));
+        NavigationItems.Add(CreateItem<ArchiveViewModel>("archive", "Архив смет", "IconArchive"));
 
         // «Сотрудники» и «О программе» вынесены в верхнюю панель (см. разметку MainWindow).
     }

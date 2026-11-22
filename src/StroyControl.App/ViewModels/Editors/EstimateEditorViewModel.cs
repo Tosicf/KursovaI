@@ -16,7 +16,6 @@ public sealed partial class EstimateEditorViewModel : EditorViewModelBase
         Number = source?.Number ?? $"СМ-{DateTime.Now:yy}-{DateTime.Now:MMdd}";
         Name = source?.Name ?? string.Empty;
         SelectedProject = projects.FirstOrDefault(p => p.Id == source?.ProjectId) ?? projects.FirstOrDefault();
-        SelectedStatus = Statuses.FirstOrDefault(s => s.Value == (source?.Status ?? EstimateStatus.Draft)) ?? Statuses[0];
         Note = source?.Note;
         MarkupPercent = source?.MarkupPercent ?? 10m;
         ProfitPercent = source?.ProfitPercent ?? 12m;
@@ -27,8 +26,6 @@ public sealed partial class EstimateEditorViewModel : EditorViewModelBase
 
     public IReadOnlyList<Project> Projects { get; }
 
-    public IReadOnlyList<EnumOption<EstimateStatus>> Statuses { get; } = EnumExtensions.ToOptions<EstimateStatus>();
-
     [ObservableProperty]
     private string number;
 
@@ -37,9 +34,6 @@ public sealed partial class EstimateEditorViewModel : EditorViewModelBase
 
     [ObservableProperty]
     private Project? selectedProject;
-
-    [ObservableProperty]
-    private EnumOption<EstimateStatus> selectedStatus;
 
     [ObservableProperty]
     private string? note;
@@ -75,7 +69,9 @@ public sealed partial class EstimateEditorViewModel : EditorViewModelBase
         Number = Number.Trim(),
         Name = Name.Trim(),
         ProjectId = SelectedProject?.Id ?? 0,
-        Status = SelectedStatus.Value,
+        // Состояние документа меняется только командами «Подтвердить» и «В архив»:
+        // новая смета всегда создаётся черновиком, а у существующей сохраняется текущий статус.
+        Status = _source?.Status ?? EstimateStatus.Draft,
         Note = string.IsNullOrWhiteSpace(Note) ? null : Note.Trim(),
         MarkupPercent = MarkupPercent,
         ProfitPercent = ProfitPercent,
