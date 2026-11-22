@@ -270,6 +270,15 @@ class Canvas:
                 if self._enters(p, q, x, y, w, h, tol):
                     issues.append(f'линия {owner_s} проходит через узел {owner} '
                                   f'({self._fmt(p)}-{self._fmt(q)}; box {x:.0f},{y:.0f},{w:.0f},{h:.0f})')
+        for owner, x, y, w, h in self.nodes:
+            if x < -1 or y < -1 or x + w > self.w + 1 or y + h > self.h + 1:
+                issues.append(f'узел {owner} выходит за границы холста '
+                              f'({x:.0f},{y:.0f},{w:.0f},{h:.0f}; холст {self.w}x{self.h})')
+        for owner, p, q in segs:
+            for pt in (p, q):
+                if pt[0] < -1 or pt[1] < -1 or pt[0] > self.w + 1 or pt[1] > self.h + 1:
+                    issues.append(f'линия {owner} выходит за границы холста ({self._fmt(pt)})')
+                    break
         self.issues = issues
         return issues
 

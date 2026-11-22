@@ -239,7 +239,7 @@ def dia_04():
 
 
 def dia_04():
-    c = Canvas(980, 1000)
+    c = Canvas(980, 1120)
     c._owner_ctx('activity-deviation')
     title(c, 'Диаграмма деятельности «Анализ отклонений от сметы»', 980)
 
@@ -275,8 +275,10 @@ def dia_04():
     c.arrow((X + 150, 950), (620, 950))
     c.text(520, 938, 'да', size=11)
     c.shape('rect', 760, 950, 250, 58, 'Выгрузить отчёт\nв XLSX, CSV или PDF', size=12)
-    c.arrow((X, 998), (X, 1024)) if False else None
-    c.path([(760, 979), (760, 1030), (X + 85, 1030)])
+    c.arrow((X, 998), (X, 1040))
+    c.text(X - 20, 1020, 'нет', size=11, anchor='rm')
+    c.shape('term', X, 1062, 170, 46, 'Конец', size=FT)
+    c.path([(760, 979), (760, 1062), (X + 85, 1062)], arrow=True)
     return _done(c, '04-activity-deviation.png')
 
 
@@ -657,7 +659,7 @@ def algo_frame(c, w, title_text):
 
 
 def dia_12():
-    c = Canvas(900, 880)
+    c = Canvas(900, 920)
     c._owner_ctx('algo-calc')
     algo_frame(c, 900, 'Алгоритм расчёта отклонений по позиции сметы')
     X = 300
@@ -692,7 +694,7 @@ def dia_12():
 
 
 def dia_13():
-    c = Canvas(960, 940)
+    c = Canvas(960, 980)
     c._owner_ctx('algo-delete')
     algo_frame(c, 960, 'Алгоритм удаления записи')
     X = 300
@@ -738,7 +740,7 @@ def dia_13():
 
 
 def dia_14():
-    c = Canvas(880, 900)
+    c = Canvas(880, 940)
     c._owner_ctx('algo-auth')
     algo_frame(c, 880, 'Алгоритм авторизации пользователя')
     X = 290
@@ -777,7 +779,7 @@ def dia_14():
 
 
 def dia_15():
-    c = Canvas(980, 980)
+    c = Canvas(980, 1020)
     c._owner_ctx('algo-user')
     algo_frame(c, 980, 'Алгоритм добавления нового пользователя')
     X = 300
@@ -820,7 +822,7 @@ def dia_15():
 
 
 def dia_16():
-    c = Canvas(1090, 1080)
+    c = Canvas(1090, 1100)
     c._owner_ctx('algo-estimate')
     algo_frame(c, 1090, 'Алгоритм фиксации и архивации сметы')
     X = 300
