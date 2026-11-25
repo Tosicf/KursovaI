@@ -1,7 +1,8 @@
 <ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                     xmlns:editors="clr-namespace:StroyControl.App.ViewModels.Editors"
-                    xmlns:behaviors="clr-namespace:StroyControl.App.Behaviors">
+                    xmlns:behaviors="clr-namespace:StroyControl.App.Behaviors"
+                    xmlns:controls="clr-namespace:StroyControl.App.Controls">
 
     <!-- ==================== Материал ==================== -->
     <DataTemplate DataType="{x:Type editors:MaterialEditorViewModel}">
@@ -209,11 +210,11 @@
                 </Grid.ColumnDefinitions>
                 <StackPanel Margin="0,0,12,0">
                     <TextBlock Text="Дата начала" Style="{StaticResource FieldLabel}" />
-                    <DatePicker SelectedDate="{Binding StartDate, Mode=TwoWay}" />
+                    <controls:DateField SelectedDate="{Binding StartDate, Mode=TwoWay}" />
                 </StackPanel>
                 <StackPanel Grid.Column="1" Margin="0,0,12,0">
                     <TextBlock Text="Плановое окончание" Style="{StaticResource FieldLabel}" />
-                    <DatePicker SelectedDate="{Binding PlannedEndDate, Mode=TwoWay}" />
+                    <controls:DateField SelectedDate="{Binding PlannedEndDate, Mode=TwoWay}" />
                 </StackPanel>
                 <StackPanel Grid.Column="2">
                     <StackPanel Orientation="Horizontal">
@@ -264,7 +265,7 @@
                 </StackPanel>
                 <StackPanel Grid.Column="1">
                     <TextBlock Text="Дата сметы *" Style="{StaticResource FieldLabel}" />
-                    <DatePicker SelectedDate="{Binding Date, Mode=TwoWay}" DisplayDateEnd="{Binding MaxDate, Mode=OneWay}" />
+                    <controls:DateField SelectedDate="{Binding Date, Mode=TwoWay}" MaxDate="{Binding MaxDate}" />
                     <TextBlock Text="Месяц даты определяет, в какой группе списков и на главной панели показывается смета."
                                Style="{StaticResource Caption}" FontSize="11" TextWrapping="Wrap" Margin="2,6,0,0" />
                 </StackPanel>
@@ -397,7 +398,7 @@
                 </StackPanel>
                 <StackPanel Grid.Column="1">
                     <TextBlock Text="Дата поступления" Style="{StaticResource FieldLabel}" />
-                    <DatePicker SelectedDate="{Binding Date, Mode=TwoWay}" DisplayDateEnd="{Binding MaxDate, Mode=OneWay}" />
+                    <controls:DateField SelectedDate="{Binding Date, Mode=TwoWay}" MaxDate="{Binding MaxDate}" />
                 </StackPanel>
             </Grid>
 
@@ -583,7 +584,7 @@
                 </Grid.ColumnDefinitions>
                 <StackPanel Margin="0,0,12,0">
                     <TextBlock Text="Дата списания" Style="{StaticResource FieldLabel}" />
-                    <DatePicker SelectedDate="{Binding Date, Mode=TwoWay}" DisplayDateEnd="{Binding MaxDate, Mode=OneWay}" />
+                    <controls:DateField SelectedDate="{Binding Date, Mode=TwoWay}" MaxDate="{Binding MaxDate}" />
                 </StackPanel>
                 <StackPanel Grid.Column="1">
                     <TextBlock Text="Номер акта *" Style="{StaticResource FieldLabel}" />

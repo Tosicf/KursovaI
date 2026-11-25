@@ -18,8 +18,11 @@ public sealed class DashboardService : IDashboardService
     /// <summary>Сколько объектов попадает в блок «Исполнение смет по объектам».</summary>
     public const int MaxBudgetRows = 10;
 
-    /// <summary>Глубина графика затрат по месяцам.</summary>
+    /// <summary>Сколько месяцев показывает график при выборе конкретного месяца.</summary>
     private const int MonthWindow = 6;
+
+    /// <summary>Предел глубины графика для «всего времени» — больше не читается.</summary>
+    private const int MaxMonthWindow = 24;
 
     private readonly IDbContextFactory<AppDbContext> _factory;
 
@@ -191,18 +194,11 @@ public sealed class DashboardService : IDashboardService
                           Cost: u.Quantity * u.UnitPrice))
             .ToList());
 
-        // График заканчивается выбранным месяцем; при выборе только года — декабрём года
-        // (или текущим месяцем, если выбран текущий год), чтобы не показывать будущее.
-        var anchorMonth = filter.MonthStart
-                          ?? (filter.Year is { } year
-                              ? MonthPeriod.Start(year == DateTime.Today.Year
-                                  ? DateTime.Today
-                                  : new DateTime(year, 12, 1))
-                              : (DateTime?)null);
-
+        // Окно графика следует за периодом: месяц — последние полгода, год — все его
+        // месяцы, «всё время» — от первого документа до последнего (не больше двух лет).
         var monthly = BuildMonthlySeries(
             usages.Select(u => (u.Date, Cost: u.Quantity * u.UnitPrice)).ToList(),
-            anchorMonth);
+            filter);
 
         // Список месяцев для выпадающего фильтра — по всем документам, независимо от выбранного периода.
         var periodMonths = usages.Select(u => (DateTime?)u.Date)
@@ -259,24 +255,59 @@ public sealed class DashboardService : IDashboardService
     }
 
     /// <summary>
-    /// Факт затрат по месяцам и среднемесячный план. Окно заканчивается выбранным
-    /// месяцем (или текущим), поэтому график всегда показывает последние
-    /// <see cref="MonthWindow"/> месяцев относительно периода.
+    /// Факт затрат по месяцам и среднемесячный план. Окно зависит от выбранного
+    /// периода: месяц — последние <see cref="MonthWindow"/> месяцев, год — все месяцы
+    /// года, «всё время» — весь срок данных, но не глубже <see cref="MaxMonthWindow"/>.
     /// </summary>
     private static IReadOnlyList<MonthlyCostRow> BuildMonthlySeries(
         IReadOnlyList<(DateTime Date, decimal Cost)> usages,
-        DateTime? month)
+        PeriodFilter filter)
     {
-        var anchor = MonthPeriod.Start(month ?? DateTime.Today);
-        var months = Enumerable.Range(0, MonthWindow)
-            .Select(i => anchor.AddMonths(-(MonthWindow - 1) + i))
-            .ToList();
+        var today = MonthPeriod.Start(DateTime.Today);
+
+        DateTime start;
+        DateTime end;
+
+        if (filter.Year is { } year && filter.Month is { } month)
+        {
+            end = new DateTime(year, month, 1);
+            start = end.AddMonths(-(MonthWindow - 1));
+        }
+        else if (filter.Year is { } yearOnly)
+        {
+            start = new DateTime(yearOnly, 1, 1);
+            end = yearOnly >= DateTime.Today.Year ? today : new DateTime(yearOnly, 12, 1);
+        }
+        else if (usages.Count == 0)
+        {
+            start = today.AddMonths(-(MonthWindow - 1));
+            end = today;
+        }
+        else
+        {
+            start = MonthPeriod.Start(usages.Min(u => u.Date));
+            end = MonthPeriod.Start(usages.Max(u => u.Date));
+
+            // Будущих месяцев в данных быть не может, но график не должен их показывать.
+            if (end > today) end = today;
+            if (start > end) start = end;
+
+            if (MonthsBetween(start, end) > MaxMonthWindow)
+                start = end.AddMonths(-(MaxMonthWindow - 1));
+        }
+
+        if (start > end) start = end;
+
+        var months = new List<DateTime>();
+        for (var current = start; current <= end; current = current.AddMonths(1))
+            months.Add(current);
 
         var actual = usages
             .GroupBy(u => MonthPeriod.Start(u.Date))
             .ToDictionary(g => g.Key, g => g.Sum(x => x.Cost));
 
-        var total = actual.Values.Sum();
+        // Среднемесячный план — по фактическим затратам внутри окна.
+        var total = months.Sum(m => actual.TryGetValue(m, out var cost) ? cost : 0m);
         var plannedMonthly = months.Count == 0 ? 0m : Math.Round(total / months.Count / 1.05m, 2);
 
         return months
@@ -286,4 +317,8 @@ public sealed class DashboardService : IDashboardService
                 actual.TryGetValue(m, out var cost) ? Math.Round(cost, 2) : 0m))
             .ToList();
     }
+
+    /// <summary>Сколько месяцев между началом и концом окна включительно.</summary>
+    private static int MonthsBetween(DateTime start, DateTime end) =>
+        (end.Year - start.Year) * 12 + end.Month - start.Month + 1;
 }
