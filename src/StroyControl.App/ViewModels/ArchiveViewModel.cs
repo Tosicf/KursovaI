@@ -6,6 +6,7 @@ using CommunityToolkit.Mvvm.Input;
 using StroyControl.App.Services;
 using StroyControl.Core.Entities;
 using StroyControl.Core.Interfaces;
+using StroyControl.Core.Services;
 
 namespace StroyControl.App.ViewModels;
 
@@ -34,6 +35,8 @@ public sealed partial class ArchiveViewModel : ViewModelBase
 
         EstimatesView = CollectionViewSource.GetDefaultView(Estimates);
         EstimatesView.Filter = Filter;
+
+        Period = new MonthFilterViewModel(RefreshView);
     }
 
     public override string Title => "Архив смет";
@@ -41,6 +44,9 @@ public sealed partial class ArchiveViewModel : ViewModelBase
     public ObservableCollection<Estimate> Estimates { get; } = new();
 
     public ICollectionView EstimatesView { get; }
+
+    /// <summary>Период архива: сметы группируются по дате сметы.</summary>
+    public MonthFilterViewModel Period { get; }
 
     /// <summary>Отчёт содержит финансовые показатели.</summary>
     public bool CanViewReport => _session.CanViewFinance;
@@ -53,8 +59,8 @@ public sealed partial class ArchiveViewModel : ViewModelBase
 
     public int VisibleCount => EstimatesView.Cast<object>().Count();
 
-    /// <summary>Суммарная плановая стоимость всех архивных смет.</summary>
-    public string TotalDisplay => Estimates.Sum(e => e.PlannedTotal).ToString("N2") + " BYN";
+    /// <summary>Суммарная плановая стоимость смет выбранного периода (по фильтру списка).</summary>
+    public string TotalDisplay => EstimatesView.Cast<Estimate>().Sum(e => e.PlannedTotal).ToString("N2") + " BYN";
 
     [ObservableProperty]
     private string searchText = string.Empty;
@@ -83,6 +89,8 @@ public sealed partial class ArchiveViewModel : ViewModelBase
             Estimates.Clear();
             foreach (var estimate in archived)
                 Estimates.Add(estimate);
+
+            Period.Rebuild(Estimates.Select(e => (DateTime?)e.Date));
 
             EstimatesView.Refresh();
             SelectedEstimate = Estimates.FirstOrDefault(e => e.Id == previousId) ?? Estimates.FirstOrDefault();
@@ -118,12 +126,20 @@ public sealed partial class ArchiveViewModel : ViewModelBase
     private bool Filter(object item)
     {
         if (item is not Estimate estimate) return false;
+        if (!Period.Matches(estimate.Date)) return false;
         if (string.IsNullOrWhiteSpace(SearchText)) return true;
 
         var term = SearchText.Trim();
         return estimate.Number.Contains(term, StringComparison.OrdinalIgnoreCase)
                || estimate.Name.Contains(term, StringComparison.OrdinalIgnoreCase)
                || estimate.ProjectName.Contains(term, StringComparison.OrdinalIgnoreCase);
+    }
+
+    /// <summary>Обновление списка после смены месяца.</summary>
+    private void RefreshView()
+    {
+        EstimatesView.Refresh();
+        RaiseTotals();
     }
 
     private void RaiseTotals()

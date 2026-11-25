@@ -69,8 +69,13 @@
                                Visibility="{Binding SearchText, Converter={StaticResource EmptyToVisibility}}" />
                 </Grid>
 
-                <ComboBox Grid.Column="1" Width="200" Margin="12,0,0,0" ItemsSource="{Binding ProjectFilterOptions}"
-                          SelectedItem="{Binding SelectedProjectFilter, Mode=TwoWay}" />
+                <StackPanel Grid.Column="1" Orientation="Horizontal">
+                    <ComboBox Width="200" Margin="12,0,0,0" ItemsSource="{Binding ProjectFilterOptions}"
+                              SelectedItem="{Binding SelectedProjectFilter, Mode=TwoWay}" />
+                    <ComboBox Width="180" Margin="12,0,0,0" ItemsSource="{Binding Period.Options}"
+                          SelectedItem="{Binding Period.Selected, Mode=TwoWay}" DisplayMemberPath="Title"
+                          ToolTip="Период: месяцы документов от нового к старому." />
+                </StackPanel>
 
                 <StackPanel Grid.Column="2" Margin="24,0,0,0" VerticalAlignment="Center">
                     <TextBlock Text="Документов" Style="{StaticResource Caption}" FontSize="11" />

@@ -40,9 +40,17 @@ public sealed partial class DashboardViewModel : ViewModelBase
         _deliveries = deliveries;
         _inventory = inventory;
         _dialogs = dialogs;
+
+        Period = new MonthFilterViewModel(ReloadForPeriod);
     }
 
     public override string Title => "Панель управления";
+
+    /// <summary>
+    /// Период панели. Главная страница всегда показывает один месяц (или все месяцы),
+    /// поэтому при росте числа объектов она не разрастается.
+    /// </summary>
+    public MonthFilterViewModel Period { get; }
 
     public string Greeting
     {
@@ -67,17 +75,33 @@ public sealed partial class DashboardViewModel : ViewModelBase
         ? string.Empty
         : $"факт против сметы: {Data.DeviationDirection}";
 
+    /// <summary>Подпись периода для заголовков блоков панели.</summary>
+    public string PeriodCaption => Period.FilterCaption;
+
+    /// <summary>Подпись накопленных показателей: бюджет объектов считается на конец месяца.</summary>
+    public string BalanceCaption => Period.BalanceCaption;
+
+    /// <summary>Сколько объектов показано и сколько всего попало в выбранный месяц.</summary>
+    public string BudgetCaption => Data is null
+        ? string.Empty
+        : Data.BudgetRowsTotal > Data.ProjectBudgets.Count
+            ? $"{BalanceCaption}: показаны {Data.ProjectBudgets.Count} из {Data.BudgetRowsTotal} объектов, остальные — в разделе «Объекты»"
+            : $"{BalanceCaption}: {Data.BudgetRowsTotal} объектов";
+
     [ObservableProperty]
     private DashboardData? data;
 
     partial void OnDataChanged(DashboardData? value)
     {
         OnPropertyChanged(nameof(DeviationCaption));
+        OnPropertyChanged(nameof(PlannedCaption));
+        OnPropertyChanged(nameof(ActualCaption));
         OnPropertyChanged(nameof(HasStockAlerts));
         OnPropertyChanged(nameof(MaterialsSummary));
         OnPropertyChanged(nameof(LowStockCaption));
-        OnPropertyChanged(nameof(ActualCaption));
-        OnPropertyChanged(nameof(PlannedCaption));
+        OnPropertyChanged(nameof(BudgetCaption));
+        OnPropertyChanged(nameof(PeriodCaption));
+        OnPropertyChanged(nameof(BalanceCaption));
     }
 
     public bool HasStockAlerts => Data is { StockAlerts.Count: > 0 };
@@ -86,11 +110,11 @@ public sealed partial class DashboardViewModel : ViewModelBase
         ? string.Empty
         : $"{Data.LowStockCount} позиций ниже минимального запаса";
 
-    public string PlannedCaption => "сметная стоимость материалов";
+    public string PlannedCaption => $"{BalanceCaption}: план по сметам";
 
     public string ActualCaption => Data is null
         ? string.Empty
-        : $"{Data.DeviationDirection} {Math.Abs(Data.DeviationPercent):N1} % к смете";
+        : $"{BalanceCaption}: {Data.DeviationDirection} {Math.Abs(Data.DeviationPercent):N1} % к смете";
 
     public string MaterialsSummary => Data is null
         ? string.Empty
@@ -152,10 +176,27 @@ public sealed partial class DashboardViewModel : ViewModelBase
         if (IsBusy) return;
 
         IsBusy = true;
-        var ok = await ExecuteAsync(async () => Data = await _dashboardService.LoadAsync(), "Не удалось загрузить панель.");
+        var ok = await ExecuteAsync(
+            async () => Data = await _dashboardService.LoadAsync(Period.Month),
+            "Не удалось загрузить панель.");
         IsBusy = false;
+
+        // Список месяцев строится по всем документам, поэтому выбор периода не теряется.
+        if (Data is not null)
+            Period.Rebuild(Data.PeriodMonths.Select(m => (DateTime?)m));
 
         if (!ok && ErrorMessage is not null)
             _toasts.Error("Панель управления", ErrorMessage);
+    }
+
+    /// <summary>Смена месяца в фильтре перезагружает показатели панели.</summary>
+    private void ReloadForPeriod()
+    {
+        OnPropertyChanged(nameof(PeriodCaption));
+        OnPropertyChanged(nameof(BalanceCaption));
+        OnPropertyChanged(nameof(BudgetCaption));
+
+        if (IsBusy) return;
+        _ = LoadAsync();
     }
 }

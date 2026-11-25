@@ -36,6 +36,13 @@ public static class SchemaPatcher
         @"IF COL_LENGTH('dbo.estimates', 'LaborSharePercent') IS NULL
               ALTER TABLE dbo.estimates ADD LaborSharePercent DECIMAL(6,2) NOT NULL CONSTRAINT DF_estimates_LaborSharePercent DEFAULT 35;",
 
+        // Дата сметы: по ней сметы группируются и сортируются по месяцам во всех списках.
+        @"IF COL_LENGTH('dbo.estimates', 'Date') IS NULL
+              ALTER TABLE dbo.estimates ADD [Date] DATETIME2 NOT NULL CONSTRAINT DF_estimates_Date DEFAULT SYSUTCDATETIME();",
+
+        @"IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = N'IX_estimates_Date' AND object_id = OBJECT_ID(N'dbo.estimates'))
+              CREATE INDEX IX_estimates_Date ON dbo.estimates ([Date]);",
+
         // Площадь объекта — для стоимости и прибыли на 1 м².
         @"IF COL_LENGTH('dbo.projects', 'TotalArea') IS NULL
               ALTER TABLE dbo.projects ADD TotalArea DECIMAL(12,2) NOT NULL CONSTRAINT DF_projects_TotalArea DEFAULT 0;"

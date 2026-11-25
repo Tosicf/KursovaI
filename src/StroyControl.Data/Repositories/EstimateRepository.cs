@@ -41,7 +41,11 @@ public sealed class EstimateRepository : RepositoryBase<Estimate>, IEstimateRepo
         if (projectId.HasValue)
             query = query.Where(e => e.ProjectId == projectId.Value);
 
-        return await query.OrderBy(e => e.Number).ToListAsync(cancellationToken);
+        // Сортировка по месяцам: свежие сметы сверху, внутри месяца — по номеру.
+        return await query
+            .OrderByDescending(e => e.Date)
+            .ThenBy(e => e.Number)
+            .ToListAsync(cancellationToken);
     }
 
     public async Task<IReadOnlyList<Estimate>> GetArchivedAsync(CancellationToken cancellationToken = default)
@@ -53,7 +57,7 @@ public sealed class EstimateRepository : RepositoryBase<Estimate>, IEstimateRepo
             .Include(e => e.Items)
             .ThenInclude(i => i.Material)
             .Where(e => e.Status == EstimateStatus.Archived)
-            .OrderByDescending(e => e.UpdatedAt)
+            .OrderByDescending(e => e.Date)
             .ThenBy(e => e.Number)
             .ToListAsync(cancellationToken);
 
@@ -83,6 +87,7 @@ public sealed class EstimateRepository : RepositoryBase<Estimate>, IEstimateRepo
         entity.Number = estimate.Number;
         entity.Name = estimate.Name;
         entity.ProjectId = estimate.ProjectId;
+        entity.Date = estimate.Date;
         entity.Note = estimate.Note;
         entity.MarkupPercent = estimate.MarkupPercent;
         entity.ProfitPercent = estimate.ProfitPercent;

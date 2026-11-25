@@ -7,6 +7,7 @@ using StroyControl.App.Services;
 using StroyControl.Core.Entities;
 using StroyControl.Core.Enums;
 using StroyControl.Core.Interfaces;
+using StroyControl.Core.Services;
 
 namespace StroyControl.App.ViewModels;
 
@@ -33,6 +34,8 @@ public sealed partial class ProjectsViewModel : ViewModelBase
         StatusOptions.Add(AllStatuses);
         foreach (var option in EnumExtensions.ToOptions<ProjectStatus>())
             StatusOptions.Add(option.Display);
+
+        Period = new MonthFilterViewModel(ApplyFilters);
     }
 
     public override string Title => "Объекты";
@@ -42,6 +45,9 @@ public sealed partial class ProjectsViewModel : ViewModelBase
     public ObservableCollection<string> StatusOptions { get; } = new();
 
     public ICollectionView ItemsView { get; }
+
+    /// <summary>Период списка: объекты группируются по месяцу начала работ.</summary>
+    public MonthFilterViewModel Period { get; }
 
     public bool CanEdit => _session.CanEditProjects;
 
@@ -85,7 +91,9 @@ public sealed partial class ProjectsViewModel : ViewModelBase
             foreach (var project in projects)
                 Items.Add(project);
 
-            UpdateStatistics();
+            // Месяцы для фильтра берутся из дат начала работ; выбор периода сохраняется.
+            Period.Rebuild(Items.Select(p => (DateTime?)p.StartDate));
+            ApplyFilters();
         }, "Не удалось загрузить список объектов.");
 
         IsBusy = false;
@@ -107,11 +115,13 @@ public sealed partial class ProjectsViewModel : ViewModelBase
         if (entity is null) return;
 
         Items.Insert(0, entity);
-        UpdateStatistics();
+        SortByMonth();
+        ApplyFilters();
 
         try
         {
             await _projects.AddAsync(entity);
+            Period.Rebuild(Items.Select(p => (DateTime?)p.StartDate));
             _toasts.Success("Объект добавлен", entity.Name);
         }
         catch (Exception ex)
@@ -143,6 +153,9 @@ public sealed partial class ProjectsViewModel : ViewModelBase
             updated.Estimates = project.Estimates;
             Items[index] = updated;
 
+            SortByMonth();
+            Period.Rebuild(Items.Select(p => (DateTime?)p.StartDate));
+            ApplyFilters();
             _toasts.Success("Объект обновлён", updated.Name);
         }
         catch (Exception ex)
@@ -198,7 +211,24 @@ public sealed partial class ProjectsViewModel : ViewModelBase
             if (!matches) return false;
         }
 
+        if (!Period.Matches(project.StartDate)) return false;
+
         return SelectedStatus == AllStatuses || project.StatusDisplay == SelectedStatus;
+    }
+
+    /// <summary>Пересортировка по месяцам: свежие месяцы сверху, внутри месяца — по названию.</summary>
+    private void SortByMonth()
+    {
+        var ordered = Items
+            .OrderByDescending(p => MonthPeriod.Start(p.StartDate))
+            .ThenBy(p => p.Name, StringComparer.CurrentCulture)
+            .ToList();
+
+        for (var target = 0; target < ordered.Count; target++)
+        {
+            var current = Items.IndexOf(ordered[target]);
+            if (current != target) Items.Move(current, target);
+        }
     }
 
     private void ApplyFilters()

@@ -7,7 +7,7 @@
 import os
 
 from docx import Document
-from docx.enum.table import WD_TABLE_ALIGNMENT
+from docx.enum.table import WD_ROW_HEIGHT_RULE, WD_TABLE_ALIGNMENT
 from docx.enum.text import WD_ALIGN_PARAGRAPH, WD_BREAK
 from docx.oxml import OxmlElement
 from docx.oxml.ns import qn
@@ -53,7 +53,7 @@ class PZ:
         normal = doc.styles['Normal']
         _font(normal)
         pf = normal.paragraph_format
-        pf.line_spacing = 1.5
+        pf.line_spacing = Pt(18)
         pf.space_before = Pt(0)
         pf.space_after = Pt(0)
         pf.first_line_indent = Cm(1.25)
@@ -66,11 +66,11 @@ class PZ:
             st.font.color.rgb = RGBColor(0, 0, 0)
             pf = st.paragraph_format
             pf.first_line_indent = Cm(1.25)
-            pf.line_spacing = 1.5
+            pf.line_spacing = Pt(18)
             pf.space_before = Pt(before)
             pf.space_after = Pt(after)
             pf.keep_with_next = True
-            pf.alignment = ALIGN['left']
+            pf.alignment = ALIGN['center'] if name == 'Heading 1' else ALIGN['left']
 
         h1pf = doc.styles['Heading 1'].paragraph_format
         h1pf.page_break_before = True
@@ -105,14 +105,14 @@ class PZ:
 
     # ---------------------------------------------------------------- текст
     def p(self, text, indent=True, align='justify', size=14, bold=False, italic=False,
-          before=0, after=0, spacing=1.5):
+          before=0, after=0, spacing=None):
         par = self.doc.add_paragraph()
         par.alignment = ALIGN[align]
         pf = par.paragraph_format
         pf.first_line_indent = Cm(1.25) if indent else Cm(0)
         pf.space_before = Pt(before)
         pf.space_after = Pt(after)
-        pf.line_spacing = spacing
+        pf.line_spacing = Pt(18) if spacing is None else spacing
         run = par.add_run(text)
         run.font.name = FONT
         run.font.size = Pt(size)
@@ -142,7 +142,7 @@ class PZ:
             par = self.doc.add_paragraph()
             pf = par.paragraph_format
             pf.first_line_indent = Cm(1.25)
-            pf.line_spacing = 1.5
+            pf.line_spacing = Pt(18)
             pf.space_after = Pt(0)
             par.alignment = ALIGN['justify']
             run = par.add_run('– ' + item)
@@ -154,7 +154,7 @@ class PZ:
             par = self.doc.add_paragraph()
             pf = par.paragraph_format
             pf.first_line_indent = Cm(1.25)
-            pf.line_spacing = 1.5
+            pf.line_spacing = Pt(18)
             pf.space_after = Pt(0)
             par.alignment = ALIGN['justify']
             run = par.add_run(f'{i}) {item}')
@@ -179,7 +179,55 @@ class PZ:
         pf.first_line_indent = Cm(0)
         pf.space_before = Pt(0)
         pf.space_after = Pt(10)
-        pf.line_spacing = 1.5
+        pf.line_spacing = Pt(18)
+        run = cap.add_run(f'Рисунок {number} – {title}')
+        run.font.name = FONT
+        run.font.size = Pt(14)
+
+    def fig_placeholder(self, number, title, height_cm=7.0, hint=''):
+        """Рамка «место для рисунка» с подписью «Рисунок N – Название».
+
+        Используется там, где нужен скриншот работающей программы: подпись и
+        номер рисунка проставлены, а изображение вставляется в рамку вручную.
+        """
+        tbl = self.doc.add_table(rows=1, cols=1)
+        tbl.style = 'Table Grid'
+        tbl.alignment = WD_TABLE_ALIGNMENT.CENTER
+        tbl.autofit = False
+        row = tbl.rows[0]
+        row.height = Cm(height_cm)
+        row.height_rule = WD_ROW_HEIGHT_RULE.AT_LEAST
+        cell = row.cells[0]
+        cell.width = Cm(16.5)
+        par = cell.paragraphs[0]
+        par.alignment = ALIGN['center']
+        pf = par.paragraph_format
+        pf.first_line_indent = Cm(0)
+        pf.line_spacing = 1.0
+        pf.space_before = Pt(6)
+        pf.space_after = Pt(6)
+        run = par.add_run(f'(место для рисунка {number} – {title})')
+        run.font.name = FONT
+        run.font.size = Pt(12)
+        run.italic = True
+        if hint:
+            run.add_break()
+            run2 = par.add_run(hint)
+            run2.font.name = FONT
+            run2.font.size = Pt(10)
+            run2.italic = True
+        spacer = self.doc.add_paragraph()
+        spacer.paragraph_format.first_line_indent = Cm(0)
+        spacer.paragraph_format.line_spacing = 1.0
+        spacer.paragraph_format.space_after = Pt(0)
+
+        cap = self.doc.add_paragraph()
+        cap.alignment = ALIGN['center']
+        pf = cap.paragraph_format
+        pf.first_line_indent = Cm(0)
+        pf.space_before = Pt(0)
+        pf.space_after = Pt(10)
+        pf.line_spacing = Pt(18)
         run = cap.add_run(f'Рисунок {number} – {title}')
         run.font.name = FONT
         run.font.size = Pt(14)
@@ -207,7 +255,7 @@ class PZ:
         pf.first_line_indent = Cm(0)
         pf.space_before = Pt(10)
         pf.space_after = Pt(4)
-        pf.line_spacing = 1.5
+        pf.line_spacing = Pt(18)
         pf.keep_with_next = True
         run = cap.add_run(f'Таблица {number} – {title}')
         run.font.name = FONT
@@ -265,7 +313,7 @@ class PZ:
         pf.first_line_indent = Cm(0)
         pf.space_before = Pt(8)
         pf.space_after = Pt(2)
-        pf.line_spacing = 1.5
+        pf.line_spacing = Pt(18)
         pf.keep_with_next = True
         run = cap.add_run(f'Листинг {number} – {title}')
         run.font.name = FONT
