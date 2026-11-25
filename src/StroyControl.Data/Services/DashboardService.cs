@@ -105,7 +105,57 @@ public sealed class DashboardService : IDashboardService
                 ProjectMonth(p)))
             .ToList();
 
-        var budgetsInPeriod = allBudgets.Where(b => filter.Contains(b.Month)).ToList();
+        // Объект попадает в период, если в этом году/месяце по нему были документы —
+        // сметы, поступления или списания. Поэтому долгострой показывается в каждом
+        // месяце, в котором велись работы, а не только в месяце последней операции.
+        // Объект без документов виден в месяце начала работ.
+        var activityMonths = new Dictionary<int, List<DateTime>>();
+
+        void Remember(int projectId, DateTime date)
+        {
+            if (!activityMonths.TryGetValue(projectId, out var dates))
+                activityMonths[projectId] = dates = new List<DateTime>();
+
+            dates.Add(date);
+        }
+
+        foreach (var usage in usages) Remember(usage.ProjectId, usage.Date);
+        foreach (var estimate in estimates) Remember(estimate.ProjectId, estimate.Date);
+
+        foreach (var delivery in deliveries)
+        {
+            if (delivery.ProjectId is { } deliveryProjectId)
+                Remember(deliveryProjectId, delivery.Date);
+        }
+
+        var startMonths = projects.ToDictionary(p => p.Id, p => MonthPeriod.Start(p.StartDate));
+
+        bool InPeriod(ProjectBudgetRow row)
+        {
+            if (filter.IsAll) return true;
+            if (startMonths.TryGetValue(row.ProjectId, out var startMonth) && filter.Contains(startMonth)) return true;
+
+            return activityMonths.TryGetValue(row.ProjectId, out var dates) && dates.Any(filter.Contains);
+        }
+
+        // В выбранном периоде подписываем строку месяцем последней операции внутри
+        // периода, иначе у долгостроя в списке стоял бы месяц из другого периода.
+        var budgetsInPeriod = allBudgets
+            .Where(InPeriod)
+            .Select(row =>
+            {
+                if (filter.IsAll) return row;
+
+                var dates = activityMonths.TryGetValue(row.ProjectId, out var list) ? list : new List<DateTime>();
+                var lastInPeriod = dates.Where(filter.Contains).DefaultIfEmpty(DateTime.MinValue).Max();
+
+                var month = lastInPeriod == DateTime.MinValue
+                    ? startMonths[row.ProjectId]
+                    : MonthPeriod.Start(lastInPeriod);
+
+                return row with { Month = month };
+            })
+            .ToList();
 
         // Сортировка по месяцам: свежие месяцы сверху, внутри месяца — крупные сметы.
         var budgets = budgetsInPeriod

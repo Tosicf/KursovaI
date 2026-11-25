@@ -46,7 +46,10 @@ public sealed partial class ProjectsViewModel : ViewModelBase
 
     public ICollectionView ItemsView { get; }
 
-    /// <summary>Период списка: объекты группируются по месяцу начала работ.</summary>
+    /// <summary>
+    /// Период списка: объекты группируются по месяцу начала работ, но в выбранный
+    /// месяц попадают и те, по которым в этом месяце были документы.
+    /// </summary>
     public PeriodFilterViewModel Period { get; }
 
     public bool CanEdit => _session.CanEditProjects;
@@ -211,7 +214,11 @@ public sealed partial class ProjectsViewModel : ViewModelBase
             if (!matches) return false;
         }
 
-        if (!Period.Matches(project.StartDate)) return false;
+        // Объект показывается в периоде не только по месяцу начала работ: если по нему
+        // в этом месяце составлялись сметы, он тоже попадает в список — так
+        // объект-долгострой виден во всех месяцах, когда на нём велись работы.
+        if (!Period.Matches(project.StartDate) && !project.Estimates.Any(e => Period.Matches(e.Date)))
+            return false;
 
         return SelectedStatus == AllStatuses || project.StatusDisplay == SelectedStatus;
     }

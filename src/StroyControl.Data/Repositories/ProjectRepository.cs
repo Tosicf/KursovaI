@@ -14,7 +14,9 @@ public sealed class ProjectRepository : RepositoryBase<Project>, IProjectReposit
     {
         await using var db = await Factory.CreateDbContextAsync(cancellationToken);
         // Сортировка по месяцам: объекты последнего месяца начала работ сверху,
-        // внутри месяца — сначала действующие, затем по названию.
+        // внутри месяца — сначала действующие, затем по названию. Сметы подгружаются,
+        // чтобы реестр мог показать объект и в месяце, когда по нему составлялись
+        // документы (долгострой), а не только в месяце начала работ.
         return await db.Projects
             .AsNoTracking()
             .Include(p => p.Estimates)
