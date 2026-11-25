@@ -1,9 +1,12 @@
+using StroyControl.Core.Services;
+
 namespace StroyControl.Core.Dtos;
 
 /// <summary>Затраты на материалы по месяцам (для мини-диаграммы на панели управления).</summary>
 public sealed record MonthlyCostRow(DateTime Month, decimal PlannedCost, decimal ActualCost)
 {
-    public string MonthDisplay => Month.ToString("MMM");
+    /// <summary>Подпись месяца на графике: «Ноя 26» — короткая и с годом.</summary>
+    public string MonthDisplay => $"{MonthPeriod.ShortName(Month.Month)} {Month:yy}";
 
     public decimal Deviation => ActualCost - PlannedCost;
 

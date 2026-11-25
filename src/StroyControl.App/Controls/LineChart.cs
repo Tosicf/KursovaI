@@ -57,6 +57,9 @@ public sealed class LineChart : ChartBase
             dc.DrawText(label, new Point(left - label.Width - 8, y - label.Height / 2));
         }
 
+        // Минимум 56 пикселей на подпись месяца («Ноя 26»).
+        var labelStep = Math.Max(1, (int)Math.Ceiling(rows.Count / Math.Max(1d, plotWidth / 56d)));
+
         var plannedPoints = new List<Point>();
         var actualPoints = new List<Point>();
 
@@ -65,6 +68,10 @@ public sealed class LineChart : ChartBase
             var x = left + plotWidth * i / (rows.Count - 1);
             plannedPoints.Add(new Point(x, top + plotHeight - plotHeight * Math.Clamp((double)rows[i].PlannedCost / maximum, 0d, 1d)));
             actualPoints.Add(new Point(x, top + plotHeight - plotHeight * Math.Clamp((double)rows[i].ActualCost / maximum, 0d, 1d)));
+
+            // Подписи прореживаем: в окне «всё время» месяцев до двух лет, и текст иначе
+            // наезжает друг на друга.
+            if (i % labelStep != 0 && i != rows.Count - 1) continue;
 
             var month = Text(rows[i].MonthDisplay, 10, MutedBrush);
             dc.DrawText(month, new Point(x - month.Width / 2, top + plotHeight + 8));
