@@ -32,6 +32,9 @@ public sealed partial class DeviationsViewModel : ViewModelBase
     private readonly DeviationReportExporter _reportExporter = new();
     private bool _initialized;
 
+    /// <summary>Объект, выбранный на другой странице: применяется при загрузке отчёта.</summary>
+    private int? _pendingProjectId;
+
     public DeviationsViewModel(
         IDeviationService deviationService,
         IProjectRepository projects,
@@ -185,6 +188,12 @@ public sealed partial class DeviationsViewModel : ViewModelBase
         ApplyFilter();
     }
 
+    /// <summary>
+    /// Принимает объект от реестра объектов: отчёт будет построен именно по нему.
+    /// Выбор применяется в <see cref="LoadAsync"/>, чтобы не грузить отчёт дважды.
+    /// </summary>
+    public void FocusProject(int projectId) => _pendingProjectId = projectId;
+
     public override async Task LoadAsync()
     {
         if (IsBusy) return;
@@ -192,17 +201,25 @@ public sealed partial class DeviationsViewModel : ViewModelBase
         IsBusy = true;
         var ok = await ExecuteAsync(async () =>
         {
+            var pendingId = _pendingProjectId;
+            _pendingProjectId = null;
+
             if (ProjectOptions.Count <= 1)
             {
                 var projects = await _projects.GetAllWithEstimatesAsync();
-                var selectedId = SelectedProject?.Id;
+                var selectedId = pendingId ?? SelectedProject?.Id;
 
                 ProjectOptions.Clear();
                 ProjectOptions.Add(new ProjectFilterOption(null, "Все объекты"));
                 foreach (var project in projects)
                     ProjectOptions.Add(new ProjectFilterOption(project.Id, project.Name));
 
-                SelectedProject = ProjectOptions.FirstOrDefault(p => p.Id == selectedId) ?? ProjectOptions[0];
+                SelectProject(ProjectOptions.FirstOrDefault(p => p.Id == selectedId) ?? ProjectOptions[0]);
+            }
+            else if (pendingId is { } id)
+            {
+                var option = ProjectOptions.FirstOrDefault(p => p.Id == id);
+                if (option is not null) SelectProject(option);
             }
 
             Report = await _deviationService.BuildReportAsync(SelectedProject?.Id);
@@ -213,6 +230,25 @@ public sealed partial class DeviationsViewModel : ViewModelBase
 
         if (!ok && ErrorMessage is not null)
             _toasts.Error("Анализ отклонений", ErrorMessage);
+    }
+
+    /// <summary>
+    /// Меняет выбранный объект, не запуская повторную загрузку отчёта из сеттера:
+    /// отчёт всё равно строится ниже в <see cref="LoadAsync"/>.
+    /// </summary>
+    private void SelectProject(ProjectFilterOption option)
+    {
+        var guard = _initialized;
+        _initialized = false;
+
+        try
+        {
+            SelectedProject = option;
+        }
+        finally
+        {
+            _initialized = guard;
+        }
     }
 
     /// <summary>Печатный отчёт: предпросмотр, печать, CSV, PDF.</summary>

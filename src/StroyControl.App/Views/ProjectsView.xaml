@@ -103,7 +103,8 @@
         <Border Grid.Row="2" Style="{StaticResource Card}" Padding="0">
             <Grid>
                 <DataGrid Style="{StaticResource DataGridStyle}" ItemsSource="{Binding ItemsView}"
-                          SelectedItem="{Binding SelectedProject}" Margin="8,6,8,8">
+                          SelectedItem="{Binding SelectedProject}" Margin="8,6,8,8"
+                          PreviewMouseRightButtonDown="OnRowRightButtonDown">
                     <DataGrid.ContextMenu>
                         <ContextMenu>
                             <MenuItem Header="Изменить…" InputGestureText="F2"
@@ -114,6 +115,15 @@
                                       Command="{Binding PlacementTarget.DataContext.DeleteCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
                                   CommandParameter="{Binding PlacementTarget.SelectedItem, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
                                   IsEnabled="{Binding PlacementTarget.DataContext.CanEdit, RelativeSource={RelativeSource AncestorType=ContextMenu}}" />
+                            <Separator />
+                            <MenuItem Header="Сметы объекта"
+                                      ToolTip="Открыть раздел «Сметы», отфильтрованный по этому объекту"
+                                      Command="{Binding PlacementTarget.DataContext.OpenEstimatesCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
+                                      CommandParameter="{Binding PlacementTarget.SelectedItem, RelativeSource={RelativeSource AncestorType=ContextMenu}}" />
+                            <MenuItem Header="Анализ отклонений по объекту"
+                                      ToolTip="Открыть раздел «Анализ отклонений» с отчётом по этому объекту"
+                                      Command="{Binding PlacementTarget.DataContext.OpenDeviationsCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
+                                      CommandParameter="{Binding PlacementTarget.SelectedItem, RelativeSource={RelativeSource AncestorType=ContextMenu}}" />
                             <Separator />
                             <MenuItem Header="Добавить"
                                       Command="{Binding PlacementTarget.DataContext.AddCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}"

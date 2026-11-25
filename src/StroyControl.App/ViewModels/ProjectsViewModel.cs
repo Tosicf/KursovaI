@@ -20,13 +20,26 @@ public sealed partial class ProjectsViewModel : ViewModelBase
     private readonly IDialogService _dialogs;
     private readonly IToastService _toasts;
     private readonly ISessionService _session;
+    private readonly DeviationsViewModel _deviations;
+    private readonly EstimatesViewModel _estimates;
+    private readonly PageNavigator _navigator;
 
-    public ProjectsViewModel(IProjectRepository projects, IDialogService dialogs, IToastService toasts, ISessionService session)
+    public ProjectsViewModel(
+        IProjectRepository projects,
+        IDialogService dialogs,
+        IToastService toasts,
+        ISessionService session,
+        DeviationsViewModel deviations,
+        EstimatesViewModel estimates,
+        PageNavigator navigator)
     {
         _projects = projects;
         _dialogs = dialogs;
         _toasts = toasts;
         _session = session;
+        _deviations = deviations;
+        _estimates = estimates;
+        _navigator = navigator;
 
         ItemsView = CollectionViewSource.GetDefaultView(Items);
         ItemsView.Filter = FilterItem;
@@ -133,6 +146,31 @@ public sealed partial class ProjectsViewModel : ViewModelBase
             UpdateStatistics();
             _toasts.Error("Не удалось сохранить объект", ex.Message);
         }
+    }
+
+    /// <summary>
+    /// Открывает анализ отклонений с уже выбранным объектом: отчёт строится по нему
+    /// сразу, без повторного выбора в выпадающем списке на другой странице.
+    /// </summary>
+    [RelayCommand]
+    private void OpenDeviations(Project? project)
+    {
+        project ??= SelectedProject;
+        if (project is null) return;
+
+        _deviations.FocusProject(project.Id);
+        _navigator.Open("deviations");
+    }
+
+    /// <summary>Открывает раздел «Сметы», отфильтрованный по выбранному объекту.</summary>
+    [RelayCommand]
+    private void OpenEstimates(Project? project)
+    {
+        project ??= SelectedProject;
+        if (project is null) return;
+
+        _estimates.FocusProject(project.Id);
+        _navigator.Open("estimates");
     }
 
     [RelayCommand]
