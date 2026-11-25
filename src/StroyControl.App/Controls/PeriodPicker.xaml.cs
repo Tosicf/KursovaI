@@ -35,11 +35,10 @@ public partial class PeriodPicker : UserControl
         PeriodPopup.IsOpen = !PeriodPopup.IsOpen;
 
         // Открываем список на текущем выборе, чтобы не прокручивать его вручную.
-        if (PeriodPopup.IsOpen)
-        {
-            YearsList.ScrollIntoView(YearsList.SelectedItem);
-            MonthsList.ScrollIntoView(MonthsList.SelectedItem);
-        }
+        if (!PeriodPopup.IsOpen) return;
+
+        if (YearsList.SelectedItem is not null) YearsList.ScrollIntoView(YearsList.SelectedItem);
+        if (MonthsList.SelectedItem is not null) MonthsList.ScrollIntoView(MonthsList.SelectedItem);
     }
 
     /// <summary>
