@@ -125,6 +125,7 @@ public sealed partial class UsageEditorViewModel : EditorViewModelBase
         if (Quantity <= 0m) return "Количество должно быть больше нуля.";
         if (UnitPrice < 0m) return "Цена не может быть отрицательной.";
         if (string.IsNullOrWhiteSpace(DocumentNumber)) return "Укажите номер акта списания.";
+        if (Date.Date > MaxDate) return "Дата списания не может быть в будущем.";
         return null;
     }
 

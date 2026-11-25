@@ -5,8 +5,8 @@ namespace StroyControl.Core.Interfaces;
 public interface IDashboardService
 {
     /// <summary>
-    /// Показатели панели. <paramref name="month"/> ограничивает выборку одним месяцем
+    /// Показатели панели. <paramref name="period"/> ограничивает выборку годом и месяцем
     /// (null — за всё время), чтобы панель не разрасталась при росте числа объектов.
     /// </summary>
-    Task<DashboardData> LoadAsync(DateTime? month = null, CancellationToken cancellationToken = default);
+    Task<DashboardData> LoadAsync(PeriodFilter? period = null, CancellationToken cancellationToken = default);
 }

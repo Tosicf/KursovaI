@@ -35,7 +35,7 @@ public sealed partial class ProjectsViewModel : ViewModelBase
         foreach (var option in EnumExtensions.ToOptions<ProjectStatus>())
             StatusOptions.Add(option.Display);
 
-        Period = new MonthFilterViewModel(ApplyFilters);
+        Period = new PeriodFilterViewModel(ApplyFilters);
     }
 
     public override string Title => "Объекты";
@@ -47,7 +47,7 @@ public sealed partial class ProjectsViewModel : ViewModelBase
     public ICollectionView ItemsView { get; }
 
     /// <summary>Период списка: объекты группируются по месяцу начала работ.</summary>
-    public MonthFilterViewModel Period { get; }
+    public PeriodFilterViewModel Period { get; }
 
     public bool CanEdit => _session.CanEditProjects;
 

@@ -23,6 +23,12 @@ public abstract partial class EditorViewModelBase : ObservableObject
 
     public virtual double ContentMaxHeight => 540;
 
+    /// <summary>
+    /// Верхняя граница дат документов: будущие даты выбирать нельзя — документ
+    /// фиксирует уже наступившее событие.
+    /// </summary>
+    public DateTime MaxDate => DateTime.Today;
+
     /// <summary>Проверка введённых данных. null — данные корректны.</summary>
     protected abstract string? Validate();
 

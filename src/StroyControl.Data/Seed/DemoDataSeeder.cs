@@ -23,10 +23,27 @@ public static class DemoDataSeeder
 
     private static readonly string[] LowStockCodes = { "ПЕНА-750", "КАБ-3x2.5" };
 
+    /// <summary>Код объекта, по которому распознаётся демонстрационная база.</summary>
+    private const string DemoProjectCode = "ОБ-2025-01";
+
     public static async Task SeedAsync(AppDbContext db, CancellationToken cancellationToken = default)
     {
         if (await db.Users.AnyAsync(cancellationToken))
+        {
+            // База уже создана раньше: догружаем недостающие демонстрационные объекты
+            // и сметы, чтобы расширенный набор появился и без пересоздания базы.
+            // Сбой этого шага не должен блокировать запуск приложения с рабочими данными.
+            try
+            {
+                await TopUpDemoDataAsync(db, cancellationToken);
+            }
+            catch (Exception)
+            {
+                // Демонстрационные данные — вспомогательные: запуск продолжается.
+            }
+
             return;
+        }
 
         var random = new Random(Seed);
         var today = DateTime.Today;
@@ -119,6 +136,62 @@ public static class DemoDataSeeder
     }
 
     private static string YearSuffix(DateTime date) => date.ToString("yy");
+
+    /// <summary>
+    /// Догоняющее наполнение демонстрационного набора для уже созданной базы: добавляет
+    /// объекты и сметы, которых в ней ещё нет, и выставляет даты смет демонстрационного
+    /// набора (раньше поле даты отсутствовало, и все документы попадали в текущий месяц).
+    /// Работает только с базой, созданной этим сидом, ничего не удаляет и не дублирует.
+    /// </summary>
+    private static async Task TopUpDemoDataAsync(AppDbContext db, CancellationToken cancellationToken)
+    {
+        var today = DateTime.Today;
+        var random = new Random(Seed);
+
+        var projects = await db.Projects.ToListAsync(cancellationToken);
+        if (projects.All(p => p.Code != DemoProjectCode))
+            return; // в базе «живые» данные — демонстрационный набор не дополняем
+
+        var materials = await db.Materials.ToListAsync(cancellationToken);
+        if (materials.Count == 0)
+            return;
+
+        var knownCodes = projects.Select(p => p.Code).ToHashSet(StringComparer.OrdinalIgnoreCase);
+        var added = new List<Project>();
+
+        foreach (var project in BuildProjects(today))
+        {
+            if (knownCodes.Contains(project.Code)) continue;
+
+            db.Projects.Add(project);
+            added.Add(project);
+        }
+
+        if (added.Count > 0)
+            await db.SaveChangesAsync(cancellationToken);
+
+        var allProjects = projects.Concat(added).ToList();
+        var existing = await db.Estimates.ToListAsync(cancellationToken);
+        var byNumber = existing.ToDictionary(e => e.Number, StringComparer.OrdinalIgnoreCase);
+
+        foreach (var estimate in BuildEstimates(allProjects, materials, random, today))
+        {
+            if (byNumber.TryGetValue(estimate.Number, out var stored))
+            {
+                // Дата, равная сегодняшней, у давно созданного документа означает, что она
+                // проставлена значением по умолчанию при добавлении колонки, — возвращаем
+                // расчётную дату демонстрационного набора.
+                if (stored.Date.Date == today && stored.CreatedAt.Date < today)
+                    stored.Date = estimate.Date;
+
+                continue;
+            }
+
+            db.Estimates.Add(estimate);
+        }
+
+        await db.SaveChangesAsync(cancellationToken);
+    }
 
     private static List<User> BuildUsers()
     {
@@ -232,6 +305,8 @@ public static class DemoDataSeeder
 
     private static List<Project> BuildProjects(DateTime today)
     {
+        // Даты начала работ не выходят в будущее: месяц объекта должен быть доступен
+        // в фильтре периода (интерфейс не предлагает не наступившие месяцы).
         return new List<Project>
         {
             new()
@@ -288,11 +363,11 @@ public static class DemoDataSeeder
                 ManagerName = "Иванов А. П.",
                 ContractSum = 1_150_000m,
                 TotalArea = 1_240m,
-                StartDate = today.AddMonths(2),
+                StartDate = today.AddMonths(-1),
                 PlannedEndDate = today.AddMonths(14),
                 Status = ProjectStatus.Planning,
                 ProgressPercent = 5,
-                Note = "Сметная документация передана на проверку, работы не начаты."
+                Note = "Сметная документация на проверке, монтаж начинается в текущем месяце."
             },
             new()
             {
@@ -326,6 +401,21 @@ public static class DemoDataSeeder
             },
             new()
             {
+                Code = "ОБ-2025-06",
+                Name = "Реконструкция средней школы №2",
+                Address = "г. Жодино, ул. 50 лет Октября, 21",
+                Customer = "УКС Жодинского горисполкома",
+                ManagerName = "Ковалёва Е. В.",
+                ContractSum = 3_950_000m,
+                TotalArea = 5_120m,
+                StartDate = today.AddMonths(-7),
+                PlannedEndDate = today.AddMonths(5),
+                Status = ProjectStatus.InProgress,
+                ProgressPercent = 48,
+                Note = "Замена кровли и фасада без прекращения занятий, работы поэтапно."
+            },
+            new()
+            {
                 Code = "ОБ-2024-11",
                 Name = "Административное здание районного исполкома",
                 Address = "г. Вилейка, ул. Советская, 3",
@@ -341,6 +431,21 @@ public static class DemoDataSeeder
             },
             new()
             {
+                Code = "ОБ-2024-12",
+                Name = "Склад готовой продукции с административно-бытовым корпусом",
+                Address = "г. Молодечно, ул. Великосельская, 14",
+                Customer = "ОАО «Молодечномебель»",
+                ManagerName = "Романов Д. О.",
+                ContractSum = 2_640_000m,
+                TotalArea = 4_300m,
+                StartDate = today.AddMonths(-14),
+                PlannedEndDate = today.AddMonths(2),
+                Status = ProjectStatus.Suspended,
+                ProgressPercent = 55,
+                Note = "Приостановлен по решению заказчика: корректировка проектной документации."
+            },
+            new()
+            {
                 Code = "ОБ-2026-01",
                 Name = "Физкультурно-оздоровительный комплекс с бассейном",
                 Address = "г. Барановичи, ул. Фабричная, 9",
@@ -348,7 +453,7 @@ public static class DemoDataSeeder
                 ManagerName = "Дорошевич С. К.",
                 ContractSum = 7_300_000m,
                 TotalArea = 9_400m,
-                StartDate = today.AddMonths(4),
+                StartDate = today,
                 PlannedEndDate = today.AddMonths(22),
                 Status = ProjectStatus.Planning,
                 ProgressPercent = 0,
@@ -457,7 +562,10 @@ public static class DemoDataSeeder
 
             foreach (var item in items)
             {
-                var material = materials.First(m => m.Code == item.Material);
+                // В уже существующей базе справочник мог быть короче — позицию пропускаем.
+                var material = materials.FirstOrDefault(m => m.Code == item.Material);
+                if (material is null) continue;
+
                 estimate.Items.Add(new EstimateItem
                 {
                     MaterialId = material.Id,
@@ -490,7 +598,7 @@ public static class DemoDataSeeder
         // как документы группируются по периодам, а не сваливаются в один список.
         return new List<Estimate>
         {
-            Create("ОБ-2025-01", "СМ-01/25", "Смета на общестроительные работы", today.AddMonths(-8), EstimateStatus.Approved,
+            Create("ОБ-2025-01", "СМ-01/25", "Смета на общестроительные работы", today.AddMonths(-11), EstimateStatus.Approved,
                 ("ЦЕМ-500", "Фундамент", 24000m),
                 ("АРМ-500-12", "Фундамент", 185000m),
                 ("БЕТ-B25", "Фундамент", 3200m),
@@ -519,7 +627,7 @@ public static class DemoDataSeeder
                 ("КАБ-3x2.5", "Электрика", 4200m),
                 ("ПЕНА-750", "Электрика", 180m)),
 
-            Create("ОБ-2024-07", "СМ-21/24", "Смета на каркас и кровлю", today.AddMonths(-16), EstimateStatus.Approved,
+            Create("ОБ-2024-07", "СМ-21/24", "Смета на каркас и кровлю", today.AddMonths(-24), EstimateStatus.Approved,
                 ("АРМ-500-12", "Каркас", 310000m),
                 ("БЕТ-B25", "Каркас", 5200m),
                 ("ЩЕБ-5-20", "Основания", 2600m),
@@ -534,11 +642,11 @@ public static class DemoDataSeeder
                 ("ЦЕМ-500", "Наружные сети", 6400m),
                 ("КАБ-3x2.5", "Электрика", 1500m)),
 
-            Create("ОБ-2025-04", "СМ-32/25", "Смета на восстановление благоустройства", today.AddMonths(-1), EstimateStatus.Draft,
+            Create("ОБ-2025-04", "СМ-32/25", "Смета на восстановление благоустройства", today.AddMonths(-2), EstimateStatus.Draft,
                 ("ПЕС-МЫТ", "Благоустройство", 900m),
                 ("ЩЕБ-5-20", "Благоустройство", 700m)),
 
-            Create("ОБ-2025-05", "СМ-41/25", "Смета на общестроительные работы", today.AddMonths(-11), EstimateStatus.Approved,
+            Create("ОБ-2025-05", "СМ-41/25", "Смета на общестроительные работы", today.AddMonths(-12), EstimateStatus.Approved,
                 ("КИР-1НФ", "Кладка", 540000m),
                 ("ЦЕМ-500", "Кладка", 18000m),
                 ("АРМ-500-12", "Каркас", 120000m),
@@ -552,24 +660,41 @@ public static class DemoDataSeeder
                 ("ЩЕБ-5-20", "Благоустройство", 1200m),
                 ("БЛОК-D600", "Благоустройство", 60m)),
 
-            Create("ОБ-2024-11", "СМ-51/24", "Смета на реконструкцию здания", today.AddMonths(-19), EstimateStatus.Archived,
+            Create("ОБ-2024-11", "СМ-51/24", "Смета на реконструкцию здания", today.AddMonths(-23), EstimateStatus.Archived,
                 ("КИР-1НФ", "Кладка", 210000m),
                 ("ЦЕМ-500", "Кладка", 9500m),
                 ("ГКЛ-12.5", "Отделка", 2100m),
                 ("КРАС-ФАС", "Отделка", 1200m),
                 ("МВ-100", "Отделка", 1600m)),
 
-            Create("ОБ-2026-03", "СМ-61/26", "Смета на замену котельного оборудования", today.AddMonths(2), EstimateStatus.OnReview,
+            Create("ОБ-2026-03", "СМ-61/26", "Смета на замену котельного оборудования", today.AddMonths(-1), EstimateStatus.OnReview,
                 ("АРМ-500-12", "Каркас", 18000m),
                 ("ЦЕМ-500", "Фундамент", 2400m),
                 ("КАБ-3x2.5", "Электрика", 900m)),
 
-            Create("ОБ-2026-01", "СМ-71/26", "Смета на каркас и кровлю комплекса", today.AddMonths(4), EstimateStatus.Draft,
+            Create("ОБ-2026-01", "СМ-71/26", "Смета на каркас и кровлю комплекса", today, EstimateStatus.Draft,
                 ("АРМ-500-12", "Каркас", 420000m),
                 ("БЕТ-B25", "Каркас", 6800m),
                 ("ОСБ-18", "Кровля", 4200m),
                 ("РУБ-350", "Кровля", 3600m),
-                ("МВ-100", "Кровля", 7800m))
+                ("МВ-100", "Кровля", 7800m)),
+
+            Create("ОБ-2025-06", "СМ-33/26", "Смета на ремонт кровли и фасада", today.AddMonths(-6), EstimateStatus.Approved,
+                ("РУБ-350", "Кровля", 1400m),
+                ("МВ-100", "Кровля", 2600m),
+                ("ОСБ-18", "Кровля", 900m),
+                ("КРАС-ФАС", "Отделка", 2200m),
+                ("ГКЛ-12.5", "Отделка", 1800m),
+                ("ПРОФ-CD60", "Отделка", 2400m)),
+
+            Create("ОБ-2024-12", "СМ-52/25", "Смета на устройство склада", today.AddMonths(-14), EstimateStatus.Approved,
+                ("АРМ-500-12", "Каркас", 96000m),
+                ("БЕТ-B25", "Каркас", 2100m),
+                ("КИР-1НФ", "Кладка", 140000m),
+                ("ЦЕМ-500", "Кладка", 8400m),
+                ("БЛОК-D600", "Кладка", 420m),
+                ("ЩЕБ-5-20", "Основания", 1100m),
+                ("ПЕС-МЫТ", "Основания", 900m))
         };
     }
 

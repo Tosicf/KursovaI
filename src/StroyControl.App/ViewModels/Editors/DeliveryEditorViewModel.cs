@@ -157,6 +157,7 @@ public sealed partial class DeliveryEditorViewModel : EditorViewModelBase
     protected override string? Validate()
     {
         if (string.IsNullOrWhiteSpace(Number)) return "Укажите номер приходной накладной.";
+        if (Date.Date > MaxDate) return "Дата поступления не может быть в будущем.";
         if (SelectedSupplier is null) return "Выберите поставщика.";
         if (!Items.Any(i => i.Material is not null && i.Quantity > 0m))
             return "Добавьте хотя бы одну строку: материал и количество больше нуля.";

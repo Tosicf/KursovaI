@@ -48,7 +48,7 @@ public sealed partial class UsagesViewModel : ViewModelBase
 
         ProjectFilterOptions.Add(AllProjects);
 
-        Period = new MonthFilterViewModel(ApplyFilter);
+        Period = new PeriodFilterViewModel(ApplyFilter);
     }
 
     public override string Title => "Списания";
@@ -66,7 +66,7 @@ public sealed partial class UsagesViewModel : ViewModelBase
     public ICollectionView ItemsView { get; }
 
     /// <summary>Период списка: списания группируются по месяцу акта расхода.</summary>
-    public MonthFilterViewModel Period { get; }
+    public PeriodFilterViewModel Period { get; }
 
     public bool CanEdit => _session.CanEditUsages;
 

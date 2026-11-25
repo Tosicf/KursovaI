@@ -25,7 +25,7 @@ public sealed class DashboardService : IDashboardService
 
     public DashboardService(IDbContextFactory<AppDbContext> factory) => _factory = factory;
 
-    public async Task<DashboardData> LoadAsync(DateTime? month = null, CancellationToken cancellationToken = default)
+    public async Task<DashboardData> LoadAsync(PeriodFilter? period = null, CancellationToken cancellationToken = default)
     {
         await using var db = await _factory.CreateDbContextAsync(cancellationToken);
 
@@ -43,27 +43,22 @@ public sealed class DashboardService : IDashboardService
             .Include(u => u.Project)
             .ToListAsync(cancellationToken);
 
-        var monthStart = month is null ? (DateTime?)null : MonthPeriod.Start(month.Value);
-        var monthEnd = monthStart?.AddMonths(1).AddDays(-1);
+        var filter = period ?? PeriodFilter.All;
+        var periodEnd = filter.End;
 
-        // Операции выбранного месяца: по ним считаются структура затрат, лента и диаграмма.
-        var usagesInPeriod = monthStart is null
-            ? usages
-            : usages.Where(u => MonthPeriod.Matches(u.Date, monthStart.Value)).ToList();
+        // Операции выбранного периода: по ним считаются структура затрат, лента и диаграмма.
+        var usagesInPeriod = usages.Where(u => filter.Contains(u.Date)).ToList();
+        var deliveriesInPeriod = deliveries.Where(d => filter.Contains(d.Date)).ToList();
 
-        var deliveriesInPeriod = monthStart is null
-            ? deliveries
-            : deliveries.Where(d => MonthPeriod.Matches(d.Date, monthStart.Value)).ToList();
-
-        // Исполнение бюджета объекта считается накопленным итогом по конец выбранного месяца,
-        // иначе «план» брался бы за весь срок объекта, а «факт» — только за месяц.
-        var estimatesToDate = monthEnd is null
+        // Исполнение бюджета объекта считается накопленным итогом по конец периода,
+        // иначе «план» брался бы за весь срок объекта, а «факт» — только за период.
+        var estimatesToDate = periodEnd is null
             ? estimates
-            : estimates.Where(e => e.Date <= monthEnd.Value).ToList();
+            : estimates.Where(e => e.Date <= periodEnd.Value).ToList();
 
-        var usagesToDate = monthEnd is null
+        var usagesToDate = periodEnd is null
             ? usages
-            : usages.Where(u => u.Date <= monthEnd.Value).ToList();
+            : usages.Where(u => u.Date <= periodEnd.Value).ToList();
 
         var plannedByProject = estimatesToDate
             .GroupBy(e => e.ProjectId)
@@ -110,9 +105,7 @@ public sealed class DashboardService : IDashboardService
                 ProjectMonth(p)))
             .ToList();
 
-        var budgetsInPeriod = monthStart is null
-            ? allBudgets
-            : allBudgets.Where(b => MonthPeriod.Matches(b.Month, monthStart)).ToList();
+        var budgetsInPeriod = allBudgets.Where(b => filter.Contains(b.Month)).ToList();
 
         // Сортировка по месяцам: свежие месяцы сверху, внутри месяца — крупные сметы.
         var budgets = budgetsInPeriod
@@ -148,9 +141,18 @@ public sealed class DashboardService : IDashboardService
                           Cost: u.Quantity * u.UnitPrice))
             .ToList());
 
+        // График заканчивается выбранным месяцем; при выборе только года — декабрём года
+        // (или текущим месяцем, если выбран текущий год), чтобы не показывать будущее.
+        var anchorMonth = filter.MonthStart
+                          ?? (filter.Year is { } year
+                              ? MonthPeriod.Start(year == DateTime.Today.Year
+                                  ? DateTime.Today
+                                  : new DateTime(year, 12, 1))
+                              : (DateTime?)null);
+
         var monthly = BuildMonthlySeries(
             usages.Select(u => (u.Date, Cost: u.Quantity * u.UnitPrice)).ToList(),
-            monthStart);
+            anchorMonth);
 
         // Список месяцев для выпадающего фильтра — по всем документам, независимо от выбранного периода.
         var periodMonths = usages.Select(u => (DateTime?)u.Date)
