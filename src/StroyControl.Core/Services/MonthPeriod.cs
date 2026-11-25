@@ -45,6 +45,9 @@ public static class MonthPeriod
     /// <summary>Название месяца по номеру: «Ноябрь».</summary>
     public static string MonthName(int month) => month is >= 1 and <= 12 ? MonthNames[month - 1] : string.Empty;
 
+    /// <summary>Короткое название месяца по номеру: «Янв», «Ноя» — для сетки календаря.</summary>
+    public static string ShortName(int month) => month is >= 1 and <= 12 ? ShortMonthNames[month - 1] : string.Empty;
+
     /// <summary>Название месяца с годом: «Ноябрь 2026».</summary>
     public static string Title(DateTime month) => $"{MonthName(Start(month).Month)} {month.Year}";
 

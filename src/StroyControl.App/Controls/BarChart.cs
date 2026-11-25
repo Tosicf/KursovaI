@@ -27,9 +27,11 @@ public sealed class BarChart : ChartBase
         var height = ActualHeight;
         if (width < 60 || height < 60) return;
 
+        // Число столбцов не ограничиваем пятью: список объектов периода уже ограничен
+        // в сервисе (MaxBudgetRows), иначе на графике «пропадали» объекты.
         var rows = (Items?.Cast<ProjectBudgetRow>() ?? Enumerable.Empty<ProjectBudgetRow>())
             .Where(r => r.PlannedCost > 0m || r.ActualCost > 0m)
-            .Take(5)
+            .Take(10)
             .ToList();
 
         const double left = 52;

@@ -3,44 +3,49 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
     <UserControl.Resources>
-        <!-- Пункт списка годов и месяцев: подсветка наведения и выбора в цветах темы. -->
-        <Style x:Key="PeriodOptionItem" TargetType="ListBoxItem">
-            <Setter Property="Padding" Value="9,5" />
+        <!-- Ячейка месяца: как день в календаре — наведение, выбор, недоступные месяцы. -->
+        <Style x:Key="PeriodMonthCellStyle" TargetType="Button">
+            <Setter Property="Height" Value="30" />
+            <Setter Property="Margin" Value="2" />
+            <Setter Property="FontFamily" Value="Segoe UI" />
+            <Setter Property="FontSize" Value="12" />
             <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}" />
-            <Setter Property="FontSize" Value="12.5" />
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderBrush" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="FocusVisualStyle" Value="{x:Null}" />
             <Setter Property="Template">
                 <Setter.Value>
-                    <ControlTemplate TargetType="ListBoxItem">
-                        <Border x:Name="ItemBorder" Background="Transparent" CornerRadius="6"
-                                Padding="{TemplateBinding Padding}" SnapsToDevicePixels="True">
-                            <ContentPresenter />
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="Root" Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="6" SnapsToDevicePixels="True">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="ItemBorder" Property="Background"
-                                        Value="{DynamicResource SurfaceAltBrush}" />
-                            </Trigger>
-                            <Trigger Property="IsSelected" Value="True">
-                                <Setter TargetName="ItemBorder" Property="Background"
-                                        Value="{DynamicResource AccentSoftBrush}" />
-                                <Setter Property="Foreground" Value="{DynamicResource AccentBrush}" />
-                                <Setter Property="FontWeight" Value="SemiBold" />
+                                <Setter TargetName="Root" Property="Background" Value="{DynamicResource SurfaceAltBrush}" />
+                                <Setter TargetName="Root" Property="BorderBrush" Value="{DynamicResource BorderBrush}" />
+                                <Setter TargetName="Root" Property="BorderThickness" Value="1" />
                             </Trigger>
                             <Trigger Property="IsEnabled" Value="False">
                                 <Setter Property="Foreground" Value="{DynamicResource TextMutedBrush}" />
+                                <Setter Property="Opacity" Value="0.45" />
+                                <Setter Property="Cursor" Value="Arrow" />
                             </Trigger>
+                            <DataTrigger Binding="{Binding IsSelected}" Value="True">
+                                <Setter TargetName="Root" Property="Background" Value="{DynamicResource AccentBrush}" />
+                                <Setter TargetName="Root" Property="BorderBrush" Value="{DynamicResource AccentBrush}" />
+                                <Setter TargetName="Root" Property="BorderThickness" Value="1" />
+                                <Setter Property="Foreground" Value="White" />
+                                <Setter Property="FontWeight" Value="SemiBold" />
+                            </DataTrigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
                 </Setter.Value>
             </Setter>
-        </Style>
-
-        <Style x:Key="PeriodList" TargetType="ListBox">
-            <Setter Property="Background" Value="Transparent" />
-            <Setter Property="BorderThickness" Value="0" />
-            <Setter Property="Padding" Value="2" />
-            <Setter Property="ItemContainerStyle" Value="{StaticResource PeriodOptionItem}" />
-            <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Disabled" />
         </Style>
     </UserControl.Resources>
 
@@ -62,43 +67,57 @@
                StaysOpen="False" AllowsTransparency="True" PopupAnimation="Fade"
                VerticalOffset="6" HorizontalOffset="0">
             <Border Background="{DynamicResource SurfaceBrush}" BorderBrush="{DynamicResource BorderBrush}"
-                    BorderThickness="1" CornerRadius="10" Padding="6" MinWidth="252">
+                    BorderThickness="1" CornerRadius="10" Padding="6" Width="252">
                 <Border.Effect>
                     <DropShadowEffect BlurRadius="18" ShadowDepth="3" Opacity="0.16" Color="#000000" />
                 </Border.Effect>
 
                 <StackPanel>
-                    <TextBlock Text="Период" Style="{StaticResource Caption}" FontSize="11" Margin="10,6,10,2" />
+                    <!-- Шапка как у календаря: ‹ год › -->
+                    <Grid Margin="2,2,2,4">
+                        <Button Style="{StaticResource IconButton}" Width="28" Height="28"
+                                HorizontalAlignment="Left" Click="OnPreviousYearClick"
+                                IsEnabled="{Binding CanGoPrevYear}" ToolTip="Предыдущий год">
+                            <Path Data="{StaticResource IconChevronLeft}" Stroke="{DynamicResource TextSecondaryBrush}"
+                                  StrokeThickness="1.8" Width="12" Height="12" Stretch="Uniform"
+                                  StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeLineJoin="Round" />
+                        </Button>
 
-                    <Grid>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="108" />
-                            <ColumnDefinition Width="138" />
-                        </Grid.ColumnDefinitions>
+                        <TextBlock Text="{Binding YearCaption}" HorizontalAlignment="Center" VerticalAlignment="Center"
+                                   FontSize="13" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimaryBrush}" />
 
-                        <StackPanel>
-                            <TextBlock Text="Год" Style="{StaticResource FieldLabel}" Margin="10,4,0,2" />
-                            <ListBox x:Name="YearsList" Style="{StaticResource PeriodList}" MaxHeight="228"
-                                     ItemsSource="{Binding Years}" DisplayMemberPath="Title"
-                                     SelectedItem="{Binding SelectedYear, Mode=TwoWay}"
-                                     PreviewMouseLeftButtonUp="OnOptionClick" />
-                        </StackPanel>
-
-                        <StackPanel Grid.Column="1">
-                            <TextBlock Text="Месяц" Style="{StaticResource FieldLabel}" Margin="8,4,0,2" />
-                            <ListBox x:Name="MonthsList" Style="{StaticResource PeriodList}" MaxHeight="228"
-                                     ItemsSource="{Binding Months}" DisplayMemberPath="Title"
-                                     SelectedItem="{Binding SelectedMonth, Mode=TwoWay}"
-                                     IsEnabled="{Binding CanFilterByMonth}"
-                                     PreviewMouseLeftButtonUp="OnOptionClick" />
-                        </StackPanel>
+                        <Button Style="{StaticResource IconButton}" Width="28" Height="28"
+                                HorizontalAlignment="Right" Click="OnNextYearClick"
+                                IsEnabled="{Binding CanGoNextYear}" ToolTip="Следующий год">
+                            <Path Data="{StaticResource IconChevronRight}" Stroke="{DynamicResource TextSecondaryBrush}"
+                                  StrokeThickness="1.8" Width="12" Height="12" Stretch="Uniform"
+                                  StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeLineJoin="Round" />
+                        </Button>
                     </Grid>
+
+                    <!-- Сетка месяцев: четыре строки по три месяца -->
+                    <ItemsControl ItemsSource="{Binding MonthCells}">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <UniformGrid Columns="3" />
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Button Content="{Binding Title}" Tag="{Binding}" IsEnabled="{Binding IsEnabled}"
+                                        Style="{StaticResource PeriodMonthCellStyle}" Click="OnMonthClick" />
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
 
                     <Border Height="1" Background="{DynamicResource BorderBrush}" Margin="6,8,6,6" />
 
-                    <Button Style="{StaticResource GhostButton}" Content="За всё время"
-                            HorizontalAlignment="Stretch" HorizontalContentAlignment="Left"
-                            Margin="2,0,2,2" Click="OnResetClick" />
+                    <StackPanel Orientation="Horizontal" Margin="2,0,2,2">
+                        <Button Style="{StaticResource GhostButton}" Content="Весь год" Margin="0,0,6,0"
+                                Click="OnWholeYearClick" ToolTip="Показать весь выбранный год без разбивки по месяцам" />
+                        <Button Style="{StaticResource GhostButton}" Content="Всё время"
+                                Click="OnResetClick" ToolTip="Снять ограничение периода" />
+                    </StackPanel>
                 </StackPanel>
             </Border>
         </Popup>
