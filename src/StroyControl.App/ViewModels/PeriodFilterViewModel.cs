@@ -75,6 +75,57 @@ public sealed partial class PeriodFilterViewModel : ObservableObject
         _ => $"{MonthPeriod.MonthName(Filter.Month.Value)} {Filter.Year}"
     };
 
+    /// <summary>Сетка месяцев выбранного года: двенадцать ячеек, будущие недоступны.</summary>
+    public ObservableCollection<PeriodMonthCell> MonthCells { get; } = new();
+
+    /// <summary>Год в шапке окна выбора периода: «2026» или «Все годы».</summary>
+    public string YearCaption => SelectedYear?.Year?.ToString() ?? MonthPeriod.AllYearsTitle;
+
+    /// <summary>Есть более старый год для перехода стрелкой.</summary>
+    public bool CanGoPrevYear => YearIndex(SelectedYear?.Year) is var index && index >= 0 && index + 1 < Years.Count;
+
+    /// <summary>Есть более новый год для перехода стрелкой.</summary>
+    public bool CanGoNextYear => YearIndex(SelectedYear?.Year) is var index && index > 1;
+
+    private int YearIndex(int? year) => Years.ToList().FindIndex(option => option.Year == year);
+
+    /// <summary>Переход к более старому году (список годов отсортирован от нового к старому).</summary>
+    public void SelectPreviousYear()
+    {
+        var index = YearIndex(SelectedYear?.Year);
+        if (index >= 0 && index + 1 < Years.Count)
+            SelectedYear = Years[index + 1];
+    }
+
+    /// <summary>Переход к более новому году.</summary>
+    public void SelectNextYear()
+    {
+        var index = YearIndex(SelectedYear?.Year);
+        if (index > 1)
+            SelectedYear = Years[index - 1];
+    }
+
+    /// <summary>Выбор месяца в сетке: год берётся текущий из шапки.</summary>
+    public void SelectMonth(int month)
+    {
+        if (SelectedYear?.Year is not { } year) return;
+        if (year == DateTime.Today.Year && month > DateTime.Today.Month) return;
+
+        SelectedMonth = new PeriodOption(year, month, MonthPeriod.MonthName(month));
+    }
+
+    /// <summary>Весь выбранный год без разбивки по месяцам.</summary>
+    public void SelectWholeYear()
+    {
+        if (SelectedYear?.Year is not { } year)
+        {
+            Reset();
+            return;
+        }
+
+        SelectedMonth = new PeriodOption(year, null, MonthPeriod.AllMonthsTitle);
+    }
+
     /// <summary>Подсказка кнопки периода.</summary>
     public string PickerTooltip =>
         $"Период: {PickerCaption.ToLowerInvariant()}. Нажмите, чтобы выбрать другой год и месяц. "
@@ -158,7 +209,11 @@ public sealed partial class PeriodFilterViewModel : ObservableObject
 
         if (year is not null)
         {
-            foreach (var month in MonthPeriod.Months(year, _dates))
+            // В сетке показываются все месяцы года, поэтому список месяцев полный:
+            // граница — текущий месяц, дальше выбирать нечего.
+            var limit = year >= DateTime.Today.Year ? DateTime.Today.Month : 12;
+
+            for (var month = limit; month >= 1; month--)
                 Months.Add(new PeriodOption(year, month, MonthPeriod.MonthName(month)));
         }
 
@@ -174,5 +229,27 @@ public sealed partial class PeriodFilterViewModel : ObservableObject
         OnPropertyChanged(nameof(CanFilterByMonth));
         OnPropertyChanged(nameof(PickerCaption));
         OnPropertyChanged(nameof(PickerTooltip));
+        OnPropertyChanged(nameof(YearCaption));
+        OnPropertyChanged(nameof(CanGoPrevYear));
+        OnPropertyChanged(nameof(CanGoNextYear));
+
+        RebuildMonthCells();
+    }
+
+    /// <summary>Сетка месяцев: двенадцать ячеек с подсветкой текущего выбора.</summary>
+    private void RebuildMonthCells()
+    {
+        MonthCells.Clear();
+
+        var year = SelectedYear?.Year;
+        var limit = year is null ? 0 : year >= DateTime.Today.Year ? DateTime.Today.Month : 12;
+
+        for (var month = 1; month <= 12; month++)
+        {
+            var available = year is not null && month <= limit;
+            var selected = available && SelectedMonth?.Month == month;
+
+            MonthCells.Add(new PeriodMonthCell(month, MonthPeriod.ShortName(month), available, selected));
+        }
     }
 }
