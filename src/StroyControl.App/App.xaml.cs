@@ -148,6 +148,9 @@ public partial class App : Application
         services.AddSingleton<IDialogService, DialogService>();
         services.AddSingleton<IApplicationController, ApplicationController>();
 
+        // Переходы между разделами по запросу страницы («Объекты» → отклонения/сметы объекта).
+        services.AddSingleton<PageNavigator>();
+
         services.AddTransient<LoginViewModel>();
         services.AddTransient<LoginWindow>();
 

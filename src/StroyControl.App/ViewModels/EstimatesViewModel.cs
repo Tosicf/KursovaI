@@ -4,6 +4,7 @@ using System.Windows.Data;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using StroyControl.App.Services;
+using StroyControl.Core.Dtos;
 using StroyControl.Core.Entities;
 using StroyControl.Core.Enums;
 using StroyControl.Core.Interfaces;
@@ -26,6 +27,9 @@ public sealed partial class EstimatesViewModel : ViewModelBase
     private readonly IDialogService _dialogs;
     private readonly IToastService _toasts;
     private readonly ISessionService _session;
+
+    /// <summary>Объект, выбранный на другой странице: фильтр применится при загрузке.</summary>
+    private int? _pendingProjectId;
 
     public EstimatesViewModel(
         IEstimateRepository estimates,
@@ -142,6 +146,12 @@ public sealed partial class EstimatesViewModel : ViewModelBase
         UpdateTotals();
     }
 
+    /// <summary>
+    /// Принимает объект от реестра объектов: список смет будет отфильтрован по нему,
+    /// а первая смета объекта — выбрана. Фильтр применяется в <see cref="LoadAsync"/>.
+    /// </summary>
+    public void FocusProject(int projectId) => _pendingProjectId = projectId;
+
     public override async Task LoadAsync()
     {
         if (IsBusy) return;
@@ -149,6 +159,9 @@ public sealed partial class EstimatesViewModel : ViewModelBase
         IsBusy = true;
         var ok = await ExecuteAsync(async () =>
         {
+            var pendingId = _pendingProjectId;
+            _pendingProjectId = null;
+
             var estimates = await _estimates.GetAllWithItemsAsync();
             var projects = await _projects.GetAllWithEstimatesAsync();
             var materials = await _materials.GetAllWithSupplierAsync();
@@ -180,10 +193,36 @@ public sealed partial class EstimatesViewModel : ViewModelBase
                 ? previousFilter
                 : AllProjects;
 
+            // Переход из реестра объектов: показываем только сметы выбранного объекта.
+            string? focusedProjectName = null;
+
+            if (pendingId is { } projectId)
+            {
+                var projectName = projects.FirstOrDefault(p => p.Id == projectId)?.Name;
+                if (!string.IsNullOrWhiteSpace(projectName) && ProjectFilterOptions.Contains(projectName))
+                {
+                    SelectedProjectFilter = projectName;
+                    focusedProjectName = projectName;
+
+                    // Поиск и ранее выбранный период могли бы спрятать сметы объекта —
+                    // при переходе из реестра показываем все сметы этого объекта.
+                    SearchText = string.Empty;
+                    Period.SelectedYear = PeriodOption.AllYears;
+                }
+            }
+
             // Месяцы для фильтра — по датам смет; выбор периода сохраняется.
             Period.Rebuild(Estimates.Select(e => (DateTime?)e.Date));
 
             SelectedEstimate = Estimates.FirstOrDefault(e => e.Id == previousId) ?? Estimates.FirstOrDefault();
+
+            // При переходе по объекту открываем его первую смету, а не чужую из истории выбора.
+            if (focusedProjectName is not null)
+            {
+                var projectEstimate = Estimates.FirstOrDefault(e => e.ProjectName == focusedProjectName);
+                if (projectEstimate is not null) SelectedEstimate = projectEstimate;
+            }
+
             ApplyFilter();
         }, "Не удалось загрузить сметы.");
 

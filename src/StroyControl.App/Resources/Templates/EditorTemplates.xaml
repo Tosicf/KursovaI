@@ -264,7 +264,7 @@
                 </StackPanel>
                 <StackPanel Grid.Column="1">
                     <TextBlock Text="Дата сметы *" Style="{StaticResource FieldLabel}" />
-                    <DatePicker SelectedDate="{Binding Date, Mode=TwoWay}" DisplayDateEnd="{Binding MaxDate}" />
+                    <DatePicker SelectedDate="{Binding Date, Mode=TwoWay}" DisplayDateEnd="{Binding MaxDate, Mode=OneWay}" />
                     <TextBlock Text="Месяц даты определяет, в какой группе списков и на главной панели показывается смета."
                                Style="{StaticResource Caption}" FontSize="11" TextWrapping="Wrap" Margin="2,6,0,0" />
                 </StackPanel>
@@ -397,7 +397,7 @@
                 </StackPanel>
                 <StackPanel Grid.Column="1">
                     <TextBlock Text="Дата поступления" Style="{StaticResource FieldLabel}" />
-                    <DatePicker SelectedDate="{Binding Date, Mode=TwoWay}" DisplayDateEnd="{Binding MaxDate}" />
+                    <DatePicker SelectedDate="{Binding Date, Mode=TwoWay}" DisplayDateEnd="{Binding MaxDate, Mode=OneWay}" />
                 </StackPanel>
             </Grid>
 
@@ -583,7 +583,7 @@
                 </Grid.ColumnDefinitions>
                 <StackPanel Margin="0,0,12,0">
                     <TextBlock Text="Дата списания" Style="{StaticResource FieldLabel}" />
-                    <DatePicker SelectedDate="{Binding Date, Mode=TwoWay}" DisplayDateEnd="{Binding MaxDate}" />
+                    <DatePicker SelectedDate="{Binding Date, Mode=TwoWay}" DisplayDateEnd="{Binding MaxDate, Mode=OneWay}" />
                 </StackPanel>
                 <StackPanel Grid.Column="1">
                     <TextBlock Text="Номер акта *" Style="{StaticResource FieldLabel}" />

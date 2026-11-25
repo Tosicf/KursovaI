@@ -16,6 +16,7 @@ public sealed partial class PeriodFilterViewModel : ObservableObject
     private readonly Action _changed;
     private List<DateTime?> _dates = new();
     private bool _suspended = true;
+    private bool _defaultApplied;
 
     /// <param name="changed">Действие страницы при смене периода (обновление фильтра).</param>
     public PeriodFilterViewModel(Action changed) => _changed = changed;
@@ -66,6 +67,34 @@ public sealed partial class PeriodFilterViewModel : ObservableObject
     /// <summary>Подпись для накопленных показателей: «по состоянию на ноябрь 2026».</summary>
     public string BalanceCaption => Filter.BalanceCaption;
 
+    /// <summary>Подпись кнопки периода: «Ноябрь 2026» / «2026 год» / «Всё время».</summary>
+    public string PickerCaption => Filter.Year switch
+    {
+        null => "Всё время",
+        _ when Filter.Month is null => $"{Filter.Year} год",
+        _ => $"{MonthPeriod.MonthName(Filter.Month.Value)} {Filter.Year}"
+    };
+
+    /// <summary>Подсказка кнопки периода.</summary>
+    public string PickerTooltip =>
+        $"Период: {PickerCaption.ToLowerInvariant()}. Нажмите, чтобы выбрать другой год и месяц. "
+        + "Будущие периоды недоступны.";
+
+    /// <summary>Сброс периода: показываются все годы и месяцы.</summary>
+    public void Reset()
+    {
+        _suspended = true;
+        SelectedYear = PeriodOption.AllYears;
+
+        // Пункты списка сравниваются по ссылке: берём экземпляр из коллекции.
+        SelectedMonth = Months.Count > 0 ? Months[0] : null;
+
+        _suspended = false;
+
+        RaiseDerived();
+        _changed();
+    }
+
     /// <summary>
     /// Перестраивает списки годов и месяцев по датам документов, сохраняя выбор.
     /// Будущие периоды в списки не попадают.
@@ -73,7 +102,21 @@ public sealed partial class PeriodFilterViewModel : ObservableObject
     public void Rebuild(IEnumerable<DateTime?> dates)
     {
         _dates = dates.ToList();
-        var previousYear = SelectedYear?.Year;
+        var beforeYear = SelectedYear?.Year;
+        var beforeMonth = SelectedMonth?.Month;
+
+        var previousYear = beforeYear;
+        var previousMonth = beforeMonth;
+
+        // При первом построении открывается текущий год и текущий месяц — так на любой
+        // странице сразу виден свежий период. Если таких данных нет (например, в архиве
+        // только сметы прошлых лет), остаётся «всё время», иначе список был бы пустым.
+        if (!_defaultApplied)
+        {
+            _defaultApplied = true;
+            previousYear = DateTime.Today.Year;
+            previousMonth = DateTime.Today.Month;
+        }
 
         _suspended = true;
 
@@ -83,22 +126,32 @@ public sealed partial class PeriodFilterViewModel : ObservableObject
             Years.Add(new PeriodOption(year, null, year.ToString()));
 
         SelectedYear = Years.FirstOrDefault(option => option.Year == previousYear) ?? PeriodOption.AllYears;
-        RebuildMonths();
+
+        // Текущего года в данных нет — месяц без года не имеет смысла.
+        if (SelectedYear?.Year != previousYear) previousMonth = null;
+
+        RebuildMonths(previousMonth);
 
         _suspended = false;
 
         RaiseDerived();
         OnPropertyChanged(nameof(Years));
+
+        // Период мог измениться сам (подставлен текущий год и месяц) — сообщаем странице,
+        // иначе она осталась бы с данными, загруженными за «всё время».
+        if (SelectedYear?.Year != beforeYear || SelectedMonth?.Month != beforeMonth)
+            _changed();
     }
 
     /// <summary>Дата попадает в выбранный период.</summary>
     public bool Matches(DateTime date) => Filter.Contains(date);
 
     /// <summary>Месяцы пересобираются под выбранный год.</summary>
-    private void RebuildMonths()
+    /// <param name="preferredMonth">Месяц, который нужно сохранить, если он есть в списке.</param>
+    private void RebuildMonths(int? preferredMonth = null)
     {
         var year = SelectedYear?.Year;
-        var previousMonth = SelectedMonth?.Month;
+        var previousMonth = preferredMonth ?? SelectedMonth?.Month;
 
         Months.Clear();
         Months.Add(PeriodOption.AllMonthsOf(year));
@@ -119,5 +172,7 @@ public sealed partial class PeriodFilterViewModel : ObservableObject
         OnPropertyChanged(nameof(FilterCaption));
         OnPropertyChanged(nameof(BalanceCaption));
         OnPropertyChanged(nameof(CanFilterByMonth));
+        OnPropertyChanged(nameof(PickerCaption));
+        OnPropertyChanged(nameof(PickerTooltip));
     }
 }

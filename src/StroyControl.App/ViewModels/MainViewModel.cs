@@ -25,6 +25,7 @@ public sealed partial class MainViewModel : ObservableObject
         ISessionService session,
         IApplicationController controller,
         IToastService toasts,
+        PageNavigator navigator,
         AppEnvironment environment)
     {
         _services = services;
@@ -35,6 +36,11 @@ public sealed partial class MainViewModel : ObservableObject
 
         IsDarkTheme = ThemeManager.IsDark;
         BuildNavigation();
+
+        // Страница может попросить открыть другой раздел (например, «Объекты» —
+        // анализ отклонений по конкретному объекту). Обработчик один: новое главное
+        // окно после повторного входа заменяет прежний.
+        navigator.Attach(OnNavigationRequested);
     }
 
     public IToastService Toasts { get; }
@@ -186,6 +192,19 @@ public sealed partial class MainViewModel : ObservableObject
         var page = _services.GetRequiredService<TPage>();
         CurrentViewModel = page;
         await page.LoadAsync();
+    }
+
+    /// <summary>Переход в раздел, запрошенный страницей: пункт меню выбирается программно.</summary>
+    private void OnNavigationRequested(string pageKey)
+    {
+        var item = NavigationItems.FirstOrDefault(i => i.Key == pageKey);
+        if (item is null) return;
+
+        // Раздел уже открыт — просто перечитываем данные, иначе сеттер не сработает.
+        if (ReferenceEquals(SelectedNavigationItem, item))
+            _navigationTask = NavigateToAsync(item);
+        else
+            SelectedNavigationItem = item;
     }
 
     private async Task NavigateToAsync(NavigationItem item)
