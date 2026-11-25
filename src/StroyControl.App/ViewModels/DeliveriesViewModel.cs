@@ -48,7 +48,7 @@ public sealed partial class DeliveriesViewModel : ViewModelBase
 
         ProjectFilterOptions.Add(AllProjects);
 
-        Period = new MonthFilterViewModel(ApplyFilter);
+        Period = new PeriodFilterViewModel(ApplyFilter);
     }
 
     public override string Title => "Поступления";
@@ -66,7 +66,7 @@ public sealed partial class DeliveriesViewModel : ViewModelBase
     public ICollectionView ItemsView { get; }
 
     /// <summary>Период списка: поступления группируются по месяцу накладной.</summary>
-    public MonthFilterViewModel Period { get; }
+    public PeriodFilterViewModel Period { get; }
 
     public bool CanEdit => _session.CanEditDeliveries;
 

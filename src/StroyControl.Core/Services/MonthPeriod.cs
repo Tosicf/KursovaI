@@ -3,15 +3,16 @@ using StroyControl.Core.Dtos;
 namespace StroyControl.Core.Services;
 
 /// <summary>
-/// Единое правило работы с месяцами для всех списков приложения: от нового месяца
-/// к старому, «Все месяцы» — отсутствие ограничения по дате. Месяц документа
-/// определяется его датой: дата начала работ у объекта, дата сметы, дата
-/// поступления или списания.
+/// Работа с периодами документов: сначала год, затем месяц. Списки выбора
+/// ограничены наступившими датами — будущие годы и месяцы выбрать нельзя.
 /// </summary>
 public static class MonthPeriod
 {
-    /// <summary>Подпись пункта без ограничения по дате.</summary>
-    public const string AllTitle = "Все месяцы";
+    /// <summary>Подпись пункта «все годы».</summary>
+    public const string AllYearsTitle = "Все годы";
+
+    /// <summary>Подпись пункта «все месяцы».</summary>
+    public const string AllMonthsTitle = "Все месяцы";
 
     // Нарицательные названия месяцев заданы явно: формат «MMMM» в ru-RU зависит
     // от версии ICU и может вернуть родительный падеж («ноября»), а группировка
@@ -34,43 +35,65 @@ public static class MonthPeriod
     /// <summary>Первое число текущего месяца.</summary>
     public static DateTime CurrentMonth => Start(DateTime.Today);
 
-    /// <summary>Дата относится к выбранному месяцу (null — ограничения нет).</summary>
-    public static bool Matches(DateTime date, DateTime? month) =>
-        month is null || (date.Year == month.Value.Year && date.Month == month.Value.Month);
+    /// <summary>Месяц ещё не наступил — такую дату нельзя ни выбрать, ни отфильтровать.</summary>
+    public static bool IsFuture(DateTime date) => Start(date) > CurrentMonth;
 
-    /// <summary>Название месяца для подписей: «Ноябрь 2026».</summary>
-    public static string Title(DateTime month) =>
-        $"{MonthNames[Start(month).Month - 1]} {month.Year}";
+    /// <summary>Дата относится к выбранному году и месяцу (null — без ограничения).</summary>
+    public static bool Matches(DateTime date, int? year, int? month) =>
+        (year is null || date.Year == year) && (month is null || date.Month == month);
 
-    /// <summary>Короткое название месяца: «Ноя 2026» (для компактных подписей в сетках).</summary>
-    public static string ShortTitle(DateTime month) =>
-        $"{ShortMonthNames[Start(month).Month - 1]} {month.Year}";
+    /// <summary>Название месяца по номеру: «Ноябрь».</summary>
+    public static string MonthName(int month) => month is >= 1 and <= 12 ? MonthNames[month - 1] : string.Empty;
 
-    /// <summary>Месяцы, встречающиеся в датах, от нового к старому (без пункта «Все месяцы»).</summary>
-    public static IReadOnlyList<MonthOption> Months(IEnumerable<DateTime?> dates)
+    /// <summary>Название месяца с годом: «Ноябрь 2026».</summary>
+    public static string Title(DateTime month) => $"{MonthName(Start(month).Month)} {month.Year}";
+
+    /// <summary>Короткое название месяца с годом: «Ноя 2026».</summary>
+    public static string ShortTitle(DateTime month) => $"{ShortMonthNames[Start(month).Month - 1]} {month.Year}";
+
+    /// <summary>
+    /// Годы, за которые есть документы, от нового к старому. Будущие годы в список
+    /// не попадают, текущий год присутствует всегда.
+    /// </summary>
+    public static IReadOnlyList<int> Years(IEnumerable<DateTime?> dates)
     {
-        return dates
+        var current = DateTime.Today.Year;
+
+        var years = dates
             .Where(d => d.HasValue)
-            .Select(d => Start(d.Value))
+            .Select(d => d.Value.Year)
+            .Where(year => year <= current)
             .Distinct()
-            .OrderByDescending(d => d)
-            .Select(d => new MonthOption(d, Title(d)))
             .ToList();
+
+        if (!years.Contains(current))
+            years.Add(current);
+
+        return years.OrderByDescending(year => year).ToList();
     }
 
     /// <summary>
-    /// Полный список месяцев для выпадающего списка: «Все месяцы», затем месяцы данных
-    /// от нового к старому. Текущий месяц присутствует всегда, даже если данных в нём нет.
+    /// Месяцы выбранного года от нового к старому: только наступившие и только те,
+    /// за которые есть документы (для «всех лет» — все месяцы, встречающиеся в данных).
+    /// Текущий месяц доступен всегда.
     /// </summary>
-    public static IReadOnlyList<MonthOption> Options(IEnumerable<DateTime?> dates)
+    public static IReadOnlyList<int> Months(int? year, IEnumerable<DateTime?> dates)
     {
-        var months = Months(dates).ToList();
-        var current = CurrentMonth;
-        if (months.All(m => m.Month != current))
-            months.Add(new MonthOption(current, Title(current)));
+        var today = DateTime.Today;
+        var limit = year is null || year >= today.Year ? today.Month : 12;
 
-        var result = new List<MonthOption> { MonthOption.All };
-        result.AddRange(months.OrderByDescending(m => m.Month));
-        return result;
+        var months = dates
+            .Where(d => d.HasValue)
+            .Select(d => d.Value)
+            .Where(date => year is null || date.Year == year)
+            .Select(date => date.Month)
+            .Where(month => month <= limit)
+            .Distinct()
+            .ToList();
+
+        if ((year is null || year == today.Year) && !months.Contains(today.Month))
+            months.Add(today.Month);
+
+        return months.OrderByDescending(month => month).ToList();
     }
 }

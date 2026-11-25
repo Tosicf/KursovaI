@@ -23,10 +23,27 @@ public static class DemoDataSeeder
 
     private static readonly string[] LowStockCodes = { "ПЕНА-750", "КАБ-3x2.5" };
 
+    /// <summary>Код объекта, по которому распознаётся демонстрационная база.</summary>
+    private const string DemoProjectCode = "ОБ-2025-01";
+
     public static async Task SeedAsync(AppDbContext db, CancellationToken cancellationToken = default)
     {
         if (await db.Users.AnyAsync(cancellationToken))
+        {
+            // База уже создана раньше: догружаем недостающие демонстрационные объекты
+            // и сметы, чтобы расширенный набор появился и без пересоздания базы.
+            // Сбой этого шага не должен блокировать запуск приложения с рабочими данными.
+            try
+            {
+                await TopUpDemoDataAsync(db, cancellationToken);
+            }
+            catch (Exception)
+            {
+                // Демонстрационные данные — вспомогательные: запуск продолжается.
+            }
+
             return;
+        }
 
         var random = new Random(Seed);
         var today = DateTime.Today;
@@ -119,6 +136,62 @@ public static class DemoDataSeeder
     }
 
     private static string YearSuffix(DateTime date) => date.ToString("yy");
+
+    /// <summary>
+    /// Догоняющее наполнение демонстрационного набора для уже созданной базы: добавляет
+    /// объекты и сметы, которых в ней ещё нет, и выставляет даты смет демонстрационного
+    /// набора (раньше поле даты отсутствовало, и все документы попадали в текущий месяц).
+    /// Работает только с базой, созданной этим сидом, ничего не удаляет и не дублирует.
+    /// </summary>
+    private static async Task TopUpDemoDataAsync(AppDbContext db, CancellationToken cancellationToken)
+    {
+        var today = DateTime.Today;
+        var random = new Random(Seed);
+
+        var projects = await db.Projects.ToListAsync(cancellationToken);
+        if (projects.All(p => p.Code != DemoProjectCode))
+            return; // в базе «живые» данные — демонстрационный набор не дополняем
+
+        var materials = await db.Materials.ToListAsync(cancellationToken);
+        if (materials.Count == 0)
+            return;
+
+        var knownCodes = projects.Select(p => p.Code).ToHashSet(StringComparer.OrdinalIgnoreCase);
+        var added = new List<Project>();
+
+        foreach (var project in BuildProjects(today))
+        {
+            if (knownCodes.Contains(project.Code)) continue;
+
+            db.Projects.Add(project);
+            added.Add(project);
+        }
+
+        if (added.Count > 0)
+            await db.SaveChangesAsync(cancellationToken);
+
+        var allProjects = projects.Concat(added).ToList();
+        var existing = await db.Estimates.ToListAsync(cancellationToken);
+        var byNumber = existing.ToDictionary(e => e.Number, StringComparer.OrdinalIgnoreCase);
+
+        foreach (var estimate in BuildEstimates(allProjects, materials, random, today))
+        {
+            if (byNumber.TryGetValue(estimate.Number, out var stored))
+            {
+                // Дата, равная сегодняшней, у давно созданного документа означает, что она
+                // проставлена значением по умолчанию при добавлении колонки, — возвращаем
+                // расчётную дату демонстрационного набора.
+                if (stored.Date.Date == today && stored.CreatedAt.Date < today)
+                    stored.Date = estimate.Date;
+
+                continue;
+            }
+
+            db.Estimates.Add(estimate);
+        }
+
+        await db.SaveChangesAsync(cancellationToken);
+    }
 
     private static List<User> BuildUsers()
     {
@@ -232,6 +305,8 @@ public static class DemoDataSeeder
 
     private static List<Project> BuildProjects(DateTime today)
     {
+        // Даты начала работ не выходят в будущее: месяц объекта должен быть доступен
+        // в фильтре периода (интерфейс не предлагает не наступившие месяцы).
         return new List<Project>
         {
             new()
@@ -288,11 +363,11 @@ public static class DemoDataSeeder
                 ManagerName = "Иванов А. П.",
                 ContractSum = 1_150_000m,
                 TotalArea = 1_240m,
-                StartDate = today.AddMonths(2),
+                StartDate = today.AddMonths(-1),
                 PlannedEndDate = today.AddMonths(14),
                 Status = ProjectStatus.Planning,
                 ProgressPercent = 5,
-                Note = "Сметная документация передана на проверку, работы не начаты."
+                Note = "Сметная документация на проверке, монтаж начинается в текущем месяце."
             },
             new()
             {
@@ -326,6 +401,21 @@ public static class DemoDataSeeder
             },
             new()
             {
+                Code = "ОБ-2025-06",
+                Name = "Реконструкция средней школы №2",
+                Address = "г. Жодино, ул. 50 лет Октября, 21",
+                Customer = "УКС Жодинского горисполкома",
+                ManagerName = "Ковалёва Е. В.",
+                ContractSum = 3_950_000m,
+                TotalArea = 5_120m,
+                StartDate = today.AddMonths(-7),
+                PlannedEndDate = today.AddMonths(5),
+                Status = ProjectStatus.InProgress,
+                ProgressPercent = 48,
+                Note = "Замена кровли и фасада без прекращения занятий, работы поэтапно."
+            },
+            new()
+            {
                 Code = "ОБ-2024-11",
                 Name = "Административное здание районного исполкома",
                 Address = "г. Вилейка, ул. Советская, 3",
@@ -341,6 +431,96 @@ public static class DemoDataSeeder
             },
             new()
             {
+                Code = "ОБ-2024-12",
+                Name = "Склад готовой продукции с административно-бытовым корпусом",
+                Address = "г. Молодечно, ул. Великосельская, 14",
+                Customer = "ОАО «Молодечномебель»",
+                ManagerName = "Романов Д. О.",
+                ContractSum = 2_640_000m,
+                TotalArea = 4_300m,
+                StartDate = today.AddMonths(-14),
+                PlannedEndDate = today.AddMonths(2),
+                Status = ProjectStatus.Suspended,
+                ProgressPercent = 55,
+                Note = "Приостановлен по решению заказчика: корректировка проектной документации."
+            },
+            new()
+            {
+                Code = "ОБ-2025-07",
+                Name = "Многоквартирный дом №12 в микрорайоне «Южный»",
+                Address = "г. Минск, ул. Основателей, 12",
+                Customer = "ОАО «Городской квартал»",
+                ManagerName = "Дорошевич С. К.",
+                ContractSum = 5_120_000m,
+                TotalArea = 9_100m,
+                StartDate = today.AddMonths(-8),
+                PlannedEndDate = today.AddMonths(12),
+                Status = ProjectStatus.InProgress,
+                ProgressPercent = 28,
+                Note = "Монолитный каркас, 12 этажей, встроенные помещения на первом этаже."
+            },
+            new()
+            {
+                Code = "ОБ-2026-04",
+                Name = "Реконструкция поликлиники №3",
+                Address = "г. Минск, ул. Никифорова, 8",
+                Customer = "УЗ «Городская поликлиника №3»",
+                ManagerName = "Ковалёва Е. В.",
+                ContractSum = 2_870_000m,
+                TotalArea = 3_640m,
+                StartDate = today.AddMonths(-8),
+                PlannedEndDate = today.AddMonths(6),
+                Status = ProjectStatus.InProgress,
+                ProgressPercent = 37,
+                Note = "Реконструкция с заменой инженерных систем, приём пациентов продолжается."
+            },
+            new()
+            {
+                Code = "ОБ-2025-08",
+                Name = "Пристройка спортзала к гимназии №1",
+                Address = "г. Слоним, ул. Первомайская, 6",
+                Customer = "УКС Слонимского райисполкома",
+                ManagerName = "Иванов А. П.",
+                ContractSum = 1_780_000m,
+                TotalArea = 1_950m,
+                StartDate = today.AddMonths(-12),
+                PlannedEndDate = today.AddMonths(4),
+                Status = ProjectStatus.InProgress,
+                ProgressPercent = 71,
+                Note = "Каркас из металлоконструкций, ввод в эксплуатацию к началу учебного года."
+            },
+            new()
+            {
+                Code = "ОБ-2025-09",
+                Name = "Реконструкция рынка «Западный»",
+                Address = "г. Минск, ул. Кунцевщина, 40",
+                Customer = "КУП «Минская городская торговля»",
+                ManagerName = "Дорошевич С. К.",
+                ContractSum = 2_240_000m,
+                TotalArea = 3_080m,
+                StartDate = today.AddMonths(-8),
+                PlannedEndDate = today.AddMonths(5),
+                Status = ProjectStatus.InProgress,
+                ProgressPercent = 22,
+                Note = "Замена кровли и торговых павильонов, работа рынка не приостанавливается."
+            },
+            new()
+            {
+                Code = "ОБ-2026-02",
+                Name = "Благоустройство набережной реки Свислочь",
+                Address = "г. Минск, участок от ул. Янки Купалы до ул. Первомайской",
+                Customer = "УП «Городское благоустройство»",
+                ManagerName = "Романов Д. О.",
+                ContractSum = 1_360_000m,
+                TotalArea = 12_500m,
+                StartDate = today,
+                PlannedEndDate = today.AddMonths(10),
+                Status = ProjectStatus.Planning,
+                ProgressPercent = 0,
+                Note = "Пешеходные дорожки, освещение, озеленение; работы начинаются в текущем месяце."
+            },
+            new()
+            {
                 Code = "ОБ-2026-01",
                 Name = "Физкультурно-оздоровительный комплекс с бассейном",
                 Address = "г. Барановичи, ул. Фабричная, 9",
@@ -348,7 +528,7 @@ public static class DemoDataSeeder
                 ManagerName = "Дорошевич С. К.",
                 ContractSum = 7_300_000m,
                 TotalArea = 9_400m,
-                StartDate = today.AddMonths(4),
+                StartDate = today,
                 PlannedEndDate = today.AddMonths(22),
                 Status = ProjectStatus.Planning,
                 ProgressPercent = 0,
@@ -457,7 +637,10 @@ public static class DemoDataSeeder
 
             foreach (var item in items)
             {
-                var material = materials.First(m => m.Code == item.Material);
+                // В уже существующей базе справочник мог быть короче — позицию пропускаем.
+                var material = materials.FirstOrDefault(m => m.Code == item.Material);
+                if (material is null) continue;
+
                 estimate.Items.Add(new EstimateItem
                 {
                     MaterialId = material.Id,
@@ -490,7 +673,7 @@ public static class DemoDataSeeder
         // как документы группируются по периодам, а не сваливаются в один список.
         return new List<Estimate>
         {
-            Create("ОБ-2025-01", "СМ-01/25", "Смета на общестроительные работы", today.AddMonths(-8), EstimateStatus.Approved,
+            Create("ОБ-2025-01", "СМ-01/25", "Смета на общестроительные работы", today.AddMonths(-11), EstimateStatus.Approved,
                 ("ЦЕМ-500", "Фундамент", 24000m),
                 ("АРМ-500-12", "Фундамент", 185000m),
                 ("БЕТ-B25", "Фундамент", 3200m),
@@ -519,7 +702,7 @@ public static class DemoDataSeeder
                 ("КАБ-3x2.5", "Электрика", 4200m),
                 ("ПЕНА-750", "Электрика", 180m)),
 
-            Create("ОБ-2024-07", "СМ-21/24", "Смета на каркас и кровлю", today.AddMonths(-16), EstimateStatus.Approved,
+            Create("ОБ-2024-07", "СМ-21/24", "Смета на каркас и кровлю", today.AddMonths(-24), EstimateStatus.Approved,
                 ("АРМ-500-12", "Каркас", 310000m),
                 ("БЕТ-B25", "Каркас", 5200m),
                 ("ЩЕБ-5-20", "Основания", 2600m),
@@ -534,11 +717,11 @@ public static class DemoDataSeeder
                 ("ЦЕМ-500", "Наружные сети", 6400m),
                 ("КАБ-3x2.5", "Электрика", 1500m)),
 
-            Create("ОБ-2025-04", "СМ-32/25", "Смета на восстановление благоустройства", today.AddMonths(-1), EstimateStatus.Draft,
+            Create("ОБ-2025-04", "СМ-32/25", "Смета на восстановление благоустройства", today.AddMonths(-2), EstimateStatus.Draft,
                 ("ПЕС-МЫТ", "Благоустройство", 900m),
                 ("ЩЕБ-5-20", "Благоустройство", 700m)),
 
-            Create("ОБ-2025-05", "СМ-41/25", "Смета на общестроительные работы", today.AddMonths(-11), EstimateStatus.Approved,
+            Create("ОБ-2025-05", "СМ-41/25", "Смета на общестроительные работы", today.AddMonths(-12), EstimateStatus.Approved,
                 ("КИР-1НФ", "Кладка", 540000m),
                 ("ЦЕМ-500", "Кладка", 18000m),
                 ("АРМ-500-12", "Каркас", 120000m),
@@ -552,24 +735,168 @@ public static class DemoDataSeeder
                 ("ЩЕБ-5-20", "Благоустройство", 1200m),
                 ("БЛОК-D600", "Благоустройство", 60m)),
 
-            Create("ОБ-2024-11", "СМ-51/24", "Смета на реконструкцию здания", today.AddMonths(-19), EstimateStatus.Archived,
+            Create("ОБ-2024-11", "СМ-51/24", "Смета на реконструкцию здания", today.AddMonths(-23), EstimateStatus.Archived,
                 ("КИР-1НФ", "Кладка", 210000m),
                 ("ЦЕМ-500", "Кладка", 9500m),
                 ("ГКЛ-12.5", "Отделка", 2100m),
                 ("КРАС-ФАС", "Отделка", 1200m),
                 ("МВ-100", "Отделка", 1600m)),
 
-            Create("ОБ-2026-03", "СМ-61/26", "Смета на замену котельного оборудования", today.AddMonths(2), EstimateStatus.OnReview,
+            Create("ОБ-2026-03", "СМ-61/26", "Смета на замену котельного оборудования", today.AddMonths(-1), EstimateStatus.OnReview,
                 ("АРМ-500-12", "Каркас", 18000m),
                 ("ЦЕМ-500", "Фундамент", 2400m),
                 ("КАБ-3x2.5", "Электрика", 900m)),
 
-            Create("ОБ-2026-01", "СМ-71/26", "Смета на каркас и кровлю комплекса", today.AddMonths(4), EstimateStatus.Draft,
+            Create("ОБ-2026-01", "СМ-71/26", "Смета на каркас и кровлю комплекса", today, EstimateStatus.Draft,
                 ("АРМ-500-12", "Каркас", 420000m),
                 ("БЕТ-B25", "Каркас", 6800m),
                 ("ОСБ-18", "Кровля", 4200m),
                 ("РУБ-350", "Кровля", 3600m),
-                ("МВ-100", "Кровля", 7800m))
+                ("МВ-100", "Кровля", 7800m)),
+
+            Create("ОБ-2025-06", "СМ-33/26", "Смета на ремонт кровли и фасада", today.AddMonths(-6), EstimateStatus.Approved,
+                ("РУБ-350", "Кровля", 1400m),
+                ("МВ-100", "Кровля", 2600m),
+                ("ОСБ-18", "Кровля", 900m),
+                ("КРАС-ФАС", "Отделка", 2200m),
+                ("ГКЛ-12.5", "Отделка", 1800m),
+                ("ПРОФ-CD60", "Отделка", 2400m)),
+
+            Create("ОБ-2024-12", "СМ-52/25", "Смета на устройство склада", today.AddMonths(-14), EstimateStatus.Approved,
+                ("АРМ-500-12", "Каркас", 96000m),
+                ("БЕТ-B25", "Каркас", 2100m),
+                ("КИР-1НФ", "Кладка", 140000m),
+                ("ЦЕМ-500", "Кладка", 8400m),
+                ("БЛОК-D600", "Кладка", 420m),
+                ("ЩЕБ-5-20", "Основания", 1100m),
+                ("ПЕС-МЫТ", "Основания", 900m)),
+
+            Create("ОБ-2025-07", "СМ-81/26", "Смета на каркас и кладку дома", today.AddMonths(-1), EstimateStatus.Approved,
+                ("АРМ-500-12", "Каркас", 260000m),
+                ("БЕТ-B25", "Каркас", 4800m),
+                ("КИР-1НФ", "Кладка", 320000m),
+                ("ЦЕМ-500", "Кладка", 12000m),
+                ("БЛОК-D600", "Стены", 1400m)),
+
+            Create("ОБ-2025-07", "СМ-82/26", "Смета на отделочные работы дома", today, EstimateStatus.Draft,
+                ("ГКЛ-12.5", "Отделка", 2800m),
+                ("ПРОФ-CD60", "Отделка", 3600m),
+                ("КРАС-ФАС", "Отделка", 1400m),
+                ("ПЛИТ-300", "Отделка", 900m)),
+
+            Create("ОБ-2026-04", "СМ-91/26", "Смета на реконструкцию корпуса поликлиники", today.AddMonths(-8), EstimateStatus.Approved,
+                ("КИР-1НФ", "Кладка", 120000m),
+                ("ЦЕМ-500", "Кладка", 5200m),
+                ("АРМ-500-12", "Каркас", 34000m),
+                ("БЕТ-B25", "Каркас", 900m),
+                ("ПЕС-МЫТ", "Основания", 400m),
+                ("ЩЕБ-5-20", "Основания", 380m)),
+
+            Create("ОБ-2026-04", "СМ-92/26", "Смета на инженерные системы поликлиники", today.AddMonths(-6), EstimateStatus.OnReview,
+                ("КАБ-3x2.5", "Электрика", 1800m),
+                ("ПЕНА-750", "Электрика", 90m),
+                ("ГКЛ-12.5", "Отделка", 1200m),
+                ("ПРОФ-CD60", "Отделка", 1500m)),
+
+            Create("ОБ-2025-09", "СМ-95/26", "Смета на кровлю торговых павильонов", today.AddMonths(-8), EstimateStatus.Approved,
+                ("ОСБ-18", "Кровля", 520m),
+                ("РУБ-350", "Кровля", 460m),
+                ("МВ-100", "Кровля", 980m),
+                ("ПРОФ-CD60", "Отделка", 640m)),
+
+            Create("ОБ-2025-08", "СМ-93/25", "Смета на пристройку спортзала", today.AddMonths(-12), EstimateStatus.Approved,
+                ("КИР-1НФ", "Кладка", 86000m),
+                ("ЦЕМ-500", "Кладка", 3900m),
+                ("АРМ-500-12", "Каркас", 26000m),
+                ("БЕТ-B25", "Каркас", 620m),
+                ("ОСБ-18", "Кровля", 240m),
+                ("РУБ-350", "Кровля", 180m)),
+
+            Create("ОБ-2025-08", "СМ-94/25", "Смета на кровлю и отделку спортзала", today.AddMonths(-1), EstimateStatus.Draft,
+                ("МВ-100", "Кровля", 520m),
+                ("ОСБ-18", "Кровля", 160m),
+                ("КРАС-ФАС", "Отделка", 480m)),
+
+            // Месяцы -2…-8 наполнены так, чтобы при выборе любого из последних
+            // периодов в списках и на панели было по три-четыре сметы, а не по одной.
+            Create("ОБ-2025-01", "СМ-03/25", "Смета на устройство перекрытий", today.AddMonths(-2), EstimateStatus.OnReview,
+                ("АРМ-500-12", "Каркас", 41000m),
+                ("БЕТ-B25", "Каркас", 980m),
+                ("ОСБ-18", "Опалубка", 320m),
+                ("ЦЕМ-500", "Бетонирование", 5200m)),
+
+            Create("ОБ-2025-05", "СМ-43/25", "Смета на проезды и озеленение", today.AddMonths(-2), EstimateStatus.Draft,
+                ("ПЕС-МЫТ", "Основания", 760m),
+                ("ЩЕБ-5-20", "Основания", 640m),
+                ("КИР-1НФ", "Благоустройство", 24000m)),
+
+            Create("ОБ-2025-02", "СМ-13/25", "Смета на кровлю и водостоки школы", today.AddMonths(-3), EstimateStatus.Approved,
+                ("РУБ-350", "Кровля", 320m),
+                ("МВ-100", "Кровля", 1400m),
+                ("ОСБ-18", "Кровля", 280m),
+                ("ПРОФ-CD60", "Отделка", 900m)),
+
+            Create("ОБ-2026-03", "СМ-62/26", "Смета на обмуровку и изоляцию котлов", today.AddMonths(-3), EstimateStatus.Draft,
+                ("КИР-1НФ", "Кладка", 12000m),
+                ("МВ-100", "Изоляция", 640m),
+                ("ЦЕМ-500", "Кладка", 1400m)),
+
+            Create("ОБ-2025-07", "СМ-83/26", "Смета на кровлю дома", today.AddMonths(-3), EstimateStatus.Approved,
+                ("ОСБ-18", "Кровля", 260m),
+                ("РУБ-350", "Кровля", 210m),
+                ("ПЕНА-750", "Кровля", 180m)),
+
+            Create("ОБ-2025-06", "СМ-34/26", "Смета на устройство фасада", today.AddMonths(-4), EstimateStatus.OnReview,
+                ("КРАС-ФАС", "Фасад", 640m),
+                ("МВ-100", "Фасад", 760m),
+                ("ПРОФ-CD60", "Фасад", 520m)),
+
+            Create("ОБ-2025-09", "СМ-96/26", "Смета на электрику павильонов", today.AddMonths(-4), EstimateStatus.Approved,
+                ("КАБ-3x2.5", "Электрика", 3200m),
+                ("ПРОФ-CD60", "Электрика", 260m)),
+
+            Create("ОБ-2025-01", "СМ-04/25", "Смета на кладку наружных стен", today.AddMonths(-5), EstimateStatus.Approved,
+                ("КИР-1НФ", "Кладка", 120000m),
+                ("ЦЕМ-500", "Кладка", 6400m),
+                ("ПЕС-МЫТ", "Кладка", 620m),
+                ("БЛОК-D600", "Стены", 340m)),
+
+            Create("ОБ-2025-05", "СМ-44/25", "Смета на инженерные сети", today.AddMonths(-5), EstimateStatus.OnReview,
+                ("КАБ-3x2.5", "Электрика", 2400m),
+                ("ПРОФ-CD60", "Электрика", 320m),
+                ("ЦЕМ-500", "Стяжка", 3800m)),
+
+            Create("ОБ-2026-01", "СМ-72/26", "Смета на нулевой цикл", today.AddMonths(-5), EstimateStatus.Approved,
+                ("БЕТ-B25", "Фундамент", 1240m),
+                ("АРМ-500-12", "Фундамент", 68000m),
+                ("ЩЕБ-5-20", "Основания", 820m),
+                ("ПЕС-МЫТ", "Основания", 760m)),
+
+            Create("ОБ-2025-09", "СМ-97/26", "Смета на отделку торговых залов", today.AddMonths(-6), EstimateStatus.Draft,
+                ("ГКЛ-12.5", "Отделка", 420m),
+                ("ПЛИТ-300", "Отделка", 380m),
+                ("КРАС-ФАС", "Отделка", 260m),
+                ("ПРОФ-CD60", "Отделка", 540m)),
+
+            Create("ОБ-2025-02", "СМ-14/25", "Смета на спортивные площадки", today.AddMonths(-7), EstimateStatus.Draft,
+                ("ПЕС-МЫТ", "Основания", 540m),
+                ("ЩЕБ-5-20", "Основания", 420m),
+                ("БЕТ-B25", "Основания", 180m)),
+
+            Create("ОБ-2026-03", "СМ-63/26", "Смета на дымовые трубы", today.AddMonths(-7), EstimateStatus.OnReview,
+                ("КИР-1НФ", "Кладка", 34000m),
+                ("ЦЕМ-500", "Кладка", 2100m),
+                ("АРМ-500-12", "Каркас", 8600m)),
+
+            Create("ОБ-2025-07", "СМ-84/26", "Смета на внутренние перегородки", today.AddMonths(-7), EstimateStatus.Approved,
+                ("ГКЛ-12.5", "Перегородки", 680m),
+                ("ПРОФ-CD60", "Перегородки", 760m),
+                ("МВ-100", "Перегородки", 420m)),
+
+            Create("ОБ-2025-06", "СМ-35/26", "Смета на благоустройство территории", today.AddMonths(-8), EstimateStatus.Approved,
+                ("ПЕС-МЫТ", "Основания", 480m),
+                ("ЩЕБ-5-20", "Основания", 360m),
+                ("КИР-1НФ", "Благоустройство", 18000m))
         };
     }
 

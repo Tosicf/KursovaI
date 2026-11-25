@@ -49,7 +49,7 @@ public sealed partial class EstimatesViewModel : ViewModelBase
 
         ProjectFilterOptions.Add(AllProjects);
 
-        Period = new MonthFilterViewModel(ApplyFilter);
+        Period = new PeriodFilterViewModel(ApplyFilter);
     }
 
     public override string Title => "Сметы";
@@ -67,7 +67,7 @@ public sealed partial class EstimatesViewModel : ViewModelBase
     public ICollectionView EstimatesView { get; }
 
     /// <summary>Период списка: сметы группируются по дате сметы.</summary>
-    public MonthFilterViewModel Period { get; }
+    public PeriodFilterViewModel Period { get; }
 
     public bool CanEdit => _session.CanEditEstimates;
 

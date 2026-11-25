@@ -60,6 +60,7 @@ public sealed partial class EstimateEditorViewModel : EditorViewModelBase
         if (string.IsNullOrWhiteSpace(Number)) return "Укажите номер сметы.";
         if (string.IsNullOrWhiteSpace(Name)) return "Укажите наименование сметы.";
         if (SelectedProject is null) return "Выберите строительный объект.";
+        if (Date.Date > MaxDate) return "Дата сметы не может быть в будущем.";
         if (MarkupPercent is < 0m or > 100m) return "Наценка должна быть в пределах 0–100 %.";
         if (ProfitPercent is < 0m or > 100m) return "Прибыль должна быть в пределах 0–100 %.";
         if (LaborSharePercent is < 0m or > 100m) return "Доля зарплаты рабочих должна быть в пределах 0–100 %.";

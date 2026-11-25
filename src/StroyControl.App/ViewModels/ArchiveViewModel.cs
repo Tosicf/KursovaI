@@ -36,7 +36,7 @@ public sealed partial class ArchiveViewModel : ViewModelBase
         EstimatesView = CollectionViewSource.GetDefaultView(Estimates);
         EstimatesView.Filter = Filter;
 
-        Period = new MonthFilterViewModel(RefreshView);
+        Period = new PeriodFilterViewModel(RefreshView);
     }
 
     public override string Title => "Архив смет";
@@ -46,7 +46,7 @@ public sealed partial class ArchiveViewModel : ViewModelBase
     public ICollectionView EstimatesView { get; }
 
     /// <summary>Период архива: сметы группируются по дате сметы.</summary>
-    public MonthFilterViewModel Period { get; }
+    public PeriodFilterViewModel Period { get; }
 
     /// <summary>Отчёт содержит финансовые показатели.</summary>
     public bool CanViewReport => _session.CanViewFinance;

@@ -41,7 +41,7 @@ public sealed partial class DashboardViewModel : ViewModelBase
         _inventory = inventory;
         _dialogs = dialogs;
 
-        Period = new MonthFilterViewModel(ReloadForPeriod);
+        Period = new PeriodFilterViewModel(ReloadForPeriod);
     }
 
     public override string Title => "Панель управления";
@@ -50,7 +50,7 @@ public sealed partial class DashboardViewModel : ViewModelBase
     /// Период панели. Главная страница всегда показывает один месяц (или все месяцы),
     /// поэтому при росте числа объектов она не разрастается.
     /// </summary>
-    public MonthFilterViewModel Period { get; }
+    public PeriodFilterViewModel Period { get; }
 
     public string Greeting
     {
@@ -177,7 +177,7 @@ public sealed partial class DashboardViewModel : ViewModelBase
 
         IsBusy = true;
         var ok = await ExecuteAsync(
-            async () => Data = await _dashboardService.LoadAsync(Period.Month),
+            async () => Data = await _dashboardService.LoadAsync(Period.Filter),
             "Не удалось загрузить панель.");
         IsBusy = false;
 

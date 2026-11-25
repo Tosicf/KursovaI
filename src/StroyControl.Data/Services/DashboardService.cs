@@ -25,7 +25,7 @@ public sealed class DashboardService : IDashboardService
 
     public DashboardService(IDbContextFactory<AppDbContext> factory) => _factory = factory;
 
-    public async Task<DashboardData> LoadAsync(DateTime? month = null, CancellationToken cancellationToken = default)
+    public async Task<DashboardData> LoadAsync(PeriodFilter? period = null, CancellationToken cancellationToken = default)
     {
         await using var db = await _factory.CreateDbContextAsync(cancellationToken);
 
@@ -43,27 +43,22 @@ public sealed class DashboardService : IDashboardService
             .Include(u => u.Project)
             .ToListAsync(cancellationToken);
 
-        var monthStart = month is null ? (DateTime?)null : MonthPeriod.Start(month.Value);
-        var monthEnd = monthStart?.AddMonths(1).AddDays(-1);
+        var filter = period ?? PeriodFilter.All;
+        var periodEnd = filter.End;
 
-        // Операции выбранного месяца: по ним считаются структура затрат, лента и диаграмма.
-        var usagesInPeriod = monthStart is null
-            ? usages
-            : usages.Where(u => MonthPeriod.Matches(u.Date, monthStart.Value)).ToList();
+        // Операции выбранного периода: по ним считаются структура затрат, лента и диаграмма.
+        var usagesInPeriod = usages.Where(u => filter.Contains(u.Date)).ToList();
+        var deliveriesInPeriod = deliveries.Where(d => filter.Contains(d.Date)).ToList();
 
-        var deliveriesInPeriod = monthStart is null
-            ? deliveries
-            : deliveries.Where(d => MonthPeriod.Matches(d.Date, monthStart.Value)).ToList();
-
-        // Исполнение бюджета объекта считается накопленным итогом по конец выбранного месяца,
-        // иначе «план» брался бы за весь срок объекта, а «факт» — только за месяц.
-        var estimatesToDate = monthEnd is null
+        // Исполнение бюджета объекта считается накопленным итогом по конец периода,
+        // иначе «план» брался бы за весь срок объекта, а «факт» — только за период.
+        var estimatesToDate = periodEnd is null
             ? estimates
-            : estimates.Where(e => e.Date <= monthEnd.Value).ToList();
+            : estimates.Where(e => e.Date <= periodEnd.Value).ToList();
 
-        var usagesToDate = monthEnd is null
+        var usagesToDate = periodEnd is null
             ? usages
-            : usages.Where(u => u.Date <= monthEnd.Value).ToList();
+            : usages.Where(u => u.Date <= periodEnd.Value).ToList();
 
         var plannedByProject = estimatesToDate
             .GroupBy(e => e.ProjectId)
@@ -110,9 +105,57 @@ public sealed class DashboardService : IDashboardService
                 ProjectMonth(p)))
             .ToList();
 
-        var budgetsInPeriod = monthStart is null
-            ? allBudgets
-            : allBudgets.Where(b => MonthPeriod.Matches(b.Month, monthStart)).ToList();
+        // Объект попадает в период, если в этом году/месяце по нему были документы —
+        // сметы, поступления или списания. Поэтому долгострой показывается в каждом
+        // месяце, в котором велись работы, а не только в месяце последней операции.
+        // Объект без документов виден в месяце начала работ.
+        var activityMonths = new Dictionary<int, List<DateTime>>();
+
+        void Remember(int projectId, DateTime date)
+        {
+            if (!activityMonths.TryGetValue(projectId, out var dates))
+                activityMonths[projectId] = dates = new List<DateTime>();
+
+            dates.Add(date);
+        }
+
+        foreach (var usage in usages) Remember(usage.ProjectId, usage.Date);
+        foreach (var estimate in estimates) Remember(estimate.ProjectId, estimate.Date);
+
+        foreach (var delivery in deliveries)
+        {
+            if (delivery.ProjectId is { } deliveryProjectId)
+                Remember(deliveryProjectId, delivery.Date);
+        }
+
+        var startMonths = projects.ToDictionary(p => p.Id, p => MonthPeriod.Start(p.StartDate));
+
+        bool InPeriod(ProjectBudgetRow row)
+        {
+            if (filter.IsAll) return true;
+            if (startMonths.TryGetValue(row.ProjectId, out var startMonth) && filter.Contains(startMonth)) return true;
+
+            return activityMonths.TryGetValue(row.ProjectId, out var dates) && dates.Any(filter.Contains);
+        }
+
+        // В выбранном периоде подписываем строку месяцем последней операции внутри
+        // периода, иначе у долгостроя в списке стоял бы месяц из другого периода.
+        var budgetsInPeriod = allBudgets
+            .Where(InPeriod)
+            .Select(row =>
+            {
+                if (filter.IsAll) return row;
+
+                var dates = activityMonths.TryGetValue(row.ProjectId, out var list) ? list : new List<DateTime>();
+                var lastInPeriod = dates.Where(filter.Contains).DefaultIfEmpty(DateTime.MinValue).Max();
+
+                var month = lastInPeriod == DateTime.MinValue
+                    ? startMonths[row.ProjectId]
+                    : MonthPeriod.Start(lastInPeriod);
+
+                return row with { Month = month };
+            })
+            .ToList();
 
         // Сортировка по месяцам: свежие месяцы сверху, внутри месяца — крупные сметы.
         var budgets = budgetsInPeriod
@@ -148,9 +191,18 @@ public sealed class DashboardService : IDashboardService
                           Cost: u.Quantity * u.UnitPrice))
             .ToList());
 
+        // График заканчивается выбранным месяцем; при выборе только года — декабрём года
+        // (или текущим месяцем, если выбран текущий год), чтобы не показывать будущее.
+        var anchorMonth = filter.MonthStart
+                          ?? (filter.Year is { } year
+                              ? MonthPeriod.Start(year == DateTime.Today.Year
+                                  ? DateTime.Today
+                                  : new DateTime(year, 12, 1))
+                              : (DateTime?)null);
+
         var monthly = BuildMonthlySeries(
             usages.Select(u => (u.Date, Cost: u.Quantity * u.UnitPrice)).ToList(),
-            monthStart);
+            anchorMonth);
 
         // Список месяцев для выпадающего фильтра — по всем документам, независимо от выбранного периода.
         var periodMonths = usages.Select(u => (DateTime?)u.Date)
