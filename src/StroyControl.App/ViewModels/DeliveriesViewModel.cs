@@ -47,6 +47,8 @@ public sealed partial class DeliveriesViewModel : ViewModelBase
         ItemsView.Filter = FilterItem;
 
         ProjectFilterOptions.Add(AllProjects);
+
+        Period = new MonthFilterViewModel(ApplyFilter);
     }
 
     public override string Title => "Поступления";
@@ -62,6 +64,9 @@ public sealed partial class DeliveriesViewModel : ViewModelBase
     public ObservableCollection<string> ProjectFilterOptions { get; } = new();
 
     public ICollectionView ItemsView { get; }
+
+    /// <summary>Период списка: поступления группируются по месяцу накладной.</summary>
+    public MonthFilterViewModel Period { get; }
 
     public bool CanEdit => _session.CanEditDeliveries;
 
@@ -136,6 +141,9 @@ public sealed partial class DeliveriesViewModel : ViewModelBase
                 ? previousFilter
                 : AllProjects;
 
+            Period.Rebuild(Items.Select(d => (DateTime?)d.Date));
+            ItemsView.Refresh();
+
             SelectedDelivery = Items.FirstOrDefault(d => d.Id == previousId) ?? Items.FirstOrDefault();
             UpdateStatistics();
         }, "Не удалось загрузить поступления.");
@@ -176,6 +184,7 @@ public sealed partial class DeliveriesViewModel : ViewModelBase
             AttachReferences(created);
             Items.Insert(0, created);
             SelectedDelivery = created;
+            Period.Rebuild(Items.Select(d => (DateTime?)d.Date));
             ApplyFilter();
             _toasts.Success("Поступление оформлено",
                 $"{created.Number} · {created.ItemsCount} поз. · остатки обновлены");
@@ -223,6 +232,10 @@ public sealed partial class DeliveriesViewModel : ViewModelBase
         try
         {
             await _inventory.UpdateDeliveryAsync(updated);
+
+            // Накладная могла перейти в другой месяц — период и порядок пересобираются.
+            Period.Rebuild(Items.Select(d => (DateTime?)d.Date));
+            ApplyFilter();
             _toasts.Success("Поступление изменено", $"{updated.Number} · остатки пересчитаны");
         }
         catch (Exception ex)
@@ -309,6 +322,8 @@ public sealed partial class DeliveriesViewModel : ViewModelBase
                           || delivery.ProjectName.Contains(term, StringComparison.OrdinalIgnoreCase);
             if (!matches) return false;
         }
+
+        if (!Period.Matches(delivery.Date)) return false;
 
         return string.IsNullOrWhiteSpace(SelectedProjectFilter) || SelectedProjectFilter == AllProjects
                || delivery.ProjectName == SelectedProjectFilter;

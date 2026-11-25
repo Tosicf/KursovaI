@@ -1,4 +1,5 @@
 using StroyControl.Core.Enums;
+using StroyControl.Core.Services;
 
 namespace StroyControl.Core.Entities;
 
@@ -14,6 +15,12 @@ public class Estimate : EntityBase
     public Project? Project { get; set; }
 
     public EstimateStatus Status { get; set; } = EstimateStatus.Draft;
+
+    /// <summary>
+    /// Дата сметы (месяц, к которому относится документ). Именно по ней сметы
+    /// группируются и сортируются во всех списках приложения.
+    /// </summary>
+    public DateTime Date { get; set; } = DateTime.Today;
 
     public string? Note { get; set; }
 
@@ -57,6 +64,11 @@ public class Estimate : EntityBase
     };
 
     public string ProjectName => Project?.Name ?? "—";
+
+    public string DateDisplay => Date.ToString("dd.MM.yyyy");
+
+    /// <summary>Месяц сметы для группировки списков: «Ноябрь 2026».</summary>
+    public string MonthDisplay => MonthPeriod.Title(Date);
 
     public override string ToString() => $"{Number} · {Name}";
 }

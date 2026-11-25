@@ -7,6 +7,7 @@ using StroyControl.App.Services;
 using StroyControl.Core.Entities;
 using StroyControl.Core.Enums;
 using StroyControl.Core.Interfaces;
+using StroyControl.Core.Services;
 
 namespace StroyControl.App.ViewModels;
 
@@ -47,6 +48,8 @@ public sealed partial class EstimatesViewModel : ViewModelBase
         EstimatesView.Filter = FilterEstimate;
 
         ProjectFilterOptions.Add(AllProjects);
+
+        Period = new MonthFilterViewModel(ApplyFilter);
     }
 
     public override string Title => "Сметы";
@@ -62,6 +65,9 @@ public sealed partial class EstimatesViewModel : ViewModelBase
     public ObservableCollection<string> ProjectFilterOptions { get; } = new();
 
     public ICollectionView EstimatesView { get; }
+
+    /// <summary>Период списка: сметы группируются по дате сметы.</summary>
+    public MonthFilterViewModel Period { get; }
 
     public bool CanEdit => _session.CanEditEstimates;
 
@@ -174,8 +180,11 @@ public sealed partial class EstimatesViewModel : ViewModelBase
                 ? previousFilter
                 : AllProjects;
 
+            // Месяцы для фильтра — по датам смет; выбор периода сохраняется.
+            Period.Rebuild(Estimates.Select(e => (DateTime?)e.Date));
+
             SelectedEstimate = Estimates.FirstOrDefault(e => e.Id == previousId) ?? Estimates.FirstOrDefault();
-            UpdateStatistics();
+            ApplyFilter();
         }, "Не удалось загрузить сметы.");
 
         IsBusy = false;
@@ -203,6 +212,8 @@ public sealed partial class EstimatesViewModel : ViewModelBase
         if (entity is null) return;
 
         Estimates.Insert(0, entity);
+        SortByMonth();
+        Period.Rebuild(Estimates.Select(e => (DateTime?)e.Date));
         ApplyFilter();
         SelectedEstimate = entity;
 
@@ -245,6 +256,8 @@ public sealed partial class EstimatesViewModel : ViewModelBase
         // сохраняет исключительно реквизиты самой сметы.
         updated.Items = estimate.Items;
         Estimates[index] = updated;
+        SortByMonth();
+        Period.Rebuild(Estimates.Select(e => (DateTime?)e.Date));
         ApplyFilter();
 
         if (ReferenceEquals(SelectedEstimate, estimate))
@@ -549,6 +562,21 @@ public sealed partial class EstimatesViewModel : ViewModelBase
         }
     }
 
+    /// <summary>Пересортировка по месяцам: свежие сметы сверху, внутри месяца — по номеру.</summary>
+    private void SortByMonth()
+    {
+        var ordered = Estimates
+            .OrderByDescending(e => MonthPeriod.Start(e.Date))
+            .ThenBy(e => e.Number, StringComparer.CurrentCulture)
+            .ToList();
+
+        for (var target = 0; target < ordered.Count; target++)
+        {
+            var current = Estimates.IndexOf(ordered[target]);
+            if (current != target) Estimates.Move(current, target);
+        }
+    }
+
     private bool FilterEstimate(object item)
     {
         if (item is not Estimate estimate) return false;
@@ -561,6 +589,8 @@ public sealed partial class EstimatesViewModel : ViewModelBase
                           || estimate.ProjectName.Contains(term, StringComparison.OrdinalIgnoreCase);
             if (!matches) return false;
         }
+
+        if (!Period.Matches(estimate.Date)) return false;
 
         return string.IsNullOrWhiteSpace(SelectedProjectFilter) || SelectedProjectFilter == AllProjects
                || estimate.ProjectName == SelectedProjectFilter;

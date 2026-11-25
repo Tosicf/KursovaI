@@ -1,4 +1,5 @@
 using StroyControl.Core.Enums;
+using StroyControl.Core.Services;
 
 namespace StroyControl.Core.Dtos;
 
@@ -9,7 +10,8 @@ public sealed record ProjectBudgetRow(
     string Name,
     decimal PlannedCost,
     decimal ActualCost,
-    ProjectStatus Status)
+    ProjectStatus Status,
+    DateTime Month)
 {
     public decimal Deviation => ActualCost - PlannedCost;
 
@@ -22,4 +24,7 @@ public sealed record ProjectBudgetRow(
         : Math.Min(100d, (double)Math.Round(ActualCost / PlannedCost * 100m, 1));
 
     public string StatusDisplay => Status.ToDisplayName();
+
+    /// <summary>Месяц последней операции по объекту — группировка строк на главной панели.</summary>
+    public string MonthDisplay => MonthPeriod.ShortTitle(Month);
 }

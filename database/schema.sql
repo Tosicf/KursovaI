@@ -215,6 +215,7 @@ CREATE TABLE dbo.estimates (
     Name       NVARCHAR(200)  NOT NULL,
     ProjectId  INT            NOT NULL,
     Status     INT            NOT NULL,
+    [Date]     DATETIME2(6)   NOT NULL CONSTRAINT DF_estimates_Date DEFAULT SYSUTCDATETIME(),
     Note       NVARCHAR(500)  NULL,
     MarkupPercent     DECIMAL(6,2) NOT NULL CONSTRAINT DF_estimates_MarkupPercent DEFAULT 10,
     ProfitPercent     DECIMAL(6,2) NOT NULL CONSTRAINT DF_estimates_ProfitPercent DEFAULT 12,
@@ -231,6 +232,11 @@ GO
 
 IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = N'IX_estimates_ProjectId' AND object_id = OBJECT_ID(N'dbo.estimates'))
     CREATE INDEX IX_estimates_ProjectId ON dbo.estimates (ProjectId);
+GO
+
+-- Сметы группируются и сортируются по месяцам: дата документа — ключ выборки периода.
+IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = N'IX_estimates_Date' AND object_id = OBJECT_ID(N'dbo.estimates'))
+    CREATE INDEX IX_estimates_Date ON dbo.estimates ([Date]);
 GO
 
 IF OBJECT_ID(N'dbo.estimate_items', N'U') IS NULL

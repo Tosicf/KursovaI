@@ -34,6 +34,12 @@ public sealed class DashboardData
 
     public IReadOnlyList<ProjectBudgetRow> ProjectBudgets { get; init; } = Array.Empty<ProjectBudgetRow>();
 
+    /// <summary>Сколько объектов попало в выбранный период (может быть больше показанных строк).</summary>
+    public int BudgetRowsTotal { get; init; }
+
+    /// <summary>Месяцы, за которые есть документы: список периодов для фильтра главной страницы.</summary>
+    public IReadOnlyList<DateTime> PeriodMonths { get; init; } = Array.Empty<DateTime>();
+
     public IReadOnlyList<ActivityItem> RecentActivity { get; init; } = Array.Empty<ActivityItem>();
 
     public IReadOnlyList<Material> StockAlerts { get; init; } = Array.Empty<Material>();

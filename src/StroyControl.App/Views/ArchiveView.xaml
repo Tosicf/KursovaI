@@ -56,6 +56,7 @@
                     <ColumnDefinition Width="*" />
                     <ColumnDefinition Width="Auto" />
                     <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
 
                 <Grid MaxWidth="360" HorizontalAlignment="Left">
@@ -68,11 +69,15 @@
                                Visibility="{Binding SearchText, Converter={StaticResource EmptyToVisibility}}" />
                 </Grid>
 
-                <StackPanel Grid.Column="1" Margin="24,0,0,0" VerticalAlignment="Center">
+                <ComboBox Grid.Column="1" Width="180" Margin="12,0,0,0" VerticalAlignment="Center"
+                          ItemsSource="{Binding Period.Options}" SelectedItem="{Binding Period.Selected, Mode=TwoWay}"
+                          DisplayMemberPath="Title" ToolTip="Период: месяцы сметы от нового к старому." />
+
+                <StackPanel Grid.Column="2" Margin="24,0,0,0" VerticalAlignment="Center">
                     <TextBlock Text="Смет в архиве" Style="{StaticResource Caption}" FontSize="11" />
                     <TextBlock Text="{Binding VisibleCount}" FontWeight="SemiBold" FontSize="15" />
                 </StackPanel>
-                <StackPanel Grid.Column="2" Margin="24,0,0,0" VerticalAlignment="Center">
+                <StackPanel Grid.Column="3" Margin="24,0,0,0" VerticalAlignment="Center">
                     <TextBlock Text="Плановая стоимость" Style="{StaticResource Caption}" FontSize="11" />
                     <TextBlock Text="{Binding TotalDisplay}" FontWeight="SemiBold" FontSize="15" />
                 </StackPanel>
@@ -109,6 +114,7 @@
                         </DataGridTemplateColumn>
 
                         <DataGridTextColumn Header="Объект" Binding="{Binding ProjectName, Mode=OneWay}" Width="190" />
+                        <DataGridTextColumn Header="Дата сметы" Binding="{Binding DateDisplay, Mode=OneWay}" Width="110" />
 
                         <DataGridTextColumn Header="Позиций" Binding="{Binding ItemsCount, Mode=OneWay}" Width="90"
                                             ElementStyle="{StaticResource NumericCell}" />

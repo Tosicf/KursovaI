@@ -6,6 +6,7 @@ using CommunityToolkit.Mvvm.Input;
 using StroyControl.App.Services;
 using StroyControl.Core.Entities;
 using StroyControl.Core.Interfaces;
+using StroyControl.Core.Services;
 
 namespace StroyControl.App.ViewModels;
 
@@ -46,6 +47,8 @@ public sealed partial class UsagesViewModel : ViewModelBase
         ItemsView.Filter = FilterItem;
 
         ProjectFilterOptions.Add(AllProjects);
+
+        Period = new MonthFilterViewModel(ApplyFilter);
     }
 
     public override string Title => "Списания";
@@ -61,6 +64,9 @@ public sealed partial class UsagesViewModel : ViewModelBase
     public ObservableCollection<string> ProjectFilterOptions { get; } = new();
 
     public ICollectionView ItemsView { get; }
+
+    /// <summary>Период списка: списания группируются по месяцу акта расхода.</summary>
+    public MonthFilterViewModel Period { get; }
 
     public bool CanEdit => _session.CanEditUsages;
 
@@ -137,6 +143,9 @@ public sealed partial class UsagesViewModel : ViewModelBase
                 ? previousFilter
                 : AllProjects;
 
+            Period.Rebuild(Items.Select(u => (DateTime?)u.Date));
+            ItemsView.Refresh();
+
             SelectedUsage = Items.FirstOrDefault(u => u.Id == previousId) ?? Items.FirstOrDefault();
             UpdateStatistics();
         }, "Не удалось загрузить списания.");
@@ -176,6 +185,7 @@ public sealed partial class UsagesViewModel : ViewModelBase
             created.CreatedBy = _session.CurrentUser;
             Items.Insert(0, created);
             SelectedUsage = created;
+            Period.Rebuild(Items.Select(u => (DateTime?)u.Date));
             ApplyFilter();
             _toasts.Success("Списание оформлено", $"{created.MaterialName} · {created.Quantity:N2} {created.UnitDisplay}");
         }
@@ -206,6 +216,10 @@ public sealed partial class UsagesViewModel : ViewModelBase
         try
         {
             await _inventory.UpdateUsageAsync(updated);
+
+            // Акт мог перейти в другой месяц — период и порядок пересобираются.
+            Period.Rebuild(Items.Select(u => (DateTime?)u.Date));
+            ApplyFilter();
             _toasts.Success("Списание изменено", "Остатки пересчитаны");
         }
         catch (Exception ex)
@@ -267,6 +281,8 @@ public sealed partial class UsagesViewModel : ViewModelBase
                           || usage.AuthorName.Contains(term, StringComparison.OrdinalIgnoreCase);
             if (!matches) return false;
         }
+
+        if (!Period.Matches(usage.Date)) return false;
 
         return string.IsNullOrWhiteSpace(SelectedProjectFilter) || SelectedProjectFilter == AllProjects
                || usage.ProjectName == SelectedProjectFilter;

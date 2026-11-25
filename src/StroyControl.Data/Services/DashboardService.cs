@@ -1,18 +1,31 @@
 using Microsoft.EntityFrameworkCore;
 using StroyControl.Core.Dtos;
+using StroyControl.Core.Entities;
 using StroyControl.Core.Enums;
 using StroyControl.Core.Interfaces;
+using StroyControl.Core.Services;
 
 namespace StroyControl.Data.Services;
 
-/// <summary>Собирает показатели для главной панели: KPI, бюджет объектов, лента операций, остатки.</summary>
+/// <summary>
+/// Собирает показатели для главной панели: KPI, бюджет объектов, ленту операций, остатки.
+/// Панель всегда ограничена периодом: без выбранного месяца показываются последние
+/// по дате объекты (не более <see cref="MaxBudgetRows"/>), поэтому при росте числа
+/// объектов главная страница не разрастается.
+/// </summary>
 public sealed class DashboardService : IDashboardService
 {
+    /// <summary>Сколько объектов попадает в блок «Исполнение смет по объектам».</summary>
+    public const int MaxBudgetRows = 10;
+
+    /// <summary>Глубина графика затрат по месяцам.</summary>
+    private const int MonthWindow = 6;
+
     private readonly IDbContextFactory<AppDbContext> _factory;
 
     public DashboardService(IDbContextFactory<AppDbContext> factory) => _factory = factory;
 
-    public async Task<DashboardData> LoadAsync(CancellationToken cancellationToken = default)
+    public async Task<DashboardData> LoadAsync(DateTime? month = null, CancellationToken cancellationToken = default)
     {
         await using var db = await _factory.CreateDbContextAsync(cancellationToken);
 
@@ -30,32 +43,91 @@ public sealed class DashboardService : IDashboardService
             .Include(u => u.Project)
             .ToListAsync(cancellationToken);
 
-        var plannedByProject = estimates
+        var monthStart = month is null ? (DateTime?)null : MonthPeriod.Start(month.Value);
+        var monthEnd = monthStart?.AddMonths(1).AddDays(-1);
+
+        // Операции выбранного месяца: по ним считаются структура затрат, лента и диаграмма.
+        var usagesInPeriod = monthStart is null
+            ? usages
+            : usages.Where(u => MonthPeriod.Matches(u.Date, monthStart.Value)).ToList();
+
+        var deliveriesInPeriod = monthStart is null
+            ? deliveries
+            : deliveries.Where(d => MonthPeriod.Matches(d.Date, monthStart.Value)).ToList();
+
+        // Исполнение бюджета объекта считается накопленным итогом по конец выбранного месяца,
+        // иначе «план» брался бы за весь срок объекта, а «факт» — только за месяц.
+        var estimatesToDate = monthEnd is null
+            ? estimates
+            : estimates.Where(e => e.Date <= monthEnd.Value).ToList();
+
+        var usagesToDate = monthEnd is null
+            ? usages
+            : usages.Where(u => u.Date <= monthEnd.Value).ToList();
+
+        var plannedByProject = estimatesToDate
             .GroupBy(e => e.ProjectId)
             .ToDictionary(g => g.Key, g => g.Sum(e => e.Items.Sum(i => i.PlannedQuantity * i.PlannedUnitPrice)));
 
-        var actualByProject = usages
+        var actualByProject = usagesToDate
             .GroupBy(u => u.ProjectId)
             .ToDictionary(g => g.Key, g => g.Sum(u => u.Quantity * u.UnitPrice));
 
-        var budgets = projects
+        // Месяц объекта — месяц его последней операции (смета, поступление, списание),
+        // а если операций ещё нет — месяц начала работ.
+        var lastEstimate = estimates
+            .GroupBy(e => e.ProjectId)
+            .ToDictionary(g => g.Key, g => g.Max(e => e.Date));
+
+        var lastUsage = usages
+            .GroupBy(u => u.ProjectId)
+            .ToDictionary(g => g.Key, g => g.Max(u => u.Date));
+
+        var lastDelivery = deliveries
+            .Where(d => d.ProjectId.HasValue)
+            .GroupBy(d => d.ProjectId!.Value)
+            .ToDictionary(g => g.Key, g => g.Max(d => d.Date));
+
+        DateTime ProjectMonth(Project project)
+        {
+            var candidates = new List<DateTime> { project.StartDate };
+
+            if (lastEstimate.TryGetValue(project.Id, out var estimateDate)) candidates.Add(estimateDate);
+            if (lastUsage.TryGetValue(project.Id, out var usageDate)) candidates.Add(usageDate);
+            if (lastDelivery.TryGetValue(project.Id, out var deliveryDate)) candidates.Add(deliveryDate);
+
+            return MonthPeriod.Start(candidates.Max());
+        }
+
+        var allBudgets = projects
             .Select(p => new ProjectBudgetRow(
                 p.Id,
                 p.Code,
                 p.Name,
                 plannedByProject.TryGetValue(p.Id, out var planned) ? planned : 0m,
                 actualByProject.TryGetValue(p.Id, out var actual) ? actual : 0m,
-                p.Status))
-            .OrderByDescending(b => b.PlannedCost)
+                p.Status,
+                ProjectMonth(p)))
             .ToList();
 
-        var activity = usages
+        var budgetsInPeriod = monthStart is null
+            ? allBudgets
+            : allBudgets.Where(b => MonthPeriod.Matches(b.Month, monthStart)).ToList();
+
+        // Сортировка по месяцам: свежие месяцы сверху, внутри месяца — крупные сметы.
+        var budgets = budgetsInPeriod
+            .OrderByDescending(b => b.Month)
+            .ThenByDescending(b => b.PlannedCost)
+            .Take(MaxBudgetRows)
+            .ToList();
+
+        var activity = usagesInPeriod
             .Select(u => new ActivityItem(
                 u.Date,
                 $"Списание · {u.Material?.Name ?? "материал"}",
                 $"{u.Project?.Name ?? "—"} · {u.Quantity:N2} {u.Material?.UnitDisplay} · {u.DocumentNumber}",
                 "usage"))
-            .Concat(deliveries.Select(d => new ActivityItem(
+            .Concat(deliveriesInPeriod.Select(d => new ActivityItem(
                 d.Date,
                 $"Поступление · {d.Number}",
                 $"{d.Supplier?.Name ?? "—"} · {d.ItemsCount} поз. · {d.Total:N2} BYN",
@@ -71,16 +143,24 @@ public sealed class DashboardService : IDashboardService
             .Take(6)
             .ToList();
 
-        var categories = BuildCategorySeries(usages
+        var categories = BuildCategorySeries(usagesInPeriod
             .Select(u => (Category: string.IsNullOrWhiteSpace(u.Material?.Category) ? "Прочее" : u.Material!.Category,
                           Cost: u.Quantity * u.UnitPrice))
             .ToList());
 
-        var monthly = BuildMonthlySeries(usages
-            .Select(u => (u.Date, Cost: u.Quantity * u.UnitPrice))
-            .ToList());
+        var monthly = BuildMonthlySeries(
+            usages.Select(u => (u.Date, Cost: u.Quantity * u.UnitPrice)).ToList(),
+            monthStart);
 
-        var plannedTotal = plannedByProject.Values.Sum();
+        // Список месяцев для выпадающего фильтра — по всем документам, независимо от выбранного периода.
+        var periodMonths = usages.Select(u => (DateTime?)u.Date)
+            .Concat(deliveries.Select(d => (DateTime?)d.Date))
+            .Concat(estimates.Select(e => (DateTime?)e.Date))
+            .Where(d => d.HasValue)
+            .Select(d => MonthPeriod.Start(d!.Value))
+            .Distinct()
+            .OrderByDescending(d => d)
+            .ToList();
 
         return new DashboardData
         {
@@ -88,19 +168,21 @@ public sealed class DashboardService : IDashboardService
             MaterialsCount = materials.Count,
             LowStockCount = materials.Count(m => m.IsActive && m.StockQuantity <= m.MinStock),
             StockValue = materials.Sum(m => m.StockQuantity * m.Price),
-            PlannedCost = plannedTotal,
-            ActualCost = actualByProject.Values.Sum(),
-            UsagesCount = usages.Count,
-            DeliveriesCount = deliveries.Count,
+            PlannedCost = budgetsInPeriod.Sum(b => b.PlannedCost),
+            ActualCost = budgetsInPeriod.Sum(b => b.ActualCost),
+            UsagesCount = usagesInPeriod.Count,
+            DeliveriesCount = deliveriesInPeriod.Count,
             ProjectBudgets = budgets,
+            BudgetRowsTotal = budgetsInPeriod.Count,
             RecentActivity = activity,
             StockAlerts = alerts,
             MonthlyCosts = monthly,
-            CategoryCosts = categories
+            CategoryCosts = categories,
+            PeriodMonths = periodMonths
         };
     }
 
-    /// <summary>Затраты по категориям материалов с долей в процентах (топ-6 + «Прочие»).</summary>
+    /// <summary>Затраты по категориям материалов с долей в процентах (топ-5 + «Прочие»).</summary>
     private static IReadOnlyList<CategoryCostRow> BuildCategorySeries(IReadOnlyList<(string Category, decimal Cost)> usages)
     {
         var total = usages.Sum(u => u.Cost);
@@ -124,16 +206,22 @@ public sealed class DashboardService : IDashboardService
             .ToList();
     }
 
-    /// <summary>Факт затрат по месяцам и среднемесячный план (смета / 6 месяцев).</summary>
-    private static IReadOnlyList<MonthlyCostRow> BuildMonthlySeries(IReadOnlyList<(DateTime Date, decimal Cost)> usages)
+    /// <summary>
+    /// Факт затрат по месяцам и среднемесячный план. Окно заканчивается выбранным
+    /// месяцем (или текущим), поэтому график всегда показывает последние
+    /// <see cref="MonthWindow"/> месяцев относительно периода.
+    /// </summary>
+    private static IReadOnlyList<MonthlyCostRow> BuildMonthlySeries(
+        IReadOnlyList<(DateTime Date, decimal Cost)> usages,
+        DateTime? month)
     {
-        var today = DateTime.Today;
-        var months = Enumerable.Range(0, 6)
-            .Select(i => new DateTime(today.Year, today.Month, 1).AddMonths(-5 + i))
+        var anchor = MonthPeriod.Start(month ?? DateTime.Today);
+        var months = Enumerable.Range(0, MonthWindow)
+            .Select(i => anchor.AddMonths(-(MonthWindow - 1) + i))
             .ToList();
 
         var actual = usages
-            .GroupBy(u => new DateTime(u.Date.Year, u.Date.Month, 1))
+            .GroupBy(u => MonthPeriod.Start(u.Date))
             .ToDictionary(g => g.Key, g => g.Sum(x => x.Cost));
 
         var total = actual.Values.Sum();

@@ -1,4 +1,5 @@
 using StroyControl.Core.Enums;
+using StroyControl.Core.Services;
 
 namespace StroyControl.Core.Entities;
 
@@ -40,6 +41,9 @@ public class Project : EntityBase
     public string AddressDisplay => string.IsNullOrWhiteSpace(Address) ? "адрес не указан" : Address;
 
     public string PeriodDisplay => $"{StartDate:dd.MM.yyyy} — {PlannedEndDate:dd.MM.yyyy}";
+
+    /// <summary>Месяц сметы/начала работ — по нему объекты группируются в списках.</summary>
+    public string MonthDisplay => MonthPeriod.Title(StartDate);
 
     public override string ToString() => $"{Code} · {Name}";
 }

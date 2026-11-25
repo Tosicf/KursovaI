@@ -16,6 +16,7 @@ public sealed partial class EstimateEditorViewModel : EditorViewModelBase
         Number = source?.Number ?? $"СМ-{DateTime.Now:yy}-{DateTime.Now:MMdd}";
         Name = source?.Name ?? string.Empty;
         SelectedProject = projects.FirstOrDefault(p => p.Id == source?.ProjectId) ?? projects.FirstOrDefault();
+        Date = source?.Date ?? DateTime.Today;
         Note = source?.Note;
         MarkupPercent = source?.MarkupPercent ?? 10m;
         ProfitPercent = source?.ProfitPercent ?? 12m;
@@ -34,6 +35,10 @@ public sealed partial class EstimateEditorViewModel : EditorViewModelBase
 
     [ObservableProperty]
     private Project? selectedProject;
+
+    /// <summary>Дата сметы — определяет месяц, в котором документ показывается в списках.</summary>
+    [ObservableProperty]
+    private DateTime date;
 
     [ObservableProperty]
     private string? note;
@@ -69,6 +74,7 @@ public sealed partial class EstimateEditorViewModel : EditorViewModelBase
         Number = Number.Trim(),
         Name = Name.Trim(),
         ProjectId = SelectedProject?.Id ?? 0,
+        Date = this.Date.Date,
         // Состояние документа меняется только командами «Подтвердить» и «В архив»:
         // новая смета всегда создаётся черновиком, а у существующей сохраняется текущий статус.
         Status = _source?.Status ?? EstimateStatus.Draft,

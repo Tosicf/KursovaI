@@ -23,20 +23,28 @@
                         </TextBlock>
                     </StackPanel>
 
-                    <Border Grid.Column="1" Style="{StaticResource Badge}" Background="{DynamicResource AccentSoftBrush}" Padding="12,7" VerticalAlignment="Center">
-                        <StackPanel Orientation="Horizontal">
-                            <Path Data="{StaticResource IconChart}" Stroke="{DynamicResource AccentBrush}" StrokeThickness="1.7"
-                                  Width="15" Height="15" Stretch="Uniform" VerticalAlignment="Center" StrokeStartLineCap="Round" />
-                            <TextBlock Text="{Binding Data.DeviationPercent, StringFormat=Отклонение по сметам: {0:N1} %}"
-                                       Foreground="{DynamicResource AccentBrush}" FontWeight="SemiBold" Margin="8,0,0,0" FontSize="12" />
-                        </StackPanel>
-                    </Border>
+                    <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                        <ComboBox Width="176" VerticalAlignment="Center" Margin="0,0,12,0"
+                                  ItemsSource="{Binding Period.Options}"
+                                  SelectedItem="{Binding Period.Selected, Mode=TwoWay}"
+                                  DisplayMemberPath="Title"
+                                  ToolTip="Период панели: показатели, объекты и операции выбранного месяца. Свежие месяцы — сверху." />
+
+                        <Border Style="{StaticResource Badge}" Background="{DynamicResource AccentSoftBrush}" Padding="12,7" VerticalAlignment="Center">
+                            <StackPanel Orientation="Horizontal">
+                                <Path Data="{StaticResource IconChart}" Stroke="{DynamicResource AccentBrush}" StrokeThickness="1.7"
+                                      Width="15" Height="15" Stretch="Uniform" VerticalAlignment="Center" StrokeStartLineCap="Round" />
+                                <TextBlock Text="{Binding Data.DeviationPercent, StringFormat=Отклонение по сметам: {0:N1} %}"
+                                           Foreground="{DynamicResource AccentBrush}" FontWeight="SemiBold" Margin="8,0,0,0" FontSize="12" />
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
                 </Grid>
 
                 <!-- KPI -->
                 <WrapPanel Margin="0,0,0,4">
                     <controls:KpiCard Title="Объекты в работе" Value="{Binding Data.ActiveProjects}"
-                                      Caption="{Binding Data.ProjectBudgets.Count, StringFormat=объектов в портфеле: {0}}"
+                                      Caption="в работе и в проектировании"
                                       Icon="{StaticResource IconProjects}"
                                       Accent="{DynamicResource AccentBrush}" IconBackground="{DynamicResource AccentSoftBrush}"
                                       Margin="0,0,14,14" MinWidth="238" />
@@ -93,7 +101,10 @@
                         <StackPanel>
                             <Grid Margin="0,0,0,10">
                                 <TextBlock Text="Структура затрат" Style="{StaticResource SectionTitle}" />
-                                <TextBlock Text="по категориям" Style="{StaticResource Caption}" HorizontalAlignment="Right" VerticalAlignment="Center" />
+                                <TextBlock Style="{StaticResource Caption}" HorizontalAlignment="Right" VerticalAlignment="Center">
+                                    <Run Text="по категориям · " />
+                                    <Run Text="{Binding PeriodCaption, Mode=OneWay}" />
+                                </TextBlock>
                             </Grid>
                             <controls:DonutChart Items="{Binding Data.CategoryCosts}" Height="220" />
                         </StackPanel>
@@ -118,6 +129,9 @@
                                 <TextBlock Text="план / факт, BYN" Style="{StaticResource Caption}" HorizontalAlignment="Right" VerticalAlignment="Center" />
                             </Grid>
 
+                            <TextBlock Text="{Binding BudgetCaption}" Style="{StaticResource Caption}" FontSize="11"
+                                       Margin="0,-8,0,12" TextWrapping="Wrap" />
+
                             <ItemsControl ItemsSource="{Binding Data.ProjectBudgets}">
                                 <ItemsControl.ItemTemplate>
                                     <DataTemplate>
@@ -135,7 +149,8 @@
 
                                             <Grid Margin="0,7,0,0">
                                                 <TextBlock Style="{StaticResource Caption}">
-                                                    <Run Text="план " />
+                                                    <Run Text="{Binding MonthDisplay, Mode=OneWay}" Foreground="{DynamicResource TextMutedBrush}" />
+                                                    <Run Text="   ·   план " />
                                                     <Run Text="{Binding PlannedCost, Converter={StaticResource Money}, Mode=OneWay}" Foreground="{DynamicResource TextPrimaryBrush}" />
                                                     <Run Text="   ·   факт " />
                                                     <Run Text="{Binding ActualCost, Converter={StaticResource Money}, Mode=OneWay}" Foreground="{DynamicResource TextPrimaryBrush}" />
@@ -247,7 +262,11 @@
 
                     <Border Grid.Column="1" Style="{StaticResource Card}">
                         <StackPanel>
-                            <TextBlock Text="Последние операции" Style="{StaticResource SectionTitle}" Margin="0,0,0,14" />
+                            <Grid Margin="0,0,0,14">
+                                <TextBlock Text="Последние операции" Style="{StaticResource SectionTitle}" />
+                                <TextBlock Text="{Binding PeriodCaption}" Style="{StaticResource Caption}"
+                                           HorizontalAlignment="Right" VerticalAlignment="Center" />
+                            </Grid>
 
                             <ItemsControl ItemsSource="{Binding Data.RecentActivity}">
                                 <ItemsControl.ItemTemplate>

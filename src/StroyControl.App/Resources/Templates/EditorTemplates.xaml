@@ -259,12 +259,14 @@
                     <TextBlock Text="Строительный объект *" Style="{StaticResource FieldLabel}" />
                     <ComboBox ItemsSource="{Binding Projects}" SelectedItem="{Binding SelectedProject, Mode=TwoWay}"
                               DisplayMemberPath="Name" />
+                    <TextBlock Text="Статус меняется кнопками «Подтвердить» и «В архив» на странице смет."
+                               Style="{StaticResource Caption}" FontSize="11" TextWrapping="Wrap" Margin="2,6,0,0" />
                 </StackPanel>
                 <StackPanel Grid.Column="1">
-                    <TextBlock Text="Состояние документа" Style="{StaticResource FieldLabel}" />
-                    <TextBlock Text="Черновик" FontWeight="SemiBold" VerticalAlignment="Center" Margin="0,0,0,2" />
-                    <TextBlock Text="Статус меняется кнопками «Подтвердить» и «В архив» на странице смет."
-                               Style="{StaticResource Caption}" FontSize="11" TextWrapping="Wrap" />
+                    <TextBlock Text="Дата сметы *" Style="{StaticResource FieldLabel}" />
+                    <DatePicker SelectedDate="{Binding Date, Mode=TwoWay}" />
+                    <TextBlock Text="Месяц даты определяет, в какой группе списков и на главной панели показывается смета."
+                               Style="{StaticResource Caption}" FontSize="11" TextWrapping="Wrap" Margin="2,6,0,0" />
                 </StackPanel>
             </Grid>
 
