@@ -1,0 +1,106 @@
+<UserControl x:Class="StroyControl.App.Controls.PeriodPicker"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <UserControl.Resources>
+        <!-- Пункт списка годов и месяцев: подсветка наведения и выбора в цветах темы. -->
+        <Style x:Key="PeriodOptionItem" TargetType="ListBoxItem">
+            <Setter Property="Padding" Value="9,5" />
+            <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}" />
+            <Setter Property="FontSize" Value="12.5" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ListBoxItem">
+                        <Border x:Name="ItemBorder" Background="Transparent" CornerRadius="6"
+                                Padding="{TemplateBinding Padding}" SnapsToDevicePixels="True">
+                            <ContentPresenter />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="ItemBorder" Property="Background"
+                                        Value="{DynamicResource SurfaceAltBrush}" />
+                            </Trigger>
+                            <Trigger Property="IsSelected" Value="True">
+                                <Setter TargetName="ItemBorder" Property="Background"
+                                        Value="{DynamicResource AccentSoftBrush}" />
+                                <Setter Property="Foreground" Value="{DynamicResource AccentBrush}" />
+                                <Setter Property="FontWeight" Value="SemiBold" />
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter Property="Foreground" Value="{DynamicResource TextMutedBrush}" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="PeriodList" TargetType="ListBox">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Padding" Value="2" />
+            <Setter Property="ItemContainerStyle" Value="{StaticResource PeriodOptionItem}" />
+            <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Disabled" />
+        </Style>
+    </UserControl.Resources>
+
+    <Grid>
+        <!-- Одна кнопка вместо пары списков: период виден сразу, выбор — в окне. -->
+        <Button x:Name="PeriodButton" Style="{StaticResource SecondaryButton}" Click="OnButtonClick"
+                HorizontalAlignment="Left" MinWidth="158" ToolTip="{Binding PickerTooltip}">
+            <StackPanel Orientation="Horizontal">
+                <Path Data="{StaticResource IconCalendar}" Stroke="{DynamicResource TextSecondaryBrush}"
+                      StrokeThickness="1.7" Width="15" Height="15" Stretch="Uniform" VerticalAlignment="Center" />
+                <TextBlock Text="{Binding PickerCaption}" Margin="8,0,10,0" VerticalAlignment="Center" />
+                <Path Data="M0,0 L4.5,5 L9,0" Stroke="{DynamicResource TextMutedBrush}" StrokeThickness="1.7"
+                      Width="9" Height="5" Stretch="Uniform" VerticalAlignment="Center"
+                      StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeLineJoin="Round" />
+            </StackPanel>
+        </Button>
+
+        <Popup x:Name="PeriodPopup" PlacementTarget="{Binding ElementName=PeriodButton}" Placement="Bottom"
+               StaysOpen="False" AllowsTransparency="True" PopupAnimation="Fade"
+               VerticalOffset="6" HorizontalOffset="0">
+            <Border Background="{DynamicResource SurfaceBrush}" BorderBrush="{DynamicResource BorderBrush}"
+                    BorderThickness="1" CornerRadius="10" Padding="6" MinWidth="252">
+                <Border.Effect>
+                    <DropShadowEffect BlurRadius="18" ShadowDepth="3" Opacity="0.16" Color="#000000" />
+                </Border.Effect>
+
+                <StackPanel>
+                    <TextBlock Text="Период" Style="{StaticResource Caption}" FontSize="11" Margin="10,6,10,2" />
+
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="108" />
+                            <ColumnDefinition Width="138" />
+                        </Grid.ColumnDefinitions>
+
+                        <StackPanel>
+                            <TextBlock Text="Год" Style="{StaticResource FieldLabel}" Margin="10,4,0,2" />
+                            <ListBox x:Name="YearsList" Style="{StaticResource PeriodList}" MaxHeight="228"
+                                     ItemsSource="{Binding Years}" DisplayMemberPath="Title"
+                                     SelectedItem="{Binding SelectedYear, Mode=TwoWay}"
+                                     PreviewMouseLeftButtonUp="OnOptionClick" />
+                        </StackPanel>
+
+                        <StackPanel Grid.Column="1">
+                            <TextBlock Text="Месяц" Style="{StaticResource FieldLabel}" Margin="8,4,0,2" />
+                            <ListBox x:Name="MonthsList" Style="{StaticResource PeriodList}" MaxHeight="228"
+                                     ItemsSource="{Binding Months}" DisplayMemberPath="Title"
+                                     SelectedItem="{Binding SelectedMonth, Mode=TwoWay}"
+                                     IsEnabled="{Binding CanFilterByMonth}"
+                                     PreviewMouseLeftButtonUp="OnOptionClick" />
+                        </StackPanel>
+                    </Grid>
+
+                    <Border Height="1" Background="{DynamicResource BorderBrush}" Margin="6,8,6,6" />
+
+                    <Button Style="{StaticResource GhostButton}" Content="За всё время"
+                            HorizontalAlignment="Stretch" HorizontalContentAlignment="Left"
+                            Margin="2,0,2,2" Click="OnResetClick" />
+                </StackPanel>
+            </Border>
+        </Popup>
+    </Grid>
+</UserControl>

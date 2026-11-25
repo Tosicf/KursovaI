@@ -69,13 +69,7 @@
                         <ComboBox ItemsSource="{Binding ProjectFilterOptions}"
                                   SelectedItem="{Binding SelectedProjectFilter, Mode=TwoWay}" />
                         <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
-                            <ComboBox Width="100" ItemsSource="{Binding Period.Years}"
-                                      SelectedItem="{Binding Period.SelectedYear, Mode=TwoWay}" DisplayMemberPath="Title"
-                                      ToolTip="Год: свежие годы и месяцы сверху. Будущие годы недоступны." />
-                            <ComboBox Width="128" Margin="8,0,0,0" ItemsSource="{Binding Period.Months}"
-                                      SelectedItem="{Binding Period.SelectedMonth, Mode=TwoWay}" DisplayMemberPath="Title"
-                                      IsEnabled="{Binding Period.CanFilterByMonth}"
-                                      ToolTip="Месяц выбранного года. Будущие месяцы недоступны." />
+                            <controls:PeriodPicker DataContext="{Binding Period}" HorizontalAlignment="Left" />
                         </StackPanel>
                     </StackPanel>
 

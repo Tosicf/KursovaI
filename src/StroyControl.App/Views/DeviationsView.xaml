@@ -35,11 +35,11 @@
                     </StackPanel>
                 </Button>
                 <Button Style="{StaticResource SecondaryButton}" IsEnabled="{Binding CanExport}" Margin="0,0,10,0"
-                        ToolTip="Выбрать формат файла отчёта">
+                        ToolTip="Выгрузить текущую выборку без печатной формы: Excel, CSV или PDF. Печатная форма с шапкой и итогами — кнопка «Отчёт».">
                     <StackPanel Orientation="Horizontal">
                         <Path Data="{StaticResource IconDownload}" Stroke="{DynamicResource TextSecondaryBrush}" StrokeThickness="1.9"
                               Width="15" Height="15" Stretch="Uniform" VerticalAlignment="Center" />
-                        <TextBlock Text="Экспорт" Margin="8,0,6,0" VerticalAlignment="Center" />
+                        <TextBlock Text="Быстрый экспорт" Margin="8,0,6,0" VerticalAlignment="Center" />
                         <Path Data="M6 9l6 6 6-6" Stroke="{DynamicResource TextSecondaryBrush}" StrokeThickness="1.8"
                               Width="10" Height="10" Stretch="Uniform" VerticalAlignment="Center"
                               StrokeStartLineCap="Round" StrokeLineJoin="Round" />

@@ -25,9 +25,11 @@ public abstract partial class EditorViewModelBase : ObservableObject
 
     /// <summary>
     /// Верхняя граница дат документов: будущие даты выбирать нельзя — документ
-    /// фиксирует уже наступившее событие.
+    /// фиксирует уже наступившее событие. Свойство записываемое: DatePicker.DisplayDateEnd
+    /// по умолчанию связывается в режиме TwoWay, а привязку к свойству только для чтения
+    /// WPF отклоняет с ошибкой XamlParseException.
     /// </summary>
-    public DateTime MaxDate => DateTime.Today;
+    public DateTime MaxDate { get; set; } = DateTime.Today;
 
     /// <summary>Проверка введённых данных. null — данные корректны.</summary>
     protected abstract string? Validate();
