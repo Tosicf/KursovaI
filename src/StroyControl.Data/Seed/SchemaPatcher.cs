@@ -10,7 +10,7 @@ namespace StroyControl.Data.Seed;
 public static class SchemaPatcher
 {
     private static readonly string[] Statements =
-    {
+    [
         // Позиции сметы: работы и материалы в одной таблице.
         @"IF COL_LENGTH('dbo.estimate_items', 'IsWork') IS NULL
               ALTER TABLE dbo.estimate_items ADD IsWork BIT NOT NULL CONSTRAINT DF_estimate_items_IsWork DEFAULT 0;",
@@ -55,12 +55,24 @@ public static class SchemaPatcher
         @"IF COL_LENGTH('dbo.material_usages', 'WorkCompletionId') IS NULL
               ALTER TABLE dbo.material_usages ADD WorkCompletionId INT NULL;",
 
+        // Политика NO ACTION обязательна: у material_usages уже есть каскадная цепочка
+        // от сметы (EstimateId → SET NULL), а смета каскадно связана с позициями и
+        // актами, поэтому SET NULL на второй связи даёт ошибку SQL Server 1785
+        // «may cause cycles or multiple cascade paths». Связанные записи удаляют сервисы.
+        // Если связь успела создаться с каскадом (delete_referential_action <> 0),
+        // она пересоздаётся: иначе SQL Server снова ответит ошибкой 1785.
+        @"IF EXISTS (SELECT 1 FROM sys.foreign_keys
+                    WHERE name = N'FK_material_usages_estimate_items_EstimateItemId'
+                      AND parent_object_id = OBJECT_ID(N'dbo.material_usages')
+                      AND delete_referential_action <> 0)
+              ALTER TABLE dbo.material_usages DROP CONSTRAINT FK_material_usages_estimate_items_EstimateItemId;",
+
         @"IF NOT EXISTS (SELECT 1 FROM sys.foreign_keys
                         WHERE name = N'FK_material_usages_estimate_items_EstimateItemId'
                           AND parent_object_id = OBJECT_ID(N'dbo.material_usages'))
               ALTER TABLE dbo.material_usages WITH CHECK
                   ADD CONSTRAINT FK_material_usages_estimate_items_EstimateItemId
-                  FOREIGN KEY (EstimateItemId) REFERENCES dbo.estimate_items (Id) ON DELETE SET NULL;",
+                  FOREIGN KEY (EstimateItemId) REFERENCES dbo.estimate_items (Id) ON DELETE NO ACTION;",
 
         // Акт выполненных работ по смете.
         @"IF OBJECT_ID(N'dbo.work_completions', N'U') IS NULL
@@ -76,7 +88,7 @@ public static class SchemaPatcher
                   CreatedAt DATETIME2 NOT NULL CONSTRAINT DF_work_completions_CreatedAt DEFAULT SYSUTCDATETIME(),
                   UpdatedAt DATETIME2 NULL,
                   CONSTRAINT FK_work_completions_estimates_EstimateId
-                      FOREIGN KEY (EstimateId) REFERENCES dbo.estimates (Id) ON DELETE CASCADE,
+                      FOREIGN KEY (EstimateId) REFERENCES dbo.estimates (Id) ON DELETE NO ACTION,
                   CONSTRAINT FK_work_completions_projects_ProjectId
                       FOREIGN KEY (ProjectId) REFERENCES dbo.projects (Id),
                   CONSTRAINT FK_work_completions_users_CreatedByUserId
@@ -109,14 +121,22 @@ public static class SchemaPatcher
                       FOREIGN KEY (EstimateItemId) REFERENCES dbo.estimate_items (Id));",
 
         // Внешний ключ списаний на акт добавляем после создания таблицы актов.
+        // Как и ссылка на позицию сметы, он объявлен без каскада: иначе к material_usages
+        // ведут две цепочки (смета → списания и смета → акты → списания).
+        @"IF EXISTS (SELECT 1 FROM sys.foreign_keys
+                    WHERE name = N'FK_material_usages_work_completions_WorkCompletionId'
+                      AND parent_object_id = OBJECT_ID(N'dbo.material_usages')
+                      AND delete_referential_action <> 0)
+              ALTER TABLE dbo.material_usages DROP CONSTRAINT FK_material_usages_work_completions_WorkCompletionId;",
+
         @"IF COL_LENGTH('dbo.material_usages', 'WorkCompletionId') IS NOT NULL
               AND NOT EXISTS (SELECT 1 FROM sys.foreign_keys
                               WHERE name = N'FK_material_usages_work_completions_WorkCompletionId'
                                 AND parent_object_id = OBJECT_ID(N'dbo.material_usages'))
               ALTER TABLE dbo.material_usages WITH CHECK
                   ADD CONSTRAINT FK_material_usages_work_completions_WorkCompletionId
-                  FOREIGN KEY (WorkCompletionId) REFERENCES dbo.work_completions (Id) ON DELETE SET NULL;"
-    };
+                  FOREIGN KEY (WorkCompletionId) REFERENCES dbo.work_completions (Id) ON DELETE NO ACTION;"
+    ];
 
     /// <summary>Применяет недостающие изменения схемы. Для InMemory (демо-режим) ничего не делает.</summary>
     public static async Task ApplyAsync(AppDbContext db, CancellationToken cancellationToken = default)

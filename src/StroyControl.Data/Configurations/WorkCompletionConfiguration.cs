@@ -17,10 +17,13 @@ public sealed class WorkCompletionConfiguration : IEntityTypeConfiguration<WorkC
         builder.Property(c => c.Note).HasMaxLength(500);
         builder.Property(c => c.RowVersion).IsConcurrencyToken();
 
+        // Каскадное удаление акта вместе со сметой дало бы вторую цепочку к списаниям,
+        // поэтому связь ограничивающая: смету с документами удалить нельзя, а акт
+        // удаляется вместе со строками (см. WorkCompletionItemConfiguration).
         builder.HasOne(c => c.Estimate)
             .WithMany()
             .HasForeignKey(c => c.EstimateId)
-            .OnDelete(DeleteBehavior.Cascade);
+            .OnDelete(DeleteBehavior.Restrict);
 
         builder.HasOne(c => c.Project)
             .WithMany()

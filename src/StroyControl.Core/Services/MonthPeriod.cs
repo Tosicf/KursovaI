@@ -18,16 +18,16 @@ public static class MonthPeriod
     // от версии ICU и может вернуть родительный падеж («ноября»), а группировка
     // списков должна одинаково выглядеть на любой машине.
     private static readonly string[] MonthNames =
-    {
+    [
         "Январь", "Февраль", "Март", "Апрель", "Май", "Июнь",
         "Июль", "Август", "Сентябрь", "Октябрь", "Ноябрь", "Декабрь"
-    };
+    ];
 
     private static readonly string[] ShortMonthNames =
-    {
+    [
         "Янв", "Фев", "Мар", "Апр", "Май", "Июн",
         "Июл", "Авг", "Сен", "Окт", "Ноя", "Дек"
-    };
+    ];
 
     /// <summary>Первое число месяца, к которому относится дата.</summary>
     public static DateTime Start(DateTime date) => new(date.Year, date.Month, 1);
@@ -72,7 +72,7 @@ public static class MonthPeriod
         if (!years.Contains(current))
             years.Add(current);
 
-        return years.OrderByDescending(year => year).ToList();
+        return [.. years.OrderByDescending(year => year)];
     }
 
     /// <summary>
@@ -97,6 +97,6 @@ public static class MonthPeriod
         if ((year is null || year == today.Year) && !months.Contains(today.Month))
             months.Add(today.Month);
 
-        return months.OrderByDescending(month => month).ToList();
+        return [.. months.OrderByDescending(month => month)];
     }
 }
