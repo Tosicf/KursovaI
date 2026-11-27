@@ -508,6 +508,19 @@ public static class LocaleEn
         ["Смета в работе (для связи расхода с планом)"] = "Estimate in work (links the cost to the plan)",
         ["Факт не собирается: смета не в работе"] = "Actual costs are not collected: the estimate is not in work",
         ["материалы"] = "materials",
-        ["работы"] = "works"
+        ["работы"] = "works",
+        ["Акт работ"] = "Work act",
+        ["Ввести факт по позиции…"] = "Enter actuals for the item…",
+        ["Ввести факт: акт выполненных работ и списание материалов по этой смете"] = "Enter actuals: work completion act and material write-off for this estimate",
+        ["Изменить акт"] = "Edit act",
+        ["Изменить выбранный акт: объём работ и израсходованные материалы"] = "Edit the selected act: work volume and consumed materials",
+        ["Не удалось обновить фактические затраты"] = "Failed to refresh actual costs",
+        ["Открыть журнал актов работ"] = "Open the work acts journal",
+        ["Оформить акт работ по смете…"] = "Create a work act for the estimate…",
+        ["Оформить ещё один акт по этой смете…"] = "Create another act for this estimate…",
+        ["У позиции нет материала — выберите другую строку."] = "The item has no material — choose another row.",
+        ["Факт вводится только по смете в работе."] = "Actuals are entered only for an estimate in work.",
+        ["актов"] = "acts",
+        ["В смете нет позиций-работ: факт по работам ввести нельзя. Добавьте работы в смету или выберите другую смету."] = "The estimate has no work items: work actuals cannot be entered. Add works to the estimate or choose another estimate."
     };
 }

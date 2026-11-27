@@ -20,11 +20,15 @@ public sealed partial class WorkCompletionEditorViewModel : EditorViewModelBase
     /// <summary>Пока идёт заполнение формы, смена сметы не должна пересобирать строки.</summary>
     private bool _loading = true;
 
+    /// <param name="estimateId">Смета, открытая в карточке: форма сразу заполняется её позициями.</param>
+    /// <param name="estimateItemId">Позиция сметы, по которой вводится факт (из контекстного меню).</param>
     public WorkCompletionEditorViewModel(
         WorkCompletion? source,
         IReadOnlyList<Estimate> estimates,
         IReadOnlyList<Material> materials,
-        int? currentUserId)
+        int? currentUserId,
+        int? estimateId = null,
+        int? estimateItemId = null)
     {
         _source = source;
         Materials = materials;
@@ -36,12 +40,18 @@ public sealed partial class WorkCompletionEditorViewModel : EditorViewModelBase
         Works.CollectionChanged += OnWorksChanged;
         MaterialRows.CollectionChanged += OnMaterialRowsChanged;
 
-        SelectedEstimate = Estimates.FirstOrDefault(e => e.Id == source?.EstimateId) ?? Estimates.FirstOrDefault();
+        SelectedEstimate = Estimates.FirstOrDefault(e => e.Id == (source?.EstimateId ?? estimateId))
+                           ?? Estimates.FirstOrDefault();
         Date = source?.Date ?? DateTime.Today;
         DocumentNumber = source?.DocumentNumber ?? $"АВР-{DateTime.Now:yy}-{DateTime.Now:MMdd}";
         Note = source?.Note;
 
         FillRows(source);
+
+        // Форму открыли по конкретной позиции сметы — оставляем в акте только её.
+        if (source is null && estimateItemId is not null)
+            PrefillItem(estimateItemId.Value);
+
         _loading = false;
     }
 
@@ -93,6 +103,14 @@ public sealed partial class WorkCompletionEditorViewModel : EditorViewModelBase
 
     public bool HasEstimate => SelectedEstimate is not null;
 
+    /// <summary>В смете есть позиции-работы — факт по работам можно ввести.</summary>
+    public bool HasWorkOptions => WorkOptions.Count > 0;
+
+    /// <summary>В смете только материалы: работы нужно сначала добавить в саму смету.</summary>
+    public bool HasNoWorkOptions => SelectedEstimate is not null && WorkOptions.Count == 0;
+
+    public string NoWorksHint => L.T("В смете нет позиций-работ: факт по работам ввести нельзя. Добавьте работы в смету или выберите другую смету.");
+
     public string EstimateHint => SelectedEstimate is null
         ? L.T("Смета в работе не выбрана")
         : $"{SelectedEstimate.Number} · {SelectedEstimate.Project?.Name ?? SelectedEstimate.ProjectName} · {L.T("В работе")}";
@@ -128,6 +146,8 @@ public sealed partial class WorkCompletionEditorViewModel : EditorViewModelBase
         OnPropertyChanged(nameof(MaterialOptions));
         OnPropertyChanged(nameof(HasEstimate));
         OnPropertyChanged(nameof(EstimateHint));
+        OnPropertyChanged(nameof(HasWorkOptions));
+        OnPropertyChanged(nameof(HasNoWorkOptions));
     }
 
     [RelayCommand]
@@ -269,6 +289,26 @@ public sealed partial class WorkCompletionEditorViewModel : EditorViewModelBase
                 usage.UnitPrice,
                 alreadyUsed: usage.Quantity));
         }
+
+        RaiseTotals();
+    }
+
+    /// <summary>
+    /// Готовит акт по одной позиции сметы: работа попадает в таблицу работ, материал —
+    /// в таблицу материалов. Так прораб вводит факт прямо из строки сметы.
+    /// </summary>
+    private void PrefillItem(int estimateItemId)
+    {
+        var item = SelectedEstimate?.Items.FirstOrDefault(i => i.Id == estimateItemId);
+        if (item is null) return;
+
+        Works.Clear();
+        MaterialRows.Clear();
+
+        if (item.IsWork)
+            Works.Add(new WorkCompletionWorkDraft(item));
+        else if (item.MaterialId is not null)
+            MaterialRows.Add(new WorkCompletionMaterialDraft(item));
 
         RaiseTotals();
     }

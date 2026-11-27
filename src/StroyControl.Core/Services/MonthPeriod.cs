@@ -62,9 +62,10 @@ public static class MonthPeriod
     {
         var current = DateTime.Today.Year;
 
+        // OfType отбрасывает null и снимает предупреждение о nullable-значении.
         var years = dates
-            .Where(d => d.HasValue)
-            .Select(d => d.Value.Year)
+            .OfType<DateTime>()
+            .Select(date => date.Year)
             .Where(year => year <= current)
             .Distinct()
             .ToList();
@@ -86,8 +87,7 @@ public static class MonthPeriod
         var limit = year is null || year >= today.Year ? today.Month : 12;
 
         var months = dates
-            .Where(d => d.HasValue)
-            .Select(d => d.Value)
+            .OfType<DateTime>()
             .Where(date => year is null || date.Year == year)
             .Select(date => date.Month)
             .Where(month => month <= limit)

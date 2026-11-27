@@ -49,12 +49,18 @@ public interface IDialogService
     /// <summary>Предпросмотр и печать акта списания материалов.</summary>
     void ShowUsageAct(MaterialUsage usage);
 
-    /// <summary>Акт выполненных работ: работы по смете и списанные на них материалы.</summary>
+    /// <summary>
+    /// Акт выполненных работ: работы по смете и списанные на них материалы.
+    /// <paramref name="estimateId"/> и <paramref name="estimateItemId"/> позволяют открыть
+    /// форму сразу по нужной смете и позиции — так факт вводится из карточки сметы.
+    /// </summary>
     WorkCompletion? EditWorkCompletion(
         WorkCompletion? completion,
         IReadOnlyList<Estimate> estimates,
         IReadOnlyList<Material> materials,
-        int? currentUserId);
+        int? currentUserId,
+        int? estimateId = null,
+        int? estimateItemId = null);
 
     void ShowWorkCompletionAct(WorkCompletion completion);
 

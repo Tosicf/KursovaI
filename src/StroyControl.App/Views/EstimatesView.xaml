@@ -182,6 +182,16 @@
                         </StackPanel>
 
                         <StackPanel Grid.Column="1" Orientation="Horizontal">
+                            <!-- Ввод факта: акт выполненных работ по этой смете (работы и материалы). -->
+                            <Button Style="{StaticResource SecondaryButton}" Height="36" Command="{Binding AddWorkCompletionCommand}"
+                                    IsEnabled="{Binding CanAddFactSelected}" Margin="0,0,8,0"
+                                    ToolTip="{loc:Tr 'Ввести факт: акт выполненных работ и списание материалов по этой смете'}">
+                                <StackPanel Orientation="Horizontal">
+                                    <Path Data="{StaticResource IconWork}" Stroke="{DynamicResource AccentBrush}" StrokeThickness="1.7"
+                                          Width="14" Height="14" Stretch="Uniform" VerticalAlignment="Center" />
+                                    <TextBlock Text="{loc:Tr 'Акт работ'}" Margin="6,0,0,0" VerticalAlignment="Center" />
+                                </StackPanel>
+                            </Button>
                             <Button Style="{StaticResource SecondaryButton}" Height="36" Command="{Binding ShowReportCommand}"
                                     IsEnabled="{Binding CanViewReport}" Margin="0,0,8,0"
                                     ToolTip="{loc:Tr 'Отчёт по смете: расчёт работ и материалов, печать и выгрузка в Excel'}">
@@ -313,6 +323,16 @@
                         <DataGrid Style="{StaticResource DataGridStyle}" ItemsSource="{Binding Items}" Margin="8,0,8,0">
                             <DataGrid.ContextMenu>
                         <ContextMenu>
+                            <MenuItem Header="{loc:Tr 'Ввести факт по позиции…'}"
+                                      Command="{Binding PlacementTarget.DataContext.AddWorkCompletionCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
+                                      CommandParameter="{Binding PlacementTarget.SelectedItem, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
+                                      IsEnabled="{Binding PlacementTarget.DataContext.CanAddFactSelected, RelativeSource={RelativeSource AncestorType=ContextMenu}}" />
+                            <MenuItem Header="{loc:Tr 'Оформить акт работ по смете…'}"
+                                      Command="{Binding PlacementTarget.DataContext.AddWorkCompletionCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
+                                      IsEnabled="{Binding PlacementTarget.DataContext.CanAddFactSelected, RelativeSource={RelativeSource AncestorType=ContextMenu}}" />
+                            <MenuItem Header="{loc:Tr 'Открыть журнал актов работ'}"
+                                      Command="{Binding PlacementTarget.DataContext.OpenWorkCompletionsCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}" />
+                            <Separator />
                             <MenuItem Header="{loc:Tr 'Отчёт по смете…'}"
                                       Command="{Binding PlacementTarget.DataContext.ShowReportCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
                                       IsEnabled="{Binding PlacementTarget.DataContext.CanViewReport, RelativeSource={RelativeSource AncestorType=ContextMenu}}" />

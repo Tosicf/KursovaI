@@ -27,7 +27,9 @@ public sealed partial class EstimatesViewModel : ViewModelBase
     private readonly IMinStockService _minStock;
     private readonly IUsageRepository _usages;
     private readonly IWorkCompletionRepository _completions;
+    private readonly IWorkCompletionService _completionService;
     private readonly IDialogService _dialogs;
+    private readonly PageNavigator _navigator;
     private readonly IToastService _toasts;
     private readonly ISessionService _session;
 
@@ -50,9 +52,11 @@ public sealed partial class EstimatesViewModel : ViewModelBase
         IMinStockService minStock,
         IUsageRepository usages,
         IWorkCompletionRepository completions,
+        IWorkCompletionService completionService,
         IDialogService dialogs,
         IToastService toasts,
-        ISessionService session)
+        ISessionService session,
+        PageNavigator navigator)
     {
         _estimates = estimates;
         _projects = projects;
@@ -60,7 +64,9 @@ public sealed partial class EstimatesViewModel : ViewModelBase
         _minStock = minStock;
         _usages = usages;
         _completions = completions;
+        _completionService = completionService;
         _dialogs = dialogs;
+        _navigator = navigator;
         _toasts = toasts;
         _session = session;
 
@@ -115,10 +121,21 @@ public sealed partial class EstimatesViewModel : ViewModelBase
     /// </summary>
     public bool IsSelectedNotInWork => SelectedEstimate is { } estimate && estimate.Status != EstimateStatus.InWork;
 
-    /// <summary>Расшифровка факта: сколько пришлось на материалы и на работы.</summary>
+    /// <summary>Расшифровка факта: сколько пришлось на материалы, работы и сколько актов.</summary>
     public string ActualBreakdownDisplay => SelectedEstimate is null || !SelectedEstimate.IsInWork
         ? L.T("Факт не собирается: смета не в работе")
-        : $"{L.T("материалы")} {MaterialsActualCost:N2} · {L.T("работы")} {WorksActualCost:N2} BYN";
+        : $"{L.T("материалы")} {MaterialsActualCost:N2} · {L.T("работы")} {WorksActualCost:N2} · {L.T("актов")} {ActsCount}";
+
+    /// <summary>
+    /// Факт вводится только по смете в работе: кнопка «Акт работ» и пункты контекстного
+    /// меню доступны лишь для такой сметы.
+    /// </summary>
+    public bool CanAddFactSelected => CanEdit && SelectedEstimate?.Status == EstimateStatus.InWork;
+
+    /// <summary>Сколько актов выполненных работ уже оформлено по выбранной смете.</summary>
+    public int ActsCount => SelectedEstimate is null
+        ? 0
+        : _completionCache.Count(c => c.EstimateId == SelectedEstimate.Id);
 
     /// <summary>Утверждённую смету можно перевести в работу.</summary>
     public bool CanStartWorkSelected => CanEdit && SelectedEstimate?.Status == EstimateStatus.Approved;
@@ -208,20 +225,7 @@ public sealed partial class EstimatesViewModel : ViewModelBase
 
     partial void OnSelectedEstimateChanged(Estimate? value)
     {
-        // Факт по смете — материалы из актов списания и работы из актов работ.
-        // Учитываются только сметы в работе: по остальным факт не собирается.
-        if (value is null || value.Status != EstimateStatus.InWork)
-        {
-            MaterialsActualCost = 0m;
-            WorksActualCost = 0m;
-        }
-        else
-        {
-            MaterialsActualCost = _usageCache.Where(u => u.EstimateId == value.Id).Sum(u => u.Cost);
-            WorksActualCost = _completionCache.Where(c => c.EstimateId == value.Id).Sum(c => c.WorksCost);
-        }
-
-        ActualCost = MaterialsActualCost + WorksActualCost;
+        RecalculateActuals();
 
         Items.Clear();
         if (value is not null)
@@ -457,6 +461,94 @@ public sealed partial class EstimatesViewModel : ViewModelBase
             _toasts.Error("Не удалось удалить смету", ex.Message);
         }
     }
+
+    /// <summary>
+    /// Пересчитывает факт по выбранной смете: материалы берутся из актов списания,
+    /// работы — из актов выполненных работ. Учитываются только сметы в работе:
+    /// по черновику, смете на проверке и архивной факт не собирается.
+    /// </summary>
+    private void RecalculateActuals()
+    {
+        var estimate = SelectedEstimate;
+
+        if (estimate is null || estimate.Status != EstimateStatus.InWork)
+        {
+            MaterialsActualCost = 0m;
+            WorksActualCost = 0m;
+        }
+        else
+        {
+            MaterialsActualCost = _usageCache.Where(u => u.EstimateId == estimate.Id).Sum(u => u.Cost);
+            WorksActualCost = _completionCache.Where(c => c.EstimateId == estimate.Id).Sum(c => c.WorksCost);
+        }
+
+        ActualCost = MaterialsActualCost + WorksActualCost;
+        OnPropertyChanged(nameof(ActsCount));
+        OnPropertyChanged(nameof(ActualBreakdownDisplay));
+    }
+
+    /// <summary>
+    /// Подтягивает свежие акты списания и акты работ и пересчитывает факт — вызывается
+    /// после ввода факта прямо из карточки сметы, чтобы суммы менялись сразу.
+    /// </summary>
+    private async Task RefreshActualsAsync()
+    {
+        try
+        {
+            _usageCache = await _usages.GetAllWithDetailsAsync();
+            _completionCache = await _completions.GetAllWithDetailsAsync();
+        }
+        catch (Exception ex)
+        {
+            _toasts.Error(L.T("Не удалось обновить фактические затраты"), ex.Message);
+        }
+
+        RecalculateActuals();
+    }
+
+    /// <summary>
+    /// Ввод факта из карточки сметы: открывает акт выполненных работ по этой смете.
+    /// Переданная позиция (работа или материал) сразу попадает в акт — так факт
+    /// вводится по конкретной строке сметы, а не «с нуля».
+    /// </summary>
+    [RelayCommand]
+    private async Task AddWorkCompletionAsync(EstimateItem? item)
+    {
+        if (SelectedEstimate is null) return;
+
+        if (!CanAddFactSelected)
+        {
+            _toasts.Info(L.T("Акт выполненных работ"), L.T("Факт вводится только по смете в работе."));
+            return;
+        }
+
+        if (item is not null && !item.IsWork && item.MaterialId is null)
+        {
+            _toasts.Info(L.T("Акт выполненных работ"), L.T("У позиции нет материала — выберите другую строку."));
+            return;
+        }
+
+        var entity = _dialogs.EditWorkCompletion(
+            null, Estimates, Materials, _session.CurrentUser?.Id, SelectedEstimate.Id, item?.Id);
+
+        if (entity is null) return;
+
+        try
+        {
+            var created = await _completionService.CreateAsync(entity);
+            await RefreshActualsAsync();
+            _toasts.Success(L.T("Акт выполненных работ сохранён"),
+                $"{created.DocumentNumber} · {created.Total:N2} BYN");
+        }
+        catch (Exception ex)
+        {
+            _toasts.Error(L.T("Не удалось сохранить акт"), ex.Message);
+        }
+    }
+
+    /// <summary>Переход в журнал актов выполненных работ (все сметы, все объекты).</summary>
+    [RelayCommand]
+    private void OpenWorkCompletions() => _navigator.Open("work-completions");
 
     /// <summary>Открывает отчёт по выбранной смете (расчёт работ и материалов).</summary>
     [RelayCommand]
@@ -795,6 +887,8 @@ public sealed partial class EstimatesViewModel : ViewModelBase
         OnPropertyChanged(nameof(IsSelectedFixed));
         OnPropertyChanged(nameof(IsSelectedInWork));
         OnPropertyChanged(nameof(IsSelectedNotInWork));
+        OnPropertyChanged(nameof(CanAddFactSelected));
+        OnPropertyChanged(nameof(ActsCount));
         OnPropertyChanged(nameof(ActualBreakdownDisplay));
         OnPropertyChanged(nameof(StatusHint));
         OnPropertyChanged(nameof(PlanFactHint));
