@@ -1,3 +1,4 @@
+using StroyControl.App.Localization;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -9,7 +10,7 @@ namespace StroyControl.App.Controls;
 public partial class EmptyState : UserControl
 {
     public static readonly DependencyProperty TitleProperty = DependencyProperty.Register(
-        nameof(Title), typeof(string), typeof(EmptyState), new PropertyMetadata("Пока пусто"));
+        nameof(Title), typeof(string), typeof(EmptyState), new PropertyMetadata(L.T("Пока пусто")));
 
     public static readonly DependencyProperty DescriptionProperty = DependencyProperty.Register(
         nameof(Description), typeof(string), typeof(EmptyState), new PropertyMetadata(string.Empty));
@@ -18,7 +19,7 @@ public partial class EmptyState : UserControl
         nameof(Icon), typeof(Geometry), typeof(EmptyState), new PropertyMetadata(null));
 
     public static readonly DependencyProperty ActionTextProperty = DependencyProperty.Register(
-        nameof(ActionText), typeof(string), typeof(EmptyState), new PropertyMetadata("Добавить"));
+        nameof(ActionText), typeof(string), typeof(EmptyState), new PropertyMetadata(L.T("Добавить")));
 
     public static readonly DependencyProperty ActionCommandProperty = DependencyProperty.Register(
         nameof(ActionCommand), typeof(ICommand), typeof(EmptyState), new PropertyMetadata(null));

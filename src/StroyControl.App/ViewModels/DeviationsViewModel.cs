@@ -3,6 +3,7 @@ using System.ComponentModel;
 using System.Windows.Data;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using StroyControl.App.Localization;
 using StroyControl.App.Services;
 using StroyControl.Core.Dtos;
 using StroyControl.Core.Entities;
@@ -64,7 +65,7 @@ public sealed partial class DeviationsViewModel : ViewModelBase
 
     public const string AllSeverities = "Все отклонения";
 
-    public override string Title => "Анализ отклонений";
+    public override string Title => L.T("Анализ отклонений");
 
     public ObservableCollection<ProjectFilterOption> ProjectOptions { get; } = new();
 

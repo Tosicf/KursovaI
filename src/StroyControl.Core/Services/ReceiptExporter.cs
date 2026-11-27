@@ -6,7 +6,7 @@ namespace StroyControl.Core.Services;
 
 /// <summary>
 /// Счёт-фактура в табличных форматах: Excel (.xlsx) и CSV. Состав тот же, что в
-/// печатной форме: реквизиты, основание, позиции, итог. Нужен, чтобы чек можно было
+/// печатной форме: реквизиты, основание, позиции, итог. Нужен, чтобы документ можно было
 /// сохранить не только в PDF и отправить поставщику или бухгалтерии.
 /// </summary>
 public sealed class ReceiptExporter
@@ -22,7 +22,7 @@ public sealed class ReceiptExporter
 
         var builder = new XlsxBuilder("Чек", new double[] { 5, 46, 10, 12, 14, 16 }, frozenRows: 10);
 
-        builder.AddRow(XlsxCell.Of("ТОВАРНЫЙ ЧЕК", XlsxStyle.Title));
+        builder.AddRow(XlsxCell.Of("СЧЁТ-ФАКТУРА", XlsxStyle.Title));
         builder.AddRow(XlsxCell.Of($"Продавец: {organization}", XlsxStyle.Bold));
         builder.AddRow(XlsxCell.Of($"Покупатель: {delivery.ProjectName}", XlsxStyle.Bold));
         builder.AddRow(XlsxCell.Of($"Документ: {delivery.Number} от {delivery.DateDisplay}"));

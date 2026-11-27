@@ -1,4 +1,5 @@
-<UserControl x:Class="StroyControl.App.Controls.DateField"
+<UserControl xmlns:loc="clr-namespace:StroyControl.App.Localization"
+        x:Class="StroyControl.App.Controls.DateField"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
@@ -66,12 +67,12 @@
                          Foreground="{DynamicResource TextPrimaryBrush}"
                          CaretBrush="{DynamicResource TextPrimaryBrush}"
                          SelectionBrush="{DynamicResource AccentBrush}"
-                         ToolTip="Дата в формате ДД.ММ.ГГГГ"
+                         ToolTip="{loc:Tr 'Дата в формате ДД.ММ.ГГГГ'}"
                          LostFocus="OnInputLostFocus" KeyDown="OnInputKeyDown" />
 
                 <Button x:Name="ToggleButton" Grid.Column="1" Style="{StaticResource IconButton}"
                         Width="34" Height="30" Margin="0,0,4,0" Click="OnToggleClick"
-                        ToolTip="Выбрать дату в календаре">
+                        ToolTip="{loc:Tr 'Выбрать дату в календаре'}">
                     <Path Data="{StaticResource IconCalendar}" Stroke="{DynamicResource TextSecondaryBrush}"
                           StrokeThickness="1.6" Width="15" Height="15" Stretch="Uniform"
                           StrokeStartLineCap="Round" StrokeLineJoin="Round" />
@@ -93,13 +94,13 @@
                     <Grid Margin="0,0,0,6">
                         <StackPanel Orientation="Horizontal" HorizontalAlignment="Left">
                             <Button Style="{StaticResource IconButton}" Width="26" Height="26"
-                                    Click="OnPreviousYearClick" ToolTip="Предыдущий год">
+                                    Click="OnPreviousYearClick" ToolTip="{loc:Tr 'Предыдущий год'}">
                                 <Path Data="M0,0 L5,6 L0,12 M6,0 L11,6 L6,12" Stroke="{DynamicResource TextSecondaryBrush}"
                                       StrokeThickness="1.6" Width="10" Height="11" Stretch="Uniform"
                                       StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeLineJoin="Round" />
                             </Button>
                             <Button Style="{StaticResource IconButton}" Width="26" Height="26"
-                                    Click="OnPreviousMonthClick" ToolTip="Предыдущий месяц">
+                                    Click="OnPreviousMonthClick" ToolTip="{loc:Tr 'Предыдущий месяц'}">
                                 <Path Data="{StaticResource IconChevronLeft}" Stroke="{DynamicResource TextSecondaryBrush}"
                                       StrokeThickness="1.8" Width="11" Height="11" Stretch="Uniform"
                                       StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeLineJoin="Round" />
@@ -111,13 +112,13 @@
 
                         <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
                             <Button Style="{StaticResource IconButton}" Width="26" Height="26"
-                                    Click="OnNextMonthClick" ToolTip="Следующий месяц">
+                                    Click="OnNextMonthClick" ToolTip="{loc:Tr 'Следующий месяц'}">
                                 <Path Data="{StaticResource IconChevronRight}" Stroke="{DynamicResource TextSecondaryBrush}"
                                       StrokeThickness="1.8" Width="11" Height="11" Stretch="Uniform"
                                       StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeLineJoin="Round" />
                             </Button>
                             <Button Style="{StaticResource IconButton}" Width="26" Height="26"
-                                    Click="OnNextYearClick" ToolTip="Следующий год">
+                                    Click="OnNextYearClick" ToolTip="{loc:Tr 'Следующий год'}">
                                 <Path Data="M0,0 L5,6 L0,12 M6,0 L11,6 L6,12" Stroke="{DynamicResource TextSecondaryBrush}"
                                       StrokeThickness="1.6" Width="10" Height="11" Stretch="Uniform"
                                       StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeLineJoin="Round" />
@@ -131,8 +132,8 @@
 
                     <Border Height="1" Background="{DynamicResource BorderBrush}" Margin="0,6,0,6" />
 
-                    <Button Style="{StaticResource GhostButton}" Content="Сегодня" HorizontalAlignment="Left"
-                            Click="OnTodayClick" ToolTip="Перейти к сегодняшней дате" />
+                    <Button Style="{StaticResource GhostButton}" Content="{loc:Tr 'Сегодня'}" HorizontalAlignment="Left"
+                            Click="OnTodayClick" ToolTip="{loc:Tr 'Перейти к сегодняшней дате'}" />
                 </StackPanel>
             </Border>
         </Popup>

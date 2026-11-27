@@ -3,6 +3,7 @@ using System.Windows;
 using System.Windows.Markup;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using StroyControl.App.Localization;
 using StroyControl.App.Services;
 using StroyControl.App.Startup;
 using StroyControl.Core.Diagnostics;
@@ -125,6 +126,9 @@ public partial class App : Application
         }
 
         var environment = AppEnvironment.Create(connectionString, demoMode, organization);
+
+        // Язык интерфейса читается до создания окон: от него зависят все подписи.
+        LocalizationService.Instance.Load();
 
         var services = new ServiceCollection();
         services.AddSingleton<IConfiguration>(configuration);

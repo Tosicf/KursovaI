@@ -5,6 +5,7 @@ using Microsoft.Win32;
 using StroyControl.App.Services;
 using StroyControl.App.Views.Reports;
 using StroyControl.Core.Entities;
+using StroyControl.Core.Services;
 
 namespace StroyControl.App.Views.Dialogs;
 
@@ -18,6 +19,7 @@ public partial class UsageActWindow : Window
 {
     private readonly MaterialUsage _usage;
     private readonly string _organization;
+    private readonly UsageActExporter _exporter = new();
 
     public UsageActWindow(MaterialUsage usage, string organization)
     {
@@ -89,6 +91,58 @@ public partial class UsageActWindow : Window
         catch (Exception ex)
         {
             MessageBox.Show(this, $"Не удалось напечатать акт.\n\n{ex.Message}", "Печать",
+                MessageBoxButton.OK, MessageBoxImage.Error);
+        }
+    }
+
+    private async void OnExcelClick(object sender, RoutedEventArgs e)
+    {
+        var dialog = new SaveFileDialog
+        {
+            Title = "Сохранить акт списания в Excel",
+            FileName = _exporter.DefaultFileName(_usage, "xlsx"),
+            Filter = "Книга Excel (*.xlsx)|*.xlsx|Все файлы (*.*)|*.*",
+            AddExtension = true,
+            OverwritePrompt = true
+        };
+
+        if (dialog.ShowDialog(this) != true) return;
+
+        try
+        {
+            await _exporter.ExportXlsxAsync(_usage, _organization, dialog.FileName);
+            MessageBox.Show(this, $"Акт сохранён:\n{dialog.FileName}", "Excel", MessageBoxButton.OK,
+                MessageBoxImage.Information);
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show(this, $"Не удалось сохранить файл.\n\n{ex.Message}", "Excel",
+                MessageBoxButton.OK, MessageBoxImage.Error);
+        }
+    }
+
+    private async void OnCsvClick(object sender, RoutedEventArgs e)
+    {
+        var dialog = new SaveFileDialog
+        {
+            Title = "Сохранить акт списания в CSV",
+            FileName = _exporter.DefaultFileName(_usage, "csv"),
+            Filter = "Файлы CSV (*.csv)|*.csv|Все файлы (*.*)|*.*",
+            AddExtension = true,
+            OverwritePrompt = true
+        };
+
+        if (dialog.ShowDialog(this) != true) return;
+
+        try
+        {
+            await _exporter.ExportCsvAsync(_usage, _organization, dialog.FileName);
+            MessageBox.Show(this, $"Акт сохранён:\n{dialog.FileName}", "CSV", MessageBoxButton.OK,
+                MessageBoxImage.Information);
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show(this, $"Не удалось сохранить файл.\n\n{ex.Message}", "CSV",
                 MessageBoxButton.OK, MessageBoxImage.Error);
         }
     }

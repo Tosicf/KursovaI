@@ -3,6 +3,7 @@ using System.ComponentModel;
 using System.Windows.Data;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using StroyControl.App.Localization;
 using StroyControl.App.Services;
 using StroyControl.Core.Entities;
 using StroyControl.Core.Enums;
@@ -51,7 +52,7 @@ public sealed partial class ProjectsViewModel : ViewModelBase
         Period = new PeriodFilterViewModel(ApplyFilters);
     }
 
-    public override string Title => "Объекты";
+    public override string Title => L.T("Объекты");
 
     public ObservableCollection<Project> Items { get; } = new();
 

@@ -3,6 +3,7 @@ using System.ComponentModel;
 using System.Windows.Data;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using StroyControl.App.Localization;
 using StroyControl.App.Services;
 using StroyControl.Core.Entities;
 using StroyControl.Core.Enums;
@@ -29,7 +30,7 @@ public sealed partial class UsersViewModel : ViewModelBase
         ItemsView.Filter = FilterItem;
     }
 
-    public override string Title => "Сотрудники";
+    public override string Title => L.T("Сотрудники");
 
     public ObservableCollection<User> Items { get; } = new();
 

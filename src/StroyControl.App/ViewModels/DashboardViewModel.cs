@@ -1,5 +1,6 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using StroyControl.App.Localization;
 using StroyControl.App.Services;
 using StroyControl.Core.Dtos;
 using StroyControl.Core.Interfaces;
@@ -44,7 +45,7 @@ public sealed partial class DashboardViewModel : ViewModelBase
         Period = new PeriodFilterViewModel(ReloadForPeriod);
     }
 
-    public override string Title => "Панель управления";
+    public override string Title => L.T("Панель управления");
 
     /// <summary>
     /// Период панели. Главная страница всегда показывает один месяц (или все месяцы),

@@ -3,6 +3,7 @@ using System.ComponentModel;
 using System.Windows.Data;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using StroyControl.App.Localization;
 using StroyControl.App.Services;
 using StroyControl.Core.Entities;
 using StroyControl.Core.Interfaces;
@@ -39,7 +40,7 @@ public sealed partial class ArchiveViewModel : ViewModelBase
         Period = new PeriodFilterViewModel(RefreshView);
     }
 
-    public override string Title => "Архив смет";
+    public override string Title => L.T("Архив смет");
 
     public ObservableCollection<Estimate> Estimates { get; } = new();
 

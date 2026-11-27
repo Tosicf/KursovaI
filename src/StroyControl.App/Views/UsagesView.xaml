@@ -1,4 +1,5 @@
-<UserControl x:Class="StroyControl.App.Views.UsagesView"
+<UserControl xmlns:loc="clr-namespace:StroyControl.App.Localization"
+        x:Class="StroyControl.App.Views.UsagesView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:controls="clr-namespace:StroyControl.App.Controls">
@@ -17,8 +18,8 @@
             </Grid.ColumnDefinitions>
 
             <StackPanel>
-                <TextBlock Text="Фактический расход материалов по объектам" Style="{StaticResource Caption}" FontSize="12.5" />
-                <TextBlock Text="Акты списания уменьшают остаток и формируют факт для анализа отклонений" Style="{StaticResource Caption}"
+                <TextBlock Text="{loc:Tr 'Фактический расход материалов по объектам'}" Style="{StaticResource Caption}" FontSize="12.5" />
+                <TextBlock Text="{loc:Tr 'Акты списания уменьшают остаток и формируют факт для анализа отклонений'}" Style="{StaticResource Caption}"
                            FontSize="11" Foreground="{DynamicResource TextMutedBrush}" Margin="0,3,0,0" />
             </StackPanel>
 
@@ -27,22 +28,22 @@
                     <StackPanel Orientation="Horizontal">
                         <Path Data="{StaticResource IconRefresh}" Stroke="{DynamicResource TextSecondaryBrush}" StrokeThickness="1.7"
                               Width="15" Height="15" Stretch="Uniform" VerticalAlignment="Center" />
-                        <TextBlock Text="Обновить" Margin="8,0,0,0" VerticalAlignment="Center" />
+                        <TextBlock Text="{loc:Tr 'Обновить'}" Margin="8,0,0,0" VerticalAlignment="Center" />
                     </StackPanel>
                 </Button>
                 <Button Style="{StaticResource SecondaryButton}" Command="{Binding PrintActCommand}" Margin="0,0,10,0"
-                        ToolTip="Акт списания по выбранной строке: предпросмотр и печать">
+                        ToolTip="{loc:Tr 'Акт списания по выбранной строке: предпросмотр и печать'}">
                     <StackPanel Orientation="Horizontal">
                         <Path Data="{StaticResource IconReport}" Stroke="{DynamicResource TextSecondaryBrush}" StrokeThickness="1.7"
                               Width="15" Height="15" Stretch="Uniform" VerticalAlignment="Center" />
-                        <TextBlock Text="Акт списания" Margin="8,0,0,0" VerticalAlignment="Center" />
+                        <TextBlock Text="{loc:Tr 'Акт списания'}" Margin="8,0,0,0" VerticalAlignment="Center" />
                     </StackPanel>
                 </Button>
                 <Button Style="{StaticResource PrimaryButton}" Command="{Binding AddCommand}" IsEnabled="{Binding CanEdit}">
                     <StackPanel Orientation="Horizontal">
                         <Path Data="{StaticResource IconOutgoing}" Stroke="White" StrokeThickness="1.9"
                               Width="15" Height="15" Stretch="Uniform" VerticalAlignment="Center" />
-                        <TextBlock Text="Оформить списание" Foreground="White" Margin="8,0,0,0" VerticalAlignment="Center" />
+                        <TextBlock Text="{loc:Tr 'Оформить списание'}" Foreground="White" Margin="8,0,0,0" VerticalAlignment="Center" />
                     </StackPanel>
                 </Button>
             </StackPanel>
@@ -63,7 +64,7 @@
                     <Path Data="{StaticResource IconSearch}" Stroke="{DynamicResource TextMutedBrush}" StrokeThickness="1.7"
                           Width="16" Height="16" Stretch="Uniform" HorizontalAlignment="Left" Margin="13,0,0,0"
                           VerticalAlignment="Center" IsHitTestVisible="False" />
-                    <TextBlock Text="Поиск по акту, материалу, объекту" Foreground="{DynamicResource TextMutedBrush}"
+                    <TextBlock Text="{loc:Tr 'Поиск по акту, материалу, объекту'}" Foreground="{DynamicResource TextMutedBrush}"
                                FontSize="12.5" VerticalAlignment="Center" Margin="38,0,10,0" IsHitTestVisible="False"
                                Visibility="{Binding SearchText, Converter={StaticResource EmptyToVisibility}}" />
                 </Grid>
@@ -75,15 +76,15 @@
                 </StackPanel>
 
                 <StackPanel Grid.Column="2" Margin="24,0,0,0" VerticalAlignment="Center">
-                    <TextBlock Text="Актов" Style="{StaticResource Caption}" FontSize="11" />
+                    <TextBlock Text="{loc:Tr 'Актов'}" Style="{StaticResource Caption}" FontSize="11" />
                     <TextBlock Text="{Binding TotalCount}" FontWeight="SemiBold" FontSize="15" />
                 </StackPanel>
                 <StackPanel Grid.Column="3" Margin="24,0,0,0" VerticalAlignment="Center">
-                    <TextBlock Text="Стоимость списаний" Style="{StaticResource Caption}" FontSize="11" />
+                    <TextBlock Text="{loc:Tr 'Стоимость списаний'}" Style="{StaticResource Caption}" FontSize="11" />
                     <TextBlock Text="{Binding TotalCostDisplay}" FontWeight="SemiBold" FontSize="15" />
                 </StackPanel>
                 <StackPanel Grid.Column="4" Margin="24,0,0,0" VerticalAlignment="Center">
-                    <TextBlock Text="Объектов охвачено" Style="{StaticResource Caption}" FontSize="11" />
+                    <TextBlock Text="{loc:Tr 'Объектов охвачено'}" Style="{StaticResource Caption}" FontSize="11" />
                     <TextBlock Text="{Binding ProjectsCovered}" FontWeight="SemiBold" FontSize="15" />
                 </StackPanel>
             </Grid>
@@ -95,29 +96,29 @@
                           SelectedItem="{Binding SelectedUsage}" Margin="8,6,8,8">
                     <DataGrid.ContextMenu>
                         <ContextMenu>
-                            <MenuItem Header="Изменить…" InputGestureText="F2"
+                            <MenuItem Header="{loc:Tr 'Изменить…'}" InputGestureText="F2"
                                       Command="{Binding PlacementTarget.DataContext.EditCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
                                   CommandParameter="{Binding PlacementTarget.SelectedItem, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
                                   IsEnabled="{Binding PlacementTarget.DataContext.CanEdit, RelativeSource={RelativeSource AncestorType=ContextMenu}}" />
-                            <MenuItem Header="Удалить" InputGestureText="Del"
+                            <MenuItem Header="{loc:Tr 'Удалить'}" InputGestureText="Del"
                                       Command="{Binding PlacementTarget.DataContext.DeleteCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
                                   CommandParameter="{Binding PlacementTarget.SelectedItem, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
                                   IsEnabled="{Binding PlacementTarget.DataContext.CanEdit, RelativeSource={RelativeSource AncestorType=ContextMenu}}" />
                             <Separator />
-                            <MenuItem Header="Печать акта списания…"
+                            <MenuItem Header="{loc:Tr 'Печать акта списания…'}"
                                       Command="{Binding PlacementTarget.DataContext.PrintActCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
                                       CommandParameter="{Binding PlacementTarget.SelectedItem, RelativeSource={RelativeSource AncestorType=ContextMenu}}" />
                             <Separator />
-                            <MenuItem Header="Добавить"
+                            <MenuItem Header="{loc:Tr 'Добавить'}"
                                       Command="{Binding PlacementTarget.DataContext.AddCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
                                   IsEnabled="{Binding PlacementTarget.DataContext.CanEdit, RelativeSource={RelativeSource AncestorType=ContextMenu}}" />
-                            <MenuItem Header="Обновить" InputGestureText="Ctrl+R"
+                            <MenuItem Header="{loc:Tr 'Обновить'}" InputGestureText="Ctrl+R"
                                       Command="{Binding PlacementTarget.DataContext.RefreshCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}" />
                         </ContextMenu>
                     </DataGrid.ContextMenu>
 
                     <DataGrid.Columns>
-                        <DataGridTemplateColumn Header="Документ" Width="160">
+                        <DataGridTemplateColumn Header="{loc:Tr 'Документ'}" Width="160">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
                                     <StackPanel VerticalAlignment="Center">
@@ -129,29 +130,29 @@
                             </DataGridTemplateColumn.CellTemplate>
                         </DataGridTemplateColumn>
 
-                        <DataGridTextColumn Header="Объект" Binding="{Binding ProjectName, Mode=OneWay}" Width="*" MinWidth="170" />
-                        <DataGridTextColumn Header="Материал" Binding="{Binding MaterialName, Mode=OneWay}" Width="*" MinWidth="180" />
-                        <DataGridTextColumn Header="Кол-во" Binding="{Binding Quantity, StringFormat='{}{0:N2}', Mode=OneWay}" Width="96"
+                        <DataGridTextColumn Header="{loc:Tr 'Объект'}" Binding="{Binding ProjectName, Mode=OneWay}" Width="*" MinWidth="170" />
+                        <DataGridTextColumn Header="{loc:Tr 'Материал'}" Binding="{Binding MaterialName, Mode=OneWay}" Width="*" MinWidth="180" />
+                        <DataGridTextColumn Header="{loc:Tr 'Кол-во'}" Binding="{Binding Quantity, StringFormat='{}{0:N2}', Mode=OneWay}" Width="96"
                                             ElementStyle="{StaticResource NumericCell}" />
-                        <DataGridTextColumn Header="Ед." Binding="{Binding UnitDisplay, Mode=OneWay}" Width="64" />
-                        <DataGridTextColumn Header="Цена, BYN" Binding="{Binding UnitPrice, StringFormat='{}{0:N2}', Mode=OneWay}" Width="110"
+                        <DataGridTextColumn Header="{loc:Tr 'Ед.'}" Binding="{Binding UnitDisplay, Mode=OneWay}" Width="64" />
+                        <DataGridTextColumn Header="{loc:Tr 'Цена, BYN'}" Binding="{Binding UnitPrice, StringFormat='{}{0:N2}', Mode=OneWay}" Width="110"
                                             ElementStyle="{StaticResource NumericCell}" />
-                        <DataGridTextColumn Header="Сумма, BYN" Binding="{Binding Cost, StringFormat='{}{0:N2}', Mode=OneWay}" Width="120"
+                        <DataGridTextColumn Header="{loc:Tr 'Сумма, BYN'}" Binding="{Binding Cost, StringFormat='{}{0:N2}', Mode=OneWay}" Width="120"
                                             ElementStyle="{StaticResource NumericCell}" />
-                        <DataGridTextColumn Header="Оформил" Binding="{Binding AuthorName, Mode=OneWay}" Width="170" />
+                        <DataGridTextColumn Header="{loc:Tr 'Оформил'}" Binding="{Binding AuthorName, Mode=OneWay}" Width="170" />
 
                         <DataGridTemplateColumn Header="" Width="88">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
                                     <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                                        <Button Style="{StaticResource IconButton}" Width="30" Height="30" ToolTip="Изменить"
+                                        <Button Style="{StaticResource IconButton}" Width="30" Height="30" ToolTip="{loc:Tr 'Изменить'}"
                                                 IsEnabled="{Binding DataContext.CanEdit, RelativeSource={RelativeSource AncestorType=DataGrid}}"
                                                 Command="{Binding DataContext.EditCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
                                                 CommandParameter="{Binding}">
                                             <Path Data="{StaticResource IconEdit}" Stroke="{DynamicResource TextSecondaryBrush}"
                                                   StrokeThickness="1.6" Width="14" Height="14" Stretch="Uniform" />
                                         </Button>
-                                        <Button Style="{StaticResource IconButton}" Width="30" Height="30" ToolTip="Удалить"
+                                        <Button Style="{StaticResource IconButton}" Width="30" Height="30" ToolTip="{loc:Tr 'Удалить'}"
                                                 IsEnabled="{Binding DataContext.CanEdit, RelativeSource={RelativeSource AncestorType=DataGrid}}"
                                                 Command="{Binding DataContext.DeleteCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
                                                 CommandParameter="{Binding}">
@@ -165,18 +166,18 @@
                     </DataGrid.Columns>
                 </DataGrid>
 
-                <controls:EmptyState Title="Списаний пока нет"
-                                     Description="Оформите акт списания, чтобы сравнить фактический расход материалов со сметой."
-                                     Icon="{StaticResource IconOutgoing}" ActionText="Оформить списание"
+                <controls:EmptyState Title="{loc:Tr 'Списаний пока нет'}"
+                                     Description="{loc:Tr 'Оформите акт списания, чтобы сравнить фактический расход материалов со сметой.'}"
+                                     Icon="{StaticResource IconOutgoing}" ActionText="{loc:Tr 'Оформить списание'}"
                                      ActionCommand="{Binding AddCommand}"
                                      Visibility="{Binding IsEmpty, Converter={StaticResource BoolToVisibility}}" />
 
-                <controls:EmptyState Title="Списания не найдены"
-                                     Description="Измените проект или поисковый запрос."
+                <controls:EmptyState Title="{loc:Tr 'Списания не найдены'}"
+                                     Description="{loc:Tr 'Измените проект или поисковый запрос.'}"
                                      Icon="{StaticResource IconSearch}"
                                      Visibility="{Binding IsFilteredEmpty, Converter={StaticResource BoolToVisibility}}" />
 
-                <controls:LoadingOverlay IsBusy="{Binding IsBusy}" Message="Загружаем списания…" />
+                <controls:LoadingOverlay IsBusy="{Binding IsBusy}" Message="{loc:Tr 'Загружаем списания…'}" />
             </Grid>
         </Border>
     </Grid>

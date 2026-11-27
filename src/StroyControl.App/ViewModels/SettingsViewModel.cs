@@ -1,5 +1,6 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using StroyControl.App.Localization;
 using StroyControl.App.Services;
 using StroyControl.App.Startup;
 using StroyControl.Core.Enums;
@@ -26,7 +27,7 @@ public sealed partial class SettingsViewModel : ViewModelBase
         Session = session;
     }
 
-    public override string Title => "О программе";
+    public override string Title => L.T("О программе");
 
     public AppEnvironment Environment { get; }
 

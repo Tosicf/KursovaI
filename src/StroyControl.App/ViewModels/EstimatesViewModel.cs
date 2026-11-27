@@ -3,6 +3,7 @@ using System.ComponentModel;
 using System.Windows.Data;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using StroyControl.App.Localization;
 using StroyControl.App.Services;
 using StroyControl.Core.Dtos;
 using StroyControl.Core.Entities;
@@ -65,7 +66,7 @@ public sealed partial class EstimatesViewModel : ViewModelBase
         Period = new PeriodFilterViewModel(ApplyFilter);
     }
 
-    public override string Title => "Сметы";
+    public override string Title => L.T("Сметы");
 
     public ObservableCollection<Estimate> Estimates { get; } = new();
 
