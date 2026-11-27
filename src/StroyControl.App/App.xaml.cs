@@ -40,8 +40,7 @@ public partial class App : Application
         }
         catch (Exception ex)
         {
-            if (_serverLog is not null)
-                _serverLog.Error("Ошибка", $"Запуск прерван: {ex.GetBaseException().Message}");
+            _serverLog?.Error("Ошибка", $"Запуск прерван: {ex.GetBaseException().Message}");
             var error = ex.GetBaseException();   // ← достаём настоящую причину
             MessageBox.Show(
                 $"Не удалось запустить приложение «СтройКонтроль».\n\n" +
@@ -87,20 +86,20 @@ public partial class App : Application
             : "Консоль не открыта (отключена в appsettings.json или недоступна) — журнал хранится в памяти");
 
         var demoMode = false;
-        var probe = await SqlServerProbe.TryConnectAsync(connectionString);
+        var (probeSuccess, probeError) = await SqlServerProbe.TryConnectAsync(connectionString);
 
-        serverLog.Write(probe.Success ? StroyControl.Core.Enums.ServerLogLevel.Info
+        serverLog.Write(probeSuccess ? StroyControl.Core.Enums.ServerLogLevel.Info
                                       : StroyControl.Core.Enums.ServerLogLevel.Warning,
-            "Подключение", probe.Success
+            "Подключение", probeSuccess
                 ? "SQL Server доступен — проверка подключения пройдена"
-                : $"SQL Server недоступен: {probe.Error}");
+                : $"SQL Server недоступен: {probeError}");
 
-        if (!probe.Success)
+        if (!probeSuccess)
         {
             if (!demoModeAllowed)
             {
                 MessageBox.Show(
-                    $"Сервер SQL Server недоступен.\n\n{probe.Error}\n\nПроверьте, запущена ли служба SQL Server, и строку подключения в appsettings.json.",
+                    $"Сервер SQL Server недоступен.\n\n{probeError}\n\nПроверьте, запущена ли служба SQL Server, и строку подключения в appsettings.json.",
                     "Нет связи с базой данных",
                     MessageBoxButton.OK,
                     MessageBoxImage.Error);
@@ -109,7 +108,7 @@ public partial class App : Application
             }
 
             var answer = MessageBox.Show(
-                $"Сервер SQL Server недоступен.\n\n{probe.Error}\n\n" +
+                $"Сервер SQL Server недоступен.\n\n{probeError}\n\n" +
                 "Запустить приложение в демонстрационном режиме? Данные будут храниться в памяти процесса " +
                 "и не сохранятся после закрытия.",
                 "Нет связи с базой данных",
@@ -190,8 +189,7 @@ public partial class App : Application
 
     private void OnDispatcherUnhandledException(object sender, System.Windows.Threading.DispatcherUnhandledExceptionEventArgs e)
     {
-        if (_serverLog is not null)
-            _serverLog.Error("Ошибка", $"Необработанное исключение интерфейса: {e.Exception.GetBaseException().Message}");
+        _serverLog?.Error("Ошибка", $"Необработанное исключение интерфейса: {e.Exception.GetBaseException().Message}");
 
         MessageBox.Show(
             $"Произошла непредвиденная ошибка.\n\n{e.Exception.Message}",
@@ -205,13 +203,11 @@ public partial class App : Application
     private void OnDomainUnhandledException(object sender, UnhandledExceptionEventArgs e)
     {
         var message = (e.ExceptionObject as Exception)?.GetBaseException().Message ?? "неизвестная ошибка";
-        if (_serverLog is not null)
-            _serverLog.Error("Ошибка", $"Критическая ошибка процесса: {message}");
+        _serverLog?.Error("Ошибка", $"Критическая ошибка процесса: {message}");
 
         try
         {
-            if (_serverLog is not null)
-                _serverLog.Info("Ошибка", "Приложение завершает работу");
+            _serverLog?.Info("Ошибка", "Приложение завершает работу");
         }
         catch
         {
@@ -221,8 +217,7 @@ public partial class App : Application
 
     private void OnUnobservedTaskException(object? sender, UnobservedTaskExceptionEventArgs e)
     {
-        if (_serverLog is not null)
-            _serverLog.Error("Ошибка", $"Ошибка фоновой задачи: {e.Exception.GetBaseException().Message}");
+        _serverLog?.Error("Ошибка", $"Ошибка фоновой задачи: {e.Exception.GetBaseException().Message}");
         e.SetObserved();
     }
 }
