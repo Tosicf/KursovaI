@@ -278,7 +278,7 @@ public sealed partial class DeliveriesViewModel : ViewModelBase
     }
 
     /// <summary>
-    /// Печать товарного чека по выбранной накладной (или по переданной контекстным меню).
+    /// Печать счёта-фактуры по выбранной накладной (или по переданной контекстным меню).
     /// </summary>
     [RelayCommand]
     private void PrintReceipt(Delivery? delivery)

@@ -24,6 +24,7 @@ public sealed partial class EstimatesViewModel : ViewModelBase
     private readonly IProjectRepository _projects;
     private readonly IMaterialRepository _materials;
     private readonly IMinStockService _minStock;
+    private readonly IUsageRepository _usages;
     private readonly IDialogService _dialogs;
     private readonly IToastService _toasts;
     private readonly ISessionService _session;
@@ -31,11 +32,18 @@ public sealed partial class EstimatesViewModel : ViewModelBase
     /// <summary>Объект, выбранный на другой странице: фильтр применится при загрузке.</summary>
     private int? _pendingProjectId;
 
+    /// <summary>
+    /// Акты списания, загруженные вместе со сметами: по ним считается фактическая
+    /// стоимость каждой сметы для сравнения плана и факта.
+    /// </summary>
+    private IReadOnlyList<MaterialUsage> _usageCache = Array.Empty<MaterialUsage>();
+
     public EstimatesViewModel(
         IEstimateRepository estimates,
         IProjectRepository projects,
         IMaterialRepository materials,
         IMinStockService minStock,
+        IUsageRepository usages,
         IDialogService dialogs,
         IToastService toasts,
         ISessionService session)
@@ -44,6 +52,7 @@ public sealed partial class EstimatesViewModel : ViewModelBase
         _projects = projects;
         _materials = materials;
         _minStock = minStock;
+        _usages = usages;
         _dialogs = dialogs;
         _toasts = toasts;
         _session = session;
@@ -81,14 +90,52 @@ public sealed partial class EstimatesViewModel : ViewModelBase
     /// <summary>Подтвердить можно черновик, в котором есть хотя бы одна позиция.</summary>
     public bool CanConfirmSelected => CanEditSelected && Items.Count > 0;
 
-    /// <summary>В архив отправляется только подтверждённая смета.</summary>
-    public bool CanArchiveSelected => CanEdit && SelectedEstimate?.Status == EstimateStatus.Approved;
+    /// <summary>В архив отправляется утверждённая смета — в том числе та, что уже в работе.</summary>
+    public bool CanArchiveSelected => CanEdit && SelectedEstimate?.Status is EstimateStatus.Approved or EstimateStatus.InWork;
 
     /// <summary>Выбранная смета зафиксирована — состав и суммы менять нельзя.</summary>
     public bool IsSelectedFixed => SelectedEstimate?.IsFixed == true;
 
     /// <summary>Подсказка о режиме работы с выбранной сметой.</summary>
     public string StatusHint => SelectedEstimate?.LockDisplay ?? "Выберите смету из списка";
+
+    /// <summary>Смета передана в работу — план и факт можно сравнивать.</summary>
+    public bool IsSelectedInWork => SelectedEstimate?.IsInWork == true;
+
+    /// <summary>Утверждённую смету можно перевести в работу.</summary>
+    public bool CanStartWorkSelected => CanEdit && SelectedEstimate?.Status == EstimateStatus.Approved;
+
+    /// <summary>Фактические затраты по выбранной смете: сумма актов списания по ней.</summary>
+    [ObservableProperty]
+    private decimal actualCost;
+
+    /// <summary>Отклонение факта от плана: положительное значение — перерасход.</summary>
+    public decimal DeviationAmount => ActualCost - ItemsTotal;
+
+    public string ActualCostDisplay => ActualCost.ToString("N2") + " BYN";
+
+    public string DeviationDisplay => DeviationAmount == 0m
+        ? "0,00 BYN"
+        : (DeviationAmount > 0m ? "+" : "−") + Math.Abs(DeviationAmount).ToString("N2") + " BYN";
+
+    public string DeviationPercentDisplay => ItemsTotal == 0m
+        ? "—"
+        : (DeviationAmount > 0m ? "+" : DeviationAmount < 0m ? "−" : string.Empty)
+          + Math.Abs(Math.Round(DeviationAmount / ItemsTotal * 100m, 1)).ToString("0.0") + " %";
+
+    /// <summary>Степень отклонения по тем же порогам, что в анализе отклонений.</summary>
+    public DeviationSeverity DeviationLevel => ItemsTotal == 0m
+        ? DeviationSeverity.Normal
+        : DeviationCalculator.Classify(Math.Abs(Math.Round(DeviationAmount / ItemsTotal * 100m, 1)));
+
+    /// <summary>Пояснение к блоку «план / факт».</summary>
+    public string PlanFactHint => SelectedEstimate is null
+        ? "Выберите смету из списка"
+        : SelectedEstimate.IsInWork
+            ? "Смета в работе: план сравнивается с фактом по актам списания"
+            : SelectedEstimate.IsArchived
+                ? "Смета в архиве: сравнение плана и факта доступно только для просмотра"
+                : "Переведите смету в работу, чтобы сравнивать план и факт";
 
     /// <summary>Отчёт содержит финансовые показатели — доступен ролям с правом просмотра финансов.</summary>
     public bool CanViewReport => _session.CanViewFinance;
@@ -131,6 +178,11 @@ public sealed partial class EstimatesViewModel : ViewModelBase
 
     partial void OnSelectedEstimateChanged(Estimate? value)
     {
+        // Факт по смете — сумма актов списания, привязанных к этой смете.
+        ActualCost = value is null
+            ? 0m
+            : _usageCache.Where(u => u.EstimateId == value.Id).Sum(u => u.Cost);
+
         Items.Clear();
         if (value is not null)
         {
@@ -165,6 +217,10 @@ public sealed partial class EstimatesViewModel : ViewModelBase
             var estimates = await _estimates.GetAllWithItemsAsync();
             var projects = await _projects.GetAllWithEstimatesAsync();
             var materials = await _materials.GetAllWithSupplierAsync();
+
+            // Факт по сметам собирается из актов списания — грузим их до выбора сметы,
+            // чтобы блок «план / факт» сразу показывал актуальные суммы.
+            _usageCache = await _usages.GetAllWithDetailsAsync();
 
             var previousId = SelectedEstimate?.Id;
 
@@ -546,16 +602,56 @@ public sealed partial class EstimatesViewModel : ViewModelBase
         }
     }
 
+    /// <summary>
+    /// Утверждённая смета передаётся в работу: с этого момента план зафиксирован,
+    /// а фактические затраты собираются по актам списания и сравниваются с планом.
+    /// </summary>
+    [RelayCommand]
+    private async Task StartWorkAsync()
+    {
+        if (!CanEdit || SelectedEstimate is null) return;
+
+        if (SelectedEstimate.Status != EstimateStatus.Approved)
+        {
+            _toasts.Info("Смета не утверждена",
+                "В работу отправляется только утверждённая смета. Сначала нажмите «Подтвердить».");
+            return;
+        }
+
+        var confirmed = _dialogs.Confirm(
+            "Отправить смету в работу?",
+            $"Смета «{SelectedEstimate.Number} · {SelectedEstimate.Name}» переходит в состояние «В работе»: "
+            + "план остаётся зафиксированным, а фактические затраты будут собираться по актам списания "
+            + "и сравниваться с планом. Вернуть смету в черновик нельзя.",
+            "В работу");
+
+        if (!confirmed) return;
+
+        var number = SelectedEstimate.Number;
+
+        try
+        {
+            await _estimates.StartWorkAsync(SelectedEstimate.Id);
+            _toasts.Success("Смета в работе", $"{number}: план сравнивается с фактом по актам списания");
+            await LoadAsync();
+            await SyncMinStockAsync();
+        }
+        catch (Exception ex)
+        {
+            _toasts.Error("Не удалось отправить смету в работу", ex.Message);
+        }
+    }
+
     /// <summary>Завершённая смета уходит в архив — отдельную вкладку только для чтения.</summary>
     [RelayCommand]
     private async Task ArchiveEstimateAsync()
     {
         if (!CanEdit || SelectedEstimate is null) return;
 
-        if (SelectedEstimate.Status != EstimateStatus.Approved)
+        if (SelectedEstimate.Status is not (EstimateStatus.Approved or EstimateStatus.InWork))
         {
             _toasts.Info("Сначала подтвердите смету",
-                "В архив отправляется только подтверждённая смета — так сохраняется история плана.");
+                "В архив отправляется только утверждённая смета — так сохраняется история плана.");
             return;
         }
 
@@ -654,8 +750,11 @@ public sealed partial class EstimatesViewModel : ViewModelBase
         OnPropertyChanged(nameof(CanEditSelected));
         OnPropertyChanged(nameof(CanConfirmSelected));
         OnPropertyChanged(nameof(CanArchiveSelected));
+        OnPropertyChanged(nameof(CanStartWorkSelected));
         OnPropertyChanged(nameof(IsSelectedFixed));
+        OnPropertyChanged(nameof(IsSelectedInWork));
         OnPropertyChanged(nameof(StatusHint));
+        OnPropertyChanged(nameof(PlanFactHint));
     }
 
     private void UpdateTotals()
@@ -663,6 +762,12 @@ public sealed partial class EstimatesViewModel : ViewModelBase
         OnPropertyChanged(nameof(CanConfirmSelected));
         OnPropertyChanged(nameof(ItemsTotal));
         OnPropertyChanged(nameof(ItemsTotalDisplay));
+        OnPropertyChanged(nameof(ActualCost));
+        OnPropertyChanged(nameof(ActualCostDisplay));
+        OnPropertyChanged(nameof(DeviationAmount));
+        OnPropertyChanged(nameof(DeviationDisplay));
+        OnPropertyChanged(nameof(DeviationPercentDisplay));
+        OnPropertyChanged(nameof(DeviationLevel));
         OnPropertyChanged(nameof(ItemsCount));
         OnPropertyChanged(nameof(HasItems));
         OnPropertyChanged(nameof(IsItemsEmpty));

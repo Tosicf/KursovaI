@@ -420,7 +420,7 @@
             </Grid>
 
             <StackPanel Margin="0,16,0,0">
-                <TextBlock Text="Номер ТТН" Style="{StaticResource FieldLabel}" />
+                <TextBlock Text="Номер счёта-фактуры" Style="{StaticResource FieldLabel}" />
                 <TextBox Text="{Binding InvoiceNumber, UpdateSourceTrigger=PropertyChanged}" />
             </StackPanel>
 

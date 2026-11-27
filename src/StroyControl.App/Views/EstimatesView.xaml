@@ -208,6 +208,15 @@
                                     <TextBlock Text="Подтвердить" Margin="6,0,0,0" VerticalAlignment="Center" />
                                 </StackPanel>
                             </Button>
+                            <Button Style="{StaticResource SecondaryButton}" Height="36" Command="{Binding StartWorkCommand}"
+                                    IsEnabled="{Binding CanStartWorkSelected}" Margin="0,0,8,0"
+                                    ToolTip="Смета утверждена: перевести её в работу, где план сравнивается с фактическими затратами">
+                                <StackPanel Orientation="Horizontal">
+                                    <Path Data="{StaticResource IconCheck}" Stroke="{DynamicResource InfoBrush}" StrokeThickness="2"
+                                          Width="14" Height="14" Stretch="Uniform" VerticalAlignment="Center" />
+                                    <TextBlock Text="В работу" Margin="6,0,0,0" VerticalAlignment="Center" />
+                                </StackPanel>
+                            </Button>
                             <Button Style="{StaticResource SecondaryButton}" Height="36" Command="{Binding ArchiveEstimateCommand}"
                                     IsEnabled="{Binding CanArchiveSelected}" Margin="0,0,8,0"
                                     ToolTip="Работы завершены: подтверждённая смета переносится во вкладку «Архив» (только чтение)">
@@ -230,35 +239,60 @@
                         </StackPanel>
                     </Grid>
 
-                    <!-- Сводка по смете -->
+                    <!-- Сводка по смете: план, факт и отклонение -->
                     <Border Grid.Row="1" Background="{DynamicResource SurfaceAltBrush}" Padding="20,12" Margin="0,0,0,4">
+                        <StackPanel>
                         <Grid>
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*" />
                                 <ColumnDefinition Width="*" />
                                 <ColumnDefinition Width="*" />
                                 <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="Auto" />
                             </Grid.ColumnDefinitions>
 
+                            <!-- План: сумма сметы. После подтверждения она не меняется — факт сравнивается именно с ней. -->
                             <StackPanel>
-                                <TextBlock Text="Плановая стоимость" Style="{StaticResource Caption}" FontSize="11" />
+                                <TextBlock Text="План по смете" Style="{StaticResource Caption}" FontSize="11" />
                                 <TextBlock Text="{Binding ItemsTotalDisplay}" FontWeight="SemiBold" FontSize="15" Margin="0,3,0,0" />
                             </StackPanel>
+
+                            <!-- Факт: сумма актов списания, привязанных к этой смете -->
                             <StackPanel Grid.Column="1">
-                                <TextBlock Text="Позиций в смете" Style="{StaticResource Caption}" FontSize="11" />
+                                <TextBlock Text="Фактические затраты" Style="{StaticResource Caption}" FontSize="11" />
+                                <TextBlock Text="{Binding ActualCostDisplay}" FontWeight="SemiBold" FontSize="15" Margin="0,3,0,0" />
+                            </StackPanel>
+
+                            <StackPanel Grid.Column="2">
+                                <TextBlock Text="Отклонение факта от плана" Style="{StaticResource Caption}" FontSize="11" />
+                                <StackPanel Orientation="Horizontal" Margin="0,3,0,0">
+                                    <TextBlock Text="{Binding DeviationDisplay}" FontWeight="SemiBold" FontSize="15"
+                                               Foreground="{Binding DeviationLevel, Converter={StaticResource SeverityToBrush}}" />
+                                    <Border Style="{StaticResource Badge}" Margin="8,0,0,0" Padding="8,2" VerticalAlignment="Center"
+                                            Background="{Binding DeviationLevel, Converter={StaticResource SeverityToBrush}, ConverterParameter=background}">
+                                        <TextBlock Text="{Binding DeviationPercentDisplay}" FontSize="10.5" FontWeight="SemiBold"
+                                                   Foreground="{Binding DeviationLevel, Converter={StaticResource SeverityToBrush}}" />
+                                    </Border>
+                                </StackPanel>
+                            </StackPanel>
+
+                            <StackPanel Grid.Column="3" Margin="16,0,0,0">
+                                <TextBlock Text="Позиций" Style="{StaticResource Caption}" FontSize="11" />
                                 <TextBlock Text="{Binding ItemsCount}" FontWeight="SemiBold" FontSize="15" Margin="0,3,0,0" />
                             </StackPanel>
-                            <StackPanel Grid.Column="2">
-                                <TextBlock Text="Объект" Style="{StaticResource Caption}" FontSize="11" />
-                                <TextBlock Text="{Binding SelectedEstimate.ProjectName, TargetNullValue=—}" FontWeight="SemiBold"
-                                           FontSize="13" Margin="0,3,0,0" TextTrimming="CharacterEllipsis" />
-                            </StackPanel>
-                            <Border Grid.Column="3" Style="{StaticResource Badge}" VerticalAlignment="Center"
+
+                            <Border Grid.Column="4" Style="{StaticResource Badge}" VerticalAlignment="Center" Margin="16,0,0,0"
                                     Background="{Binding SelectedEstimate.Status, Converter={StaticResource EstimateStatusToBrush}, ConverterParameter=background}">
                                 <TextBlock Text="{Binding SelectedEstimate.StatusDisplay}" FontSize="10.5" FontWeight="SemiBold"
                                            Foreground="{Binding SelectedEstimate.Status, Converter={StaticResource EstimateStatusToBrush}}" />
                             </Border>
                         </Grid>
+
+                        <!-- Пояснение жизненного цикла: черновик → утверждение → работа (план сравнивается с фактом) -->
+                        <TextBlock Text="{Binding PlanFactHint}" Style="{StaticResource Caption}" FontSize="11"
+                                   Foreground="{DynamicResource TextMutedBrush}" Margin="0,10,0,0"
+                                   TextTrimming="CharacterEllipsis" />
+                        </StackPanel>
                     </Border>
 
                     <!-- Позиции -->

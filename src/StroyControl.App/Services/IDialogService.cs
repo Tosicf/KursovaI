@@ -43,8 +43,11 @@ public interface IDialogService
     /// <summary>Показывает отчёт по смете (печать, Excel, CSV).</summary>
     void ShowEstimateReport(Estimate estimate);
 
-    /// <summary>Предпросмотр и печать товарного чека по поступлению материалов.</summary>
+    /// <summary>Предпросмотр и печать счёта-фактуры по поступлению материалов.</summary>
     void ShowPurchaseReceipt(Delivery delivery);
+
+    /// <summary>Предпросмотр и печать акта списания материалов.</summary>
+    void ShowUsageAct(MaterialUsage usage);
 
     /// <summary>Печатный отчёт по анализу отклонений: предпросмотр, печать, CSV и PDF.</summary>
     void ShowDeviationReport(DeviationReport report);

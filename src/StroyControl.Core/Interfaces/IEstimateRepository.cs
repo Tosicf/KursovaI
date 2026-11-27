@@ -26,6 +26,12 @@ public interface IEstimateRepository : IRepository<Estimate>
     /// </summary>
     Task ConfirmAsync(int estimateId, CancellationToken cancellationToken = default);
 
-    /// <summary>Отправляет подтверждённую смету в архив после завершения работ.</summary>
+    /// <summary>
+    /// Переводит утверждённую смету в работу: план зафиксирован, по актам списания
+    /// собирается факт и сравнивается с плановой стоимостью.
+    /// </summary>
+    Task StartWorkAsync(int estimateId, CancellationToken cancellationToken = default);
+
+    /// <summary>Отправляет смету в архив после завершения работ.</summary>
     Task ArchiveAsync(int estimateId, CancellationToken cancellationToken = default);
 }

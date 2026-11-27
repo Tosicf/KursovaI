@@ -14,6 +14,8 @@ public sealed class EstimateStatusToBrushConverter : IValueConverter
     private static readonly Brush ReviewBackground = new SolidColorBrush(Color.FromRgb(0xFE, 0xF3, 0xE2));
     private static readonly Brush ApprovedForeground = new SolidColorBrush(Color.FromRgb(0x16, 0xA3, 0x4A));
     private static readonly Brush ApprovedBackground = new SolidColorBrush(Color.FromRgb(0xE7, 0xF8, 0xEF));
+    private static readonly Brush InWorkForeground = new SolidColorBrush(Color.FromRgb(0x1D, 0x4E, 0xD8));
+    private static readonly Brush InWorkBackground = new SolidColorBrush(Color.FromRgb(0xE8, 0xF0, 0xFE));
     private static readonly Brush ArchivedForeground = new SolidColorBrush(Color.FromRgb(0x7C, 0x3A, 0xED));
     private static readonly Brush ArchivedBackground = new SolidColorBrush(Color.FromRgb(0xF1, 0xEB, 0xFE));
 
@@ -25,6 +27,7 @@ public sealed class EstimateStatusToBrushConverter : IValueConverter
             EstimateStatus.Draft => background ? DraftBackground : DraftForeground,
             EstimateStatus.OnReview => background ? ReviewBackground : ReviewForeground,
             EstimateStatus.Approved => background ? ApprovedBackground : ApprovedForeground,
+            EstimateStatus.InWork => background ? InWorkBackground : InWorkForeground,
             _ => background ? ArchivedBackground : ArchivedForeground
         };
     }

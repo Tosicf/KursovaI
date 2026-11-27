@@ -5,7 +5,7 @@ using StroyControl.Core.Entities;
 namespace StroyControl.Core.Services;
 
 /// <summary>
-/// Товарный чек в табличных форматах: Excel (.xlsx) и CSV. Состав тот же, что в
+/// Счёт-фактура в табличных форматах: Excel (.xlsx) и CSV. Состав тот же, что в
 /// печатной форме: реквизиты, основание, позиции, итог. Нужен, чтобы чек можно было
 /// сохранить не только в PDF и отправить поставщику или бухгалтерии.
 /// </summary>
@@ -67,7 +67,7 @@ public sealed class ReceiptExporter
         ArgumentNullException.ThrowIfNull(delivery);
 
         var sb = new StringBuilder();
-        sb.AppendLine("Товарный чек");
+        sb.AppendLine("Счёт-фактура");
         sb.AppendLine($"Продавец;{Esc(organization)}");
         sb.AppendLine($"Покупатель;{Esc(delivery.ProjectName)}");
         sb.AppendLine($"Документ;{Esc(delivery.Number)};{delivery.DateDisplay}");

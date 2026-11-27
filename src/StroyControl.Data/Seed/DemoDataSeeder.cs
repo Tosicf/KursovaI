@@ -630,6 +630,7 @@ public static class DemoDataSeeder
                 Note = status switch
                 {
                     EstimateStatus.Approved => "Утверждена заказчиком.",
+                    EstimateStatus.InWork => "Утверждена и передана в работу: план сравнивается с фактом.",
                     EstimateStatus.Archived => "Работы завершены, документ перенесён в архив.",
                     _ => null
                 }
@@ -673,7 +674,7 @@ public static class DemoDataSeeder
         // как документы группируются по периодам, а не сваливаются в один список.
         return new List<Estimate>
         {
-            Create("ОБ-2025-01", "СМ-01/25", "Смета на общестроительные работы", today.AddMonths(-11), EstimateStatus.Approved,
+            Create("ОБ-2025-01", "СМ-01/25", "Смета на общестроительные работы", today.AddMonths(-11), EstimateStatus.InWork,
                 ("ЦЕМ-500", "Фундамент", 24000m),
                 ("АРМ-500-12", "Фундамент", 185000m),
                 ("БЕТ-B25", "Фундамент", 3200m),
@@ -935,7 +936,7 @@ public static class DemoDataSeeder
                 Date = date,
                 SupplierId = material.SupplierId ?? suppliers[0].Id,
                 ProjectId = project?.Id,
-                InvoiceNumber = $"ТТН-{random.Next(100000, 999999)}",
+                InvoiceNumber = $"СФ-{random.Next(100000, 999999)}",
                 Note = "Ввод остатков и плановая поставка по договору.",
                 Items =
                 {
@@ -958,7 +959,7 @@ public static class DemoDataSeeder
                 Date = date,
                 SupplierId = material.SupplierId ?? suppliers[0].Id,
                 ProjectId = project.Id,
-                InvoiceNumber = $"ТТН-{random.Next(100000, 999999)}",
+                InvoiceNumber = $"СФ-{random.Next(100000, 999999)}",
                 Note = null,
                 Items =
                 {

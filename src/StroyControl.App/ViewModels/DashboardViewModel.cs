@@ -161,7 +161,7 @@ public sealed partial class DashboardViewModel : ViewModelBase
             _toasts.Success("Поступление оформлено", $"{saved.Number} · {saved.ItemsCount} поз. · {saved.Total:N2} BYN");
             await LoadAsync();
 
-            // Товарный чек по сохранённой накладной: печать, PDF или закрыть.
+            // Счёт-фактура по сохранённой накладной: печать, PDF или закрыть.
             var full = await _deliveries.GetWithItemsAsync(saved.Id) ?? saved;
             _dialogs.ShowPurchaseReceipt(full);
         }

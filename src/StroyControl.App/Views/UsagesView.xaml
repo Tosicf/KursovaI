@@ -30,6 +30,14 @@
                         <TextBlock Text="Обновить" Margin="8,0,0,0" VerticalAlignment="Center" />
                     </StackPanel>
                 </Button>
+                <Button Style="{StaticResource SecondaryButton}" Command="{Binding PrintActCommand}" Margin="0,0,10,0"
+                        ToolTip="Акт списания по выбранной строке: предпросмотр и печать">
+                    <StackPanel Orientation="Horizontal">
+                        <Path Data="{StaticResource IconReport}" Stroke="{DynamicResource TextSecondaryBrush}" StrokeThickness="1.7"
+                              Width="15" Height="15" Stretch="Uniform" VerticalAlignment="Center" />
+                        <TextBlock Text="Акт списания" Margin="8,0,0,0" VerticalAlignment="Center" />
+                    </StackPanel>
+                </Button>
                 <Button Style="{StaticResource PrimaryButton}" Command="{Binding AddCommand}" IsEnabled="{Binding CanEdit}">
                     <StackPanel Orientation="Horizontal">
                         <Path Data="{StaticResource IconOutgoing}" Stroke="White" StrokeThickness="1.9"
@@ -95,6 +103,10 @@
                                       Command="{Binding PlacementTarget.DataContext.DeleteCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
                                   CommandParameter="{Binding PlacementTarget.SelectedItem, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
                                   IsEnabled="{Binding PlacementTarget.DataContext.CanEdit, RelativeSource={RelativeSource AncestorType=ContextMenu}}" />
+                            <Separator />
+                            <MenuItem Header="Печать акта списания…"
+                                      Command="{Binding PlacementTarget.DataContext.PrintActCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
+                                      CommandParameter="{Binding PlacementTarget.SelectedItem, RelativeSource={RelativeSource AncestorType=ContextMenu}}" />
                             <Separator />
                             <MenuItem Header="Добавить"
                                       Command="{Binding PlacementTarget.DataContext.AddCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
