@@ -379,6 +379,91 @@ IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = N'IX_material_usages_Creat
 GO
 
 -- ---------------------------------------------------------------------
+-- 9а. Учёт фактических работ: акт выполненных работ и его связь со складом
+--     Строки материалов акта — это обычные списания material_usages, поэтому
+--     склад, отчёт об отклонениях и KPI считаются без дублирования формул.
+-- ---------------------------------------------------------------------
+IF COL_LENGTH('dbo.material_usages', 'EstimateItemId') IS NULL
+    ALTER TABLE dbo.material_usages ADD EstimateItemId INT NULL;
+GO
+
+IF COL_LENGTH('dbo.material_usages', 'WorkCompletionId') IS NULL
+    ALTER TABLE dbo.material_usages ADD WorkCompletionId INT NULL;
+GO
+
+IF OBJECT_ID(N'dbo.work_completions', N'U') IS NULL
+CREATE TABLE dbo.work_completions (
+    Id              INT            IDENTITY (1,1) NOT NULL,
+    RowVersion      INT            NOT NULL CONSTRAINT DF_work_completions_RowVersion DEFAULT 1,
+    CreatedAt       DATETIME2(6)   NOT NULL,
+    UpdatedAt       DATETIME2(6)   NULL,
+    EstimateId      INT            NOT NULL,
+    ProjectId       INT            NOT NULL,
+    [Date]          DATETIME2(6)   NOT NULL,
+    DocumentNumber  NVARCHAR(32)   NOT NULL,
+    Note            NVARCHAR(500)  NULL,
+    CreatedByUserId INT            NULL,
+    CONSTRAINT PK_work_completions PRIMARY KEY (Id),
+    CONSTRAINT FK_work_completions_estimates FOREIGN KEY (EstimateId)
+        REFERENCES dbo.estimates (Id) ON DELETE CASCADE,
+    CONSTRAINT FK_work_completions_projects FOREIGN KEY (ProjectId)
+        REFERENCES dbo.projects (Id) ON DELETE NO ACTION,
+    CONSTRAINT FK_work_completions_users FOREIGN KEY (CreatedByUserId)
+        REFERENCES dbo.users (Id) ON DELETE SET NULL
+);
+GO
+
+IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = N'IX_work_completions_DocumentNumber' AND object_id = OBJECT_ID(N'dbo.work_completions'))
+    CREATE UNIQUE INDEX IX_work_completions_DocumentNumber ON dbo.work_completions (DocumentNumber);
+GO
+
+IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = N'IX_work_completions_Date' AND object_id = OBJECT_ID(N'dbo.work_completions'))
+    CREATE INDEX IX_work_completions_Date ON dbo.work_completions ([Date]);
+GO
+
+IF OBJECT_ID(N'dbo.work_completion_items', N'U') IS NULL
+CREATE TABLE dbo.work_completion_items (
+    Id               INT            IDENTITY (1,1) NOT NULL,
+    RowVersion       INT            NOT NULL CONSTRAINT DF_work_completion_items_RowVersion DEFAULT 1,
+    CreatedAt        DATETIME2(6)   NOT NULL,
+    UpdatedAt        DATETIME2(6)   NULL,
+    WorkCompletionId INT            NOT NULL,
+    EstimateItemId   INT            NOT NULL,
+    Quantity         DECIMAL(18,3)  NOT NULL,
+    UnitPrice        DECIMAL(18,2)  NOT NULL,
+    CONSTRAINT PK_work_completion_items PRIMARY KEY (Id),
+    CONSTRAINT FK_work_completion_items_work_completions FOREIGN KEY (WorkCompletionId)
+        REFERENCES dbo.work_completions (Id) ON DELETE CASCADE,
+    CONSTRAINT FK_work_completion_items_estimate_items FOREIGN KEY (EstimateItemId)
+        REFERENCES dbo.estimate_items (Id) ON DELETE NO ACTION
+);
+GO
+
+IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = N'IX_work_completion_items_WorkCompletionId' AND object_id = OBJECT_ID(N'dbo.work_completion_items'))
+    CREATE INDEX IX_work_completion_items_WorkCompletionId ON dbo.work_completion_items (WorkCompletionId);
+GO
+
+IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = N'IX_work_completion_items_EstimateItemId' AND object_id = OBJECT_ID(N'dbo.work_completion_items'))
+    CREATE INDEX IX_work_completion_items_EstimateItemId ON dbo.work_completion_items (EstimateItemId);
+GO
+
+IF NOT EXISTS (SELECT 1 FROM sys.foreign_keys WHERE name = N'FK_material_usages_estimate_items')
+    ALTER TABLE dbo.material_usages WITH CHECK
+        ADD CONSTRAINT FK_material_usages_estimate_items FOREIGN KEY (EstimateItemId)
+            REFERENCES dbo.estimate_items (Id) ON DELETE SET NULL;
+GO
+
+IF NOT EXISTS (SELECT 1 FROM sys.foreign_keys WHERE name = N'FK_material_usages_work_completions')
+    ALTER TABLE dbo.material_usages WITH CHECK
+        ADD CONSTRAINT FK_material_usages_work_completions FOREIGN KEY (WorkCompletionId)
+            REFERENCES dbo.work_completions (Id) ON DELETE SET NULL;
+GO
+
+IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = N'IX_material_usages_WorkCompletionId' AND object_id = OBJECT_ID(N'dbo.material_usages'))
+    CREATE INDEX IX_material_usages_WorkCompletionId ON dbo.material_usages (WorkCompletionId);
+GO
+
+-- ---------------------------------------------------------------------
 -- 10. Представления для отчётов (те же формулы, что считает приложение)
 --     В T-SQL каждое представление должно быть первым оператором пакета,
 --     поэтому перед каждым CREATE VIEW стоит GO.

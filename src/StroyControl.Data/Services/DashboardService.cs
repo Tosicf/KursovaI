@@ -34,7 +34,13 @@ public sealed class DashboardService : IDashboardService
 
         var projects = await db.Projects.AsNoTracking().ToListAsync(cancellationToken);
         var materials = await db.Materials.AsNoTracking().Include(m => m.Supplier).ToListAsync(cancellationToken);
-        var estimates = await db.Estimates.AsNoTracking().Include(e => e.Items).ToListAsync(cancellationToken);
+        // Действующая смета — только та, что передана в работу: черновик, смета на
+        // проверке, утверждённая без запуска и архивная в KPI и на панели не участвуют.
+        var estimates = await db.Estimates
+            .AsNoTracking()
+            .Where(e => e.Status == EstimateStatus.InWork)
+            .Include(e => e.Items)
+            .ToListAsync(cancellationToken);
         var deliveries = await db.Deliveries
             .AsNoTracking()
             .Include(d => d.Supplier)
@@ -46,11 +52,21 @@ public sealed class DashboardService : IDashboardService
             .Include(u => u.Project)
             .ToListAsync(cancellationToken);
 
+        // Работы учитываются в фактических затратах так же, как материалы: акт
+        // выполненных работ по смете в работе даёт стоимость выполненных работ.
+        var completions = await db.WorkCompletions
+            .AsNoTracking()
+            .Where(c => c.Estimate != null && c.Estimate.Status == EstimateStatus.InWork)
+            .Include(c => c.Project)
+            .Include(c => c.Items)
+            .ToListAsync(cancellationToken);
+
         var filter = period ?? PeriodFilter.All;
         var periodEnd = filter.End;
 
         // Операции выбранного периода: по ним считаются структура затрат, лента и диаграмма.
         var usagesInPeriod = usages.Where(u => filter.Contains(u.Date)).ToList();
+        var completionsInPeriod = completions.Where(c => filter.Contains(c.Date)).ToList();
         var deliveriesInPeriod = deliveries.Where(d => filter.Contains(d.Date)).ToList();
 
         // Исполнение бюджета объекта считается накопленным итогом по конец периода,
@@ -70,6 +86,14 @@ public sealed class DashboardService : IDashboardService
         var actualByProject = usagesToDate
             .GroupBy(u => u.ProjectId)
             .ToDictionary(g => g.Key, g => g.Sum(u => u.Quantity * u.UnitPrice));
+
+        // Стоимость выполненных работ добавляется к фактическим затратам объекта.
+        var completionsToDate = periodEnd is null
+            ? completions
+            : completions.Where(c => c.Date <= periodEnd.Value).ToList();
+
+        foreach (var group in completionsToDate.GroupBy(c => c.ProjectId))
+            actualByProject[group.Key] = actualByProject.GetValueOrDefault(group.Key) + group.Sum(c => c.WorksCost);
 
         // Месяц объекта — месяц его последней операции (смета, поступление, списание),
         // а если операций ещё нет — месяц начала работ.
@@ -123,6 +147,7 @@ public sealed class DashboardService : IDashboardService
         }
 
         foreach (var usage in usages) Remember(usage.ProjectId, usage.Date);
+        foreach (var completion in completions) Remember(completion.ProjectId, completion.Date);
         foreach (var estimate in estimates) Remember(estimate.ProjectId, estimate.Date);
 
         foreach (var delivery in deliveries)
@@ -173,6 +198,11 @@ public sealed class DashboardService : IDashboardService
                 $"Списание · {u.Material?.Name ?? "материал"}",
                 $"{u.Project?.Name ?? "—"} · {u.Quantity:N2} {u.Material?.UnitDisplay} · {u.DocumentNumber}",
                 "usage"))
+            .Concat(completionsInPeriod.Select(c => new ActivityItem(
+                c.Date,
+                $"Акт работ · {c.DocumentNumber}",
+                $"{c.Project?.Name ?? "—"} · {c.ItemsCount} поз. · {c.WorksCost:N2} BYN",
+                "delivery")))
             .Concat(deliveriesInPeriod.Select(d => new ActivityItem(
                 d.Date,
                 $"Поступление · {d.Number}",
@@ -189,20 +219,29 @@ public sealed class DashboardService : IDashboardService
             .Take(6)
             .ToList();
 
-        var categories = BuildCategorySeries(usagesInPeriod
+        var categoryCosts = usagesInPeriod
             .Select(u => (Category: string.IsNullOrWhiteSpace(u.Material?.Category) ? "Прочее" : u.Material!.Category,
                           Cost: u.Quantity * u.UnitPrice))
-            .ToList());
+            .ToList();
+
+        // Работы — отдельная статья структуры затрат, рядом с категориями материалов.
+        if (completionsInPeriod.Count > 0)
+            categoryCosts.Add(("Работы", completionsInPeriod.Sum(c => c.WorksCost)));
+
+        var categories = BuildCategorySeries(categoryCosts);
 
         // Окно графика следует за периодом: месяц — последние полгода, год — все его
         // месяцы, «всё время» — от первого документа до последнего (не больше двух лет).
         var monthly = BuildMonthlySeries(
-            usages.Select(u => (u.Date, Cost: u.Quantity * u.UnitPrice)).ToList(),
+            usages.Select(u => (u.Date, Cost: u.Quantity * u.UnitPrice))
+                .Concat(completions.Select(c => (c.Date, Cost: c.WorksCost)))
+                .ToList(),
             filter);
 
         // Список месяцев для выпадающего фильтра — по всем документам, независимо от выбранного периода.
         var periodMonths = usages.Select(u => (DateTime?)u.Date)
             .Concat(deliveries.Select(d => (DateTime?)d.Date))
+            .Concat(completions.Select(c => (DateTime?)c.Date))
             .Concat(estimates.Select(e => (DateTime?)e.Date))
             .Where(d => d.HasValue)
             .Select(d => MonthPeriod.Start(d!.Value))

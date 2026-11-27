@@ -31,6 +31,10 @@
         <views:UsagesView />
     </DataTemplate>
 
+    <DataTemplate DataType="{x:Type vm:WorkCompletionsViewModel}">
+        <views:WorkCompletionsView />
+    </DataTemplate>
+
     <DataTemplate DataType="{x:Type vm:DeviationsViewModel}">
         <views:DeviationsView />
     </DataTemplate>

@@ -58,8 +58,10 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IEstimateRepository, EstimateRepository>();
         services.AddSingleton<IDeliveryRepository, DeliveryRepository>();
         services.AddSingleton<IUsageRepository, UsageRepository>();
+        services.AddSingleton<IWorkCompletionRepository, WorkCompletionRepository>();
 
         services.AddSingleton<IInventoryService, InventoryService>();
+        services.AddSingleton<IWorkCompletionService, WorkCompletionService>();
         services.AddSingleton<IDeviationService, DeviationService>();
         services.AddSingleton<IMinStockService, MinStockService>();
         services.AddSingleton<IDashboardService, DashboardService>();

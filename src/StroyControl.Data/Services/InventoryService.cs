@@ -2,6 +2,7 @@ using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
 using StroyControl.Core.Entities;
+using StroyControl.Core.Enums;
 using StroyControl.Core.Exceptions;
 using StroyControl.Core.Interfaces;
 
@@ -157,6 +158,7 @@ public sealed class InventoryService : IInventoryService
     private static async Task<MaterialUsage> CreateUsageAsyncCore(MaterialUsage usage, AppDbContext db, IDbContextTransaction? transaction, CancellationToken cancellationToken)
     {
         ValidateUsage(usage);
+        await EnsureEstimateInWorkAsync(db, usage.EstimateId, cancellationToken);
 
         try
         {
@@ -197,11 +199,17 @@ public sealed class InventoryService : IInventoryService
     private static async Task UpdateUsageAsyncCore(MaterialUsage usage, AppDbContext db, IDbContextTransaction? transaction, CancellationToken cancellationToken)
     {
         ValidateUsage(usage);
+        await EnsureEstimateInWorkAsync(db, usage.EstimateId, cancellationToken);
 
         try
         {
             var existing = await db.MaterialUsages.FirstOrDefaultAsync(u => u.Id == usage.Id, cancellationToken)
                            ?? throw new AppException("Списание не найдено: возможно, оно удалено другим пользователем.");
+
+            // Списание, созданное актом выполненных работ, меняется вместе с актом:
+            // иначе сумма акта перестала бы совпадать со складом.
+            if (existing.WorkCompletionId is not null)
+                throw new AppException("Списание создано актом выполненных работ: измените сам акт, чтобы остатки и суммы совпадали.");
 
             var oldMaterial = await db.Materials.FirstOrDefaultAsync(m => m.Id == existing.MaterialId, cancellationToken)
                               ?? throw new AppException("Материал не найден.");
@@ -242,6 +250,9 @@ public sealed class InventoryService : IInventoryService
             var usage = await db.MaterialUsages.FirstOrDefaultAsync(u => u.Id == usageId, cancellationToken)
                         ?? throw new AppException("Списание не найдено.");
 
+            if (usage.WorkCompletionId is not null)
+                throw new AppException("Списание создано актом выполненных работ: удалите акт, чтобы материал вернулся на склад.");
+
             var material = await db.Materials.FirstOrDefaultAsync(m => m.Id == usage.MaterialId, cancellationToken);
             if (material is not null) material.StockQuantity += usage.Quantity;
 
@@ -254,6 +265,37 @@ public sealed class InventoryService : IInventoryService
             if (transaction is not null) await transaction.RollbackAsync(cancellationToken);
             throw new AppException("Не удалось удалить списание материала.", ex);
         }
+    }
+
+    /// <summary>
+    /// Факт учитывается только по смете в состоянии «В работе». Проверка выполняется
+    /// по базе перед сохранением, поэтому правило нельзя обойти из интерфейса.
+    /// </summary>
+    private static async Task EnsureEstimateInWorkAsync(
+        AppDbContext db,
+        int? estimateId,
+        CancellationToken cancellationToken)
+    {
+        if (estimateId is null) return;
+
+        var status = await db.Estimates
+            .AsNoTracking()
+            .Where(e => e.Id == estimateId.Value)
+            .Select(e => (EstimateStatus?)e.Status)
+            .FirstOrDefaultAsync(cancellationToken);
+
+        if (status is null)
+            throw new AppException("Смета не найдена: выберите смету заново.");
+
+        if (status == EstimateStatus.InWork) return;
+
+        throw new AppException(status switch
+        {
+            EstimateStatus.Archived => "Смета в архиве: фактические затраты по ней больше не учитываются.",
+            EstimateStatus.Draft => "Смета ещё черновик: сначала утвердите её и переведите в работу.",
+            EstimateStatus.OnReview => "Смета на проверке: дождитесь утверждения и перевода в работу.",
+            _ => "Смета не в работе: нажмите «В работу», чтобы учитывать фактические затраты."
+        });
     }
 
     private static void ValidateUsage(MaterialUsage usage)

@@ -24,7 +24,9 @@ public sealed class MinStockService : IMinStockService
         var items = db.EstimateItems
             .AsNoTracking()
             .Where(i => !i.IsWork && i.MaterialId != null)
-            .Where(i => i.Estimate != null && i.Estimate.Status != EstimateStatus.Archived);
+            // Потребность считаем только по сметам в работе: черновик и смета на
+            // проверке ещё могут измениться, архивная — уже выполнена.
+            .Where(i => i.Estimate != null && i.Estimate.Status == EstimateStatus.InWork);
 
         if (projectId.HasValue)
             items = items.Where(i => i.Estimate!.ProjectId == projectId.Value);

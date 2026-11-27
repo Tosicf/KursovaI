@@ -34,6 +34,16 @@ public sealed class MaterialUsageConfiguration : IEntityTypeConfiguration<Materi
             .HasForeignKey(u => u.EstimateId)
             .OnDelete(DeleteBehavior.SetNull);
 
+        builder.HasOne(u => u.EstimateItem)
+            .WithMany()
+            .HasForeignKey(u => u.EstimateItemId)
+            .OnDelete(DeleteBehavior.SetNull);
+
+        builder.HasOne(u => u.WorkCompletion)
+            .WithMany(c => c.MaterialUsages)
+            .HasForeignKey(u => u.WorkCompletionId)
+            .OnDelete(DeleteBehavior.SetNull);
+
         builder.HasOne(u => u.CreatedBy)
             .WithMany()
             .HasForeignKey(u => u.CreatedByUserId)

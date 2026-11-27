@@ -21,7 +21,9 @@ GO
 DROP VIEW IF EXISTS dbo.v_estimate_plan;
 GO
 
+DROP TABLE IF EXISTS dbo.work_completion_items;
 DROP TABLE IF EXISTS dbo.material_usages;
+DROP TABLE IF EXISTS dbo.work_completions;
 DROP TABLE IF EXISTS dbo.delivery_items;
 DROP TABLE IF EXISTS dbo.deliveries;
 DROP TABLE IF EXISTS dbo.estimate_items;
