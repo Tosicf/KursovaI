@@ -186,7 +186,8 @@ public sealed partial class WorkCompletionsViewModel : ViewModelBase
         }
 
         var entity = _dialogs.EditWorkCompletion(
-            null, Estimates, Materials, _session.CurrentUser?.Id, template?.EstimateId);
+            null, Estimates, Materials, _session.CurrentUser?.Id, template?.EstimateId,
+            usedNumbers: await SafeNumbersAsync());
         if (entity is null) return;
 
         AttachReferences(entity);
@@ -218,7 +219,9 @@ public sealed partial class WorkCompletionsViewModel : ViewModelBase
         var target = completion ?? SelectedCompletion;
         if (!CanEdit || target is null) return;
 
-        var updated = _dialogs.EditWorkCompletion(target, Estimates, Materials, _session.CurrentUser?.Id);
+        var updated = _dialogs.EditWorkCompletion(
+            target, Estimates, Materials, _session.CurrentUser?.Id,
+            usedNumbers: await SafeNumbersAsync());
         if (updated is null) return;
 
         try
@@ -299,6 +302,22 @@ public sealed partial class WorkCompletionsViewModel : ViewModelBase
 
         Period.Reset();
         ApplyFilter();
+    }
+
+    /// <summary>
+    /// Номера сохранённых актов для подбора свободного номера. Если запрос не удался,
+    /// форма всё равно откроется — номер можно ввести вручную.
+    /// </summary>
+    private async Task<IReadOnlyList<string>?> SafeNumbersAsync()
+    {
+        try
+        {
+            return await _service.GetNumbersAsync();
+        }
+        catch (Exception)
+        {
+            return null;
+        }
     }
 
     private void AttachReferences(WorkCompletion completion)

@@ -521,6 +521,13 @@ public static class LocaleEn
         ["У позиции нет материала — выберите другую строку."] = "The item has no material — choose another row.",
         ["Факт вводится только по смете в работе."] = "Actuals are entered only for an estimate in work.",
         ["актов"] = "acts",
-        ["В смете нет позиций-работ: факт по работам ввести нельзя. Добавьте работы в смету или выберите другую смету."] = "The estimate has no work items: work actuals cannot be entered. Add works to the estimate or choose another estimate."
+        ["В смете нет позиций-работ: факт по работам ввести нельзя. Добавьте работы в смету или выберите другую смету."] = "The estimate has no work items: work actuals cannot be entered. Add works to the estimate or choose another estimate.",
+        ["Все позиции-работы сметы уже добавлены в акт."] = "All work items of the estimate are already added to the act.",
+        ["Все материалы сметы уже добавлены в акт."] = "All materials of the estimate are already added to the act.",
+        ["Позиция сметы указана в акте дважды: оставьте одну строку."] = "The estimate item is listed twice in the act: keep a single row.",
+        ["Материал указан в акте дважды: оставьте одну строку."] = "The material is listed twice in the act: keep a single row.",
+        ["Каждая позиция сметы добавляется в акт один раз"] = "Each estimate item is added to the act only once",
+        ["Свободный номер подставляется автоматически (АВР-гг-NNNN), можно изменить вручную"] = "A free number is filled in automatically (АВР-yy-NNNN); you can change it manually",
+        ["Номер акта уже используется. Измените номер и повторите сохранение."] = "This act number is already in use. Change the number and try again."
     };
 }

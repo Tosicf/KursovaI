@@ -35,6 +35,16 @@ public sealed class WorkCompletionService : IWorkCompletionService
             (db, transaction, ct) => DeleteAsyncCore(id, db, transaction, ct),
             cancellationToken);
 
+    public async Task<IReadOnlyList<string>> GetNumbersAsync(CancellationToken cancellationToken = default)
+    {
+        await using var db = await _factory.CreateDbContextAsync(cancellationToken);
+
+        return await db.WorkCompletions
+            .AsNoTracking()
+            .Select(c => c.DocumentNumber)
+            .ToListAsync(cancellationToken);
+    }
+
     // ------------------------------------------------------------------
 
     private static async Task<WorkCompletion> CreateAsyncCore(

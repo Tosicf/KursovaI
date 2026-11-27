@@ -528,8 +528,18 @@ public sealed partial class EstimatesViewModel : ViewModelBase
             return;
         }
 
+        IReadOnlyList<string>? usedNumbers = null;
+        try
+        {
+            usedNumbers = await _completionService.GetNumbersAsync();
+        }
+        catch (Exception)
+        {
+            // Список номеров — подсказка для формы: без него акт тоже можно оформить.
+        }
+
         var entity = _dialogs.EditWorkCompletion(
-            null, Estimates, Materials, _session.CurrentUser?.Id, SelectedEstimate.Id, item?.Id);
+            null, Estimates, Materials, _session.CurrentUser?.Id, SelectedEstimate.Id, item?.Id, usedNumbers);
 
         if (entity is null) return;
 
