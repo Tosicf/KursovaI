@@ -34,15 +34,19 @@ public sealed class MaterialUsageConfiguration : IEntityTypeConfiguration<Materi
             .HasForeignKey(u => u.EstimateId)
             .OnDelete(DeleteBehavior.SetNull);
 
+        // SQL Server запрещает две каскадные цепочки к одной таблице: списание уже
+        // связано со сметой (SET NULL), а смета каскадно связана с позициями и актами,
+        // поэтому ссылки на позицию сметы и на акт работ создаются без действий в базе
+        // (NO ACTION). Нужные записи сервисы удаляют явно, в одной транзакции.
         builder.HasOne(u => u.EstimateItem)
             .WithMany()
             .HasForeignKey(u => u.EstimateItemId)
-            .OnDelete(DeleteBehavior.SetNull);
+            .OnDelete(DeleteBehavior.ClientSetNull);
 
         builder.HasOne(u => u.WorkCompletion)
             .WithMany(c => c.MaterialUsages)
             .HasForeignKey(u => u.WorkCompletionId)
-            .OnDelete(DeleteBehavior.SetNull);
+            .OnDelete(DeleteBehavior.ClientSetNull);
 
         builder.HasOne(u => u.CreatedBy)
             .WithMany()

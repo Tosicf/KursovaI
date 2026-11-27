@@ -405,7 +405,7 @@ CREATE TABLE dbo.work_completions (
     CreatedByUserId INT            NULL,
     CONSTRAINT PK_work_completions PRIMARY KEY (Id),
     CONSTRAINT FK_work_completions_estimates FOREIGN KEY (EstimateId)
-        REFERENCES dbo.estimates (Id) ON DELETE CASCADE,
+        REFERENCES dbo.estimates (Id) ON DELETE NO ACTION,
     CONSTRAINT FK_work_completions_projects FOREIGN KEY (ProjectId)
         REFERENCES dbo.projects (Id) ON DELETE NO ACTION,
     CONSTRAINT FK_work_completions_users FOREIGN KEY (CreatedByUserId)
@@ -447,16 +447,32 @@ IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = N'IX_work_completion_items
     CREATE INDEX IX_work_completion_items_EstimateItemId ON dbo.work_completion_items (EstimateItemId);
 GO
 
+-- Ссылки на позицию сметы и на акт работ объявлены без каскада (NO ACTION): к
+-- material_usages уже ведёт цепочка от сметы (EstimateId → SET NULL), а смета
+-- каскадно связана с позициями и актами, поэтому SET NULL даёт ошибку SQL Server 1785
+-- «may cause cycles or multiple cascade paths». Записи удаляют сервисы в транзакции.
+IF EXISTS (SELECT 1 FROM sys.foreign_keys
+           WHERE name = N'FK_material_usages_estimate_items'
+             AND delete_referential_action <> 0)
+    ALTER TABLE dbo.material_usages DROP CONSTRAINT FK_material_usages_estimate_items;
+GO
+
 IF NOT EXISTS (SELECT 1 FROM sys.foreign_keys WHERE name = N'FK_material_usages_estimate_items')
     ALTER TABLE dbo.material_usages WITH CHECK
         ADD CONSTRAINT FK_material_usages_estimate_items FOREIGN KEY (EstimateItemId)
-            REFERENCES dbo.estimate_items (Id) ON DELETE SET NULL;
+            REFERENCES dbo.estimate_items (Id) ON DELETE NO ACTION;
+GO
+
+IF EXISTS (SELECT 1 FROM sys.foreign_keys
+           WHERE name = N'FK_material_usages_work_completions'
+             AND delete_referential_action <> 0)
+    ALTER TABLE dbo.material_usages DROP CONSTRAINT FK_material_usages_work_completions;
 GO
 
 IF NOT EXISTS (SELECT 1 FROM sys.foreign_keys WHERE name = N'FK_material_usages_work_completions')
     ALTER TABLE dbo.material_usages WITH CHECK
         ADD CONSTRAINT FK_material_usages_work_completions FOREIGN KEY (WorkCompletionId)
-            REFERENCES dbo.work_completions (Id) ON DELETE SET NULL;
+            REFERENCES dbo.work_completions (Id) ON DELETE NO ACTION;
 GO
 
 IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = N'IX_material_usages_WorkCompletionId' AND object_id = OBJECT_ID(N'dbo.material_usages'))
