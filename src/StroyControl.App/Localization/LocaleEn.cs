@@ -417,7 +417,7 @@ public static class LocaleEn
         ["Добавьте учётные записи для инженеров, снабженцев и прорабов."] =
             "Add accounts for estimators, procurement staff and foremen.",
         ["Сотрудники не найдены"] = "No employees found",
-        ["Язык интерфейса"] = "Interface language"
+        ["Язык интерфейса"] = "Interface language",
         ["Панель управления"] = "Dashboard",
         ["Материалы"] = "Materials",
         ["Поставщики"] = "Suppliers",
