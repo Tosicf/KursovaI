@@ -21,7 +21,7 @@ public sealed class WorkCompletionService : IWorkCompletionService
     public WorkCompletionService(IDbContextFactory<AppDbContext> factory) => _factory = factory;
 
     public Task<WorkCompletion> CreateAsync(WorkCompletion completion, CancellationToken cancellationToken = default) =>
-        RunInTransactionAsync(
+        ExecuteInTransactionAsync(
             (db, transaction, ct) => CreateAsyncCore(completion, db, transaction, ct),
             cancellationToken);
 
@@ -306,7 +306,22 @@ public sealed class WorkCompletionService : IWorkCompletionService
         return materials.ToDictionary(m => m.Id);
     }
 
-    private async Task<T> RunInTransactionAsync<T>(
+    /// <summary>
+    /// Транзакция для операции без результата. Отдельный метод нужен потому, что
+    /// лямбда, возвращающая <c>Task</c>, не даёт вывести <c>T</c> у версии с результатом
+    /// (CS0411), а имя с тем же названием делало бы вызовы Update и Delete неоднозначными.
+    /// </summary>
+    private async Task RunInTransactionAsync(
+        Func<AppDbContext, IDbContextTransaction?, CancellationToken, Task> body,
+        CancellationToken cancellationToken) =>
+        await ExecuteInTransactionAsync<bool>(async (db, transaction, ct) =>
+        {
+            await body(db, transaction, ct);
+            return true;
+        }, cancellationToken);
+
+    /// <summary>Транзакция для операции, возвращающей результат.</summary>
+    private async Task<T> ExecuteInTransactionAsync<T>(
         Func<AppDbContext, IDbContextTransaction?, CancellationToken, Task<T>> body,
         CancellationToken cancellationToken)
     {

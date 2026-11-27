@@ -11,9 +11,11 @@ public sealed partial class WorkCompletionWorkDraft : ObservableObject
 {
     public WorkCompletionWorkDraft(EstimateItem? item = null, decimal quantity = 0m, decimal unitPrice = 0m)
     {
-        _estimateItem = item;
-        _quantity = quantity > 0m ? quantity : item?.PlannedQuantity ?? 0m;
-        _unitPrice = unitPrice > 0m ? unitPrice : item?.PlannedUnitPrice ?? 0m;
+        // Поля, сгенерированные из [ObservableProperty], заполняются напрямую: в конструкторе
+        // подписчиков ещё нет, а имена параметров совпадают с именами полей.
+        this.estimateItem = item;
+        this.quantity = quantity > 0m ? quantity : item?.PlannedQuantity ?? 0m;
+        this.unitPrice = unitPrice > 0m ? unitPrice : item?.PlannedUnitPrice ?? 0m;
     }
 
     [ObservableProperty]
@@ -77,10 +79,10 @@ public sealed partial class WorkCompletionMaterialDraft : ObservableObject
         decimal unitPrice = 0m,
         decimal alreadyUsed = 0m)
     {
-        _materialItem = materialItem;
-        _material = material ?? materialItem?.Material;
-        _quantity = quantity > 0m ? quantity : materialItem?.PlannedQuantity ?? 0m;
-        _unitPrice = unitPrice > 0m ? unitPrice : _material?.Price ?? materialItem?.PlannedUnitPrice ?? 0m;
+        this.materialItem = materialItem;
+        this.material = material ?? materialItem?.Material;
+        this.quantity = quantity > 0m ? quantity : materialItem?.PlannedQuantity ?? 0m;
+        this.unitPrice = unitPrice > 0m ? unitPrice : this.material?.Price ?? materialItem?.PlannedUnitPrice ?? 0m;
         _alreadyUsed = alreadyUsed;
     }
 
