@@ -198,6 +198,7 @@ public sealed partial class MainViewModel : ObservableObject
         NavigationItems.Add(CreateItem<EstimatesViewModel>("estimates", L.T("Сметы"), "IconEstimates"));
         NavigationItems.Add(CreateItem<DeliveriesViewModel>("deliveries", L.T("Поступления"), "IconIncoming"));
         NavigationItems.Add(CreateItem<UsagesViewModel>("usages", L.T("Списания"), "IconOutgoing"));
+        NavigationItems.Add(CreateItem<WorkCompletionsViewModel>("work-completions", L.T("Акты работ"), "IconWork"));
         NavigationItems.Add(CreateItem<DeviationsViewModel>("deviations", L.T("Анализ отклонений"), "IconDeviations"));
         NavigationItems.Add(CreateItem<ArchiveViewModel>("archive", L.T("Архив смет"), "IconArchive"));
 

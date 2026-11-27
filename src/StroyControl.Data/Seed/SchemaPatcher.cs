@@ -45,7 +45,77 @@ public static class SchemaPatcher
 
         // Площадь объекта — для стоимости и прибыли на 1 м².
         @"IF COL_LENGTH('dbo.projects', 'TotalArea') IS NULL
-              ALTER TABLE dbo.projects ADD TotalArea DECIMAL(12,2) NOT NULL CONSTRAINT DF_projects_TotalArea DEFAULT 0;"
+              ALTER TABLE dbo.projects ADD TotalArea DECIMAL(12,2) NOT NULL CONSTRAINT DF_projects_TotalArea DEFAULT 0;",
+
+        // Факт по работам: списание материала теперь знает, к какой позиции сметы
+        // и к какому акту выполненных работ оно относится.
+        @"IF COL_LENGTH('dbo.material_usages', 'EstimateItemId') IS NULL
+              ALTER TABLE dbo.material_usages ADD EstimateItemId INT NULL;",
+
+        @"IF COL_LENGTH('dbo.material_usages', 'WorkCompletionId') IS NULL
+              ALTER TABLE dbo.material_usages ADD WorkCompletionId INT NULL;",
+
+        @"IF NOT EXISTS (SELECT 1 FROM sys.foreign_keys
+                        WHERE name = N'FK_material_usages_estimate_items_EstimateItemId'
+                          AND parent_object_id = OBJECT_ID(N'dbo.material_usages'))
+              ALTER TABLE dbo.material_usages WITH CHECK
+                  ADD CONSTRAINT FK_material_usages_estimate_items_EstimateItemId
+                  FOREIGN KEY (EstimateItemId) REFERENCES dbo.estimate_items (Id) ON DELETE SET NULL;",
+
+        // Акт выполненных работ по смете.
+        @"IF OBJECT_ID(N'dbo.work_completions', N'U') IS NULL
+              CREATE TABLE dbo.work_completions (
+                  Id INT IDENTITY(1,1) NOT NULL CONSTRAINT PK_work_completions PRIMARY KEY,
+                  EstimateId INT NOT NULL,
+                  ProjectId INT NOT NULL,
+                  [Date] DATETIME2 NOT NULL,
+                  DocumentNumber NVARCHAR(32) NOT NULL,
+                  Note NVARCHAR(500) NULL,
+                  CreatedByUserId INT NULL,
+                  RowVersion INT NOT NULL CONSTRAINT DF_work_completions_RowVersion DEFAULT 0,
+                  CreatedAt DATETIME2 NOT NULL CONSTRAINT DF_work_completions_CreatedAt DEFAULT SYSUTCDATETIME(),
+                  UpdatedAt DATETIME2 NULL,
+                  CONSTRAINT FK_work_completions_estimates_EstimateId
+                      FOREIGN KEY (EstimateId) REFERENCES dbo.estimates (Id) ON DELETE CASCADE,
+                  CONSTRAINT FK_work_completions_projects_ProjectId
+                      FOREIGN KEY (ProjectId) REFERENCES dbo.projects (Id),
+                  CONSTRAINT FK_work_completions_users_CreatedByUserId
+                      FOREIGN KEY (CreatedByUserId) REFERENCES dbo.users (Id) ON DELETE SET NULL);",
+
+        @"IF NOT EXISTS (SELECT 1 FROM sys.indexes
+                        WHERE name = N'IX_work_completions_DocumentNumber'
+                          AND object_id = OBJECT_ID(N'dbo.work_completions'))
+              CREATE UNIQUE INDEX IX_work_completions_DocumentNumber ON dbo.work_completions (DocumentNumber);",
+
+        @"IF NOT EXISTS (SELECT 1 FROM sys.indexes
+                        WHERE name = N'IX_work_completions_Date'
+                          AND object_id = OBJECT_ID(N'dbo.work_completions'))
+              CREATE INDEX IX_work_completions_Date ON dbo.work_completions ([Date]);",
+
+        // Строки выполненных работ.
+        @"IF OBJECT_ID(N'dbo.work_completion_items', N'U') IS NULL
+              CREATE TABLE dbo.work_completion_items (
+                  Id INT IDENTITY(1,1) NOT NULL CONSTRAINT PK_work_completion_items PRIMARY KEY,
+                  WorkCompletionId INT NOT NULL,
+                  EstimateItemId INT NOT NULL,
+                  Quantity DECIMAL(18,3) NOT NULL,
+                  UnitPrice DECIMAL(18,2) NOT NULL,
+                  RowVersion INT NOT NULL CONSTRAINT DF_work_completion_items_RowVersion DEFAULT 0,
+                  CreatedAt DATETIME2 NOT NULL CONSTRAINT DF_work_completion_items_CreatedAt DEFAULT SYSUTCDATETIME(),
+                  UpdatedAt DATETIME2 NULL,
+                  CONSTRAINT FK_work_completion_items_work_completions_WorkCompletionId
+                      FOREIGN KEY (WorkCompletionId) REFERENCES dbo.work_completions (Id) ON DELETE CASCADE,
+                  CONSTRAINT FK_work_completion_items_estimate_items_EstimateItemId
+                      FOREIGN KEY (EstimateItemId) REFERENCES dbo.estimate_items (Id));",
+
+        // Внешний ключ списаний на акт добавляем после создания таблицы актов.
+        @"IF COL_LENGTH('dbo.material_usages', 'WorkCompletionId') IS NOT NULL
+              AND NOT EXISTS (SELECT 1 FROM sys.foreign_keys
+                              WHERE name = N'FK_material_usages_work_completions_WorkCompletionId'
+                                AND parent_object_id = OBJECT_ID(N'dbo.material_usages'))
+              ALTER TABLE dbo.material_usages WITH CHECK
+                  ADD CONSTRAINT FK_material_usages_work_completions_WorkCompletionId
+                  FOREIGN KEY (WorkCompletionId) REFERENCES dbo.work_completions (Id) ON DELETE SET NULL;"
     };
 
     /// <summary>Применяет недостающие изменения схемы. Для InMemory (демо-режим) ничего не делает.</summary>

@@ -1,5 +1,6 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using StroyControl.Core.Entities;
+using StroyControl.Core.Enums;
 
 namespace StroyControl.App.ViewModels.Editors;
 
@@ -44,10 +45,18 @@ public sealed partial class UsageEditorViewModel : EditorViewModelBase
 
     public int? CurrentUserId { get; }
 
+    /// <summary>
+    /// К списанию предлагаются только сметы объекта в состоянии «В работе»: по черновику,
+    /// смете на проверке или в архиве факт не учитывается. Уже привязанная смета остаётся
+    /// в списке, чтобы старую запись можно было открыть и увидеть её номер.
+    /// </summary>
     public IReadOnlyList<Estimate> FilteredEstimates =>
         SelectedProject is null
             ? Array.Empty<Estimate>()
-            : Estimates.Where(e => e.ProjectId == SelectedProject.Id).ToList();
+            : Estimates
+                .Where(e => e.ProjectId == SelectedProject.Id)
+                .Where(e => e.Status == EstimateStatus.InWork || e.Id == SelectedEstimate?.Id)
+                .ToList();
 
     [ObservableProperty]
     private Project? selectedProject;

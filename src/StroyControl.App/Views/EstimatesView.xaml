@@ -262,6 +262,9 @@
                             <StackPanel Grid.Column="1">
                                 <TextBlock Text="{loc:Tr 'Фактические затраты'}" Style="{StaticResource Caption}" FontSize="11" />
                                 <TextBlock Text="{Binding ActualCostDisplay}" FontWeight="SemiBold" FontSize="15" Margin="0,3,0,0" />
+                                <TextBlock Text="{Binding ActualBreakdownDisplay}" Style="{StaticResource Caption}" FontSize="10.5"
+                                           Foreground="{DynamicResource TextMutedBrush}" Margin="0,2,0,0"
+                                           TextTrimming="CharacterEllipsis" />
                             </StackPanel>
 
                             <StackPanel Grid.Column="2">
@@ -282,11 +285,20 @@
                                 <TextBlock Text="{Binding ItemsCount}" FontWeight="SemiBold" FontSize="15" Margin="0,3,0,0" />
                             </StackPanel>
 
-                            <Border Grid.Column="4" Style="{StaticResource Badge}" VerticalAlignment="Center" Margin="16,0,0,0"
-                                    Background="{Binding SelectedEstimate.Status, Converter={StaticResource EstimateStatusToBrush}, ConverterParameter=background}">
-                                <TextBlock Text="{Binding SelectedEstimate.StatusDisplay}" FontSize="10.5" FontWeight="SemiBold"
-                                           Foreground="{Binding SelectedEstimate.Status, Converter={StaticResource EstimateStatusToBrush}}" />
-                            </Border>
+                            <StackPanel Grid.Column="4" Orientation="Horizontal" VerticalAlignment="Center" Margin="16,0,0,0">
+                                <!-- Смета не в работе: действующей она ещё не считается, факт по ней не вводится. -->
+                                <Border Style="{StaticResource Badge}" Padding="8,2" Margin="0,0,8,0"
+                                        Background="{DynamicResource WarningSoftBrush}"
+                                        Visibility="{Binding IsSelectedNotInWork, Converter={StaticResource BoolToVisibility}}">
+                                    <TextBlock Text="{loc:Tr 'Не в работе'}" FontSize="10.5" FontWeight="SemiBold"
+                                               Foreground="{DynamicResource WarningBrush}" />
+                                </Border>
+                                <Border Style="{StaticResource Badge}"
+                                        Background="{Binding SelectedEstimate.Status, Converter={StaticResource EstimateStatusToBrush}, ConverterParameter=background}">
+                                    <TextBlock Text="{Binding SelectedEstimate.StatusDisplay}" FontSize="10.5" FontWeight="SemiBold"
+                                               Foreground="{Binding SelectedEstimate.Status, Converter={StaticResource EstimateStatusToBrush}}" />
+                                </Border>
+                            </StackPanel>
                         </Grid>
 
                         <!-- Пояснение жизненного цикла: черновик → утверждение → работа (план сравнивается с фактом) -->

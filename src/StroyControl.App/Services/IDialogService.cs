@@ -49,6 +49,15 @@ public interface IDialogService
     /// <summary>Предпросмотр и печать акта списания материалов.</summary>
     void ShowUsageAct(MaterialUsage usage);
 
+    /// <summary>Акт выполненных работ: работы по смете и списанные на них материалы.</summary>
+    WorkCompletion? EditWorkCompletion(
+        WorkCompletion? completion,
+        IReadOnlyList<Estimate> estimates,
+        IReadOnlyList<Material> materials,
+        int? currentUserId);
+
+    void ShowWorkCompletionAct(WorkCompletion completion);
+
     /// <summary>Печатный отчёт по анализу отклонений: предпросмотр, печать, CSV и PDF.</summary>
     void ShowDeviationReport(DeviationReport report);
 }

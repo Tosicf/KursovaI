@@ -168,6 +168,7 @@ public partial class App : Application
         services.AddSingleton<EstimatesViewModel>();
         services.AddSingleton<DeliveriesViewModel>();
         services.AddSingleton<UsagesViewModel>();
+        services.AddSingleton<WorkCompletionsViewModel>();
         services.AddSingleton<DeviationsViewModel>();
         services.AddSingleton<ArchiveViewModel>();
         services.AddSingleton<UsersViewModel>();

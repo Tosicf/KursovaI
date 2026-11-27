@@ -132,7 +132,97 @@ public static class DemoDataSeeder
 
         await db.SaveChangesAsync(cancellationToken);
 
+        // Акты выполненных работ: фактический объём работ по сметам в работе. Строки
+        // материалов этих актов — уже существующие списания, привязанные к документу.
+        await SeedWorkCompletionsAsync(db, estimates, usages, users, today, cancellationToken);
+
         await UpdateStockAsync(db, materials, cancellationToken);
+    }
+
+    /// <summary>
+    /// Демонстрационные акты выполненных работ по сметам в состоянии «В работе».
+    /// Работы распределяются на две части (60 % и 40 % плана), а списания материалов
+    /// сметы привязываются к актам — так в журнале видно и работы, и расход склада.
+    /// </summary>
+    private static async Task SeedWorkCompletionsAsync(
+        AppDbContext db,
+        List<Estimate> estimates,
+        List<MaterialUsage> usages,
+        List<User> users,
+        DateTime today,
+        CancellationToken cancellationToken)
+    {
+        var inWork = estimates
+            .Where(e => e.Status == EstimateStatus.InWork && e.Date.Date <= today)
+            .ToList();
+
+        if (inWork.Count == 0) return;
+
+        var parts = new[] { (Share: 0.6m, DaysAgo: 42), (Share: 0.4m, DaysAgo: 9) };
+        var documentIndex = 1;
+
+        foreach (var estimate in inWork)
+        {
+            var works = estimate.Items.Where(i => i.IsWork).ToList();
+            var estimateUsages = usages
+                .Where(u => u.EstimateId == estimate.Id && u.WorkCompletionId is null)
+                .OrderBy(u => u.Date)
+                .ToList();
+
+            var usageOffset = 0;
+
+            foreach (var part in parts)
+            {
+                var date = today.AddDays(-part.DaysAgo);
+                if (date < estimate.Date.Date) date = estimate.Date.Date;
+
+                var completion = new WorkCompletion
+                {
+                    EstimateId = estimate.Id,
+                    ProjectId = estimate.ProjectId,
+                    Date = date,
+                    DocumentNumber = $"АВР-{YearSuffix(date)}-{documentIndex:0000}",
+                    Note = part.Share == 0.6m
+                        ? "Первый этап работ по смете."
+                        : "Завершение работ по смете.",
+                    CreatedByUserId = users[documentIndex % users.Count].Id
+                };
+
+                foreach (var work in works)
+                {
+                    var quantity = Math.Round(work.PlannedQuantity * part.Share, 3);
+                    if (quantity <= 0m) continue;
+
+                    completion.Items.Add(new WorkCompletionItem
+                    {
+                        EstimateItemId = work.Id,
+                        Quantity = quantity,
+                        UnitPrice = work.PlannedUnitPrice
+                    });
+                }
+
+                // Материалы: половина списаний сметы попадает в первый акт, остальные — во второй.
+                var usageCount = part.Share == 0.6m
+                    ? (estimateUsages.Count + 1) / 2
+                    : estimateUsages.Count - (estimateUsages.Count + 1) / 2;
+
+                var slice = estimateUsages.Skip(usageOffset).Take(usageCount).ToList();
+                usageOffset += slice.Count;
+
+                db.WorkCompletions.Add(completion);
+                await db.SaveChangesAsync(cancellationToken);
+
+                foreach (var usage in slice)
+                {
+                    usage.WorkCompletionId = completion.Id;
+                    usage.EstimateItemId = estimate.Items
+                        .FirstOrDefault(i => !i.IsWork && i.MaterialId == usage.MaterialId)?.Id;
+                }
+
+                await db.SaveChangesAsync(cancellationToken);
+                documentIndex++;
+            }
+        }
     }
 
     private static string YearSuffix(DateTime date) => date.ToString("yy");

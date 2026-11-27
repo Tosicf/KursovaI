@@ -31,6 +31,10 @@ public class AppDbContext : DbContext
 
     public DbSet<MaterialUsage> MaterialUsages => Set<MaterialUsage>();
 
+    public DbSet<WorkCompletion> WorkCompletions => Set<WorkCompletion>();
+
+    public DbSet<WorkCompletionItem> WorkCompletionItems => Set<WorkCompletionItem>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);

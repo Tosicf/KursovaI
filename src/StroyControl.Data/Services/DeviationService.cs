@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using StroyControl.Core.Dtos;
+using StroyControl.Core.Enums;
 using StroyControl.Core.Interfaces;
 
 namespace StroyControl.Data.Services;
@@ -18,8 +19,10 @@ public sealed class DeviationService : IDeviationService
     {
         await using var db = await _factory.CreateDbContextAsync(cancellationToken);
 
+        // Сравнивать план с фактом имеет смысл только по смете в работе.
         var estimatesQuery = db.Estimates
             .AsNoTracking()
+            .Where(e => e.Status == EstimateStatus.InWork)
             .Include(e => e.Project)
             .Include(e => e.Items)
             .ThenInclude(i => i.Material)
@@ -30,7 +33,11 @@ public sealed class DeviationService : IDeviationService
 
         var estimates = await estimatesQuery.ToListAsync(cancellationToken);
 
-        var usageQuery = db.MaterialUsages.AsNoTracking();
+        // Факт берём только по тем же сметам в работе: списания по черновикам и
+        // архивным сметам — исторические записи, в анализ отклонений они не попадают.
+        var usageQuery = db.MaterialUsages
+            .AsNoTracking()
+            .Where(u => u.Estimate != null && u.Estimate.Status == EstimateStatus.InWork);
         if (projectId.HasValue)
             usageQuery = usageQuery.Where(u => u.ProjectId == projectId.Value);
 

@@ -126,6 +126,26 @@ public sealed class DialogService : IDialogService
         window.ShowDialog();
     }
 
+    public WorkCompletion? EditWorkCompletion(
+        WorkCompletion? completion,
+        IReadOnlyList<Estimate> estimates,
+        IReadOnlyList<Material> materials,
+        int? currentUserId)
+    {
+        var vm = new WorkCompletionEditorViewModel(completion, estimates, materials, currentUserId);
+        return ShowEditor(vm) ? vm.BuildEntity() : null;
+    }
+
+    public void ShowWorkCompletionAct(WorkCompletion completion)
+    {
+        var window = new WorkCompletionActWindow(completion, _environment.Organization);
+        var owner = Application.Current?.MainWindow;
+        if (owner is not null && owner.IsVisible)
+            window.Owner = owner;
+
+        window.ShowDialog();
+    }
+
     public void ShowDeviationReport(DeviationReport report)
     {
         var window = new DeviationReportWindow(report);

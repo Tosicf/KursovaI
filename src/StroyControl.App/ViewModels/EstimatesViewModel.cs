@@ -26,6 +26,7 @@ public sealed partial class EstimatesViewModel : ViewModelBase
     private readonly IMaterialRepository _materials;
     private readonly IMinStockService _minStock;
     private readonly IUsageRepository _usages;
+    private readonly IWorkCompletionRepository _completions;
     private readonly IDialogService _dialogs;
     private readonly IToastService _toasts;
     private readonly ISessionService _session;
@@ -39,12 +40,16 @@ public sealed partial class EstimatesViewModel : ViewModelBase
     /// </summary>
     private IReadOnlyList<MaterialUsage> _usageCache = Array.Empty<MaterialUsage>();
 
+    /// <summary>Акты выполненных работ: их стоимость работ тоже входит в факт по смете.</summary>
+    private IReadOnlyList<WorkCompletion> _completionCache = Array.Empty<WorkCompletion>();
+
     public EstimatesViewModel(
         IEstimateRepository estimates,
         IProjectRepository projects,
         IMaterialRepository materials,
         IMinStockService minStock,
         IUsageRepository usages,
+        IWorkCompletionRepository completions,
         IDialogService dialogs,
         IToastService toasts,
         ISessionService session)
@@ -54,6 +59,7 @@ public sealed partial class EstimatesViewModel : ViewModelBase
         _materials = materials;
         _minStock = minStock;
         _usages = usages;
+        _completions = completions;
         _dialogs = dialogs;
         _toasts = toasts;
         _session = session;
@@ -103,12 +109,35 @@ public sealed partial class EstimatesViewModel : ViewModelBase
     /// <summary>Смета передана в работу — план и факт можно сравнивать.</summary>
     public bool IsSelectedInWork => SelectedEstimate?.IsInWork == true;
 
+    /// <summary>
+    /// Смета не в работе (черновик, на проверке, утверждена без запуска): она ещё не
+    /// считается действующей, факт по ней не вводится — в карточке стоит пометка.
+    /// </summary>
+    public bool IsSelectedNotInWork => SelectedEstimate is { } estimate && estimate.Status != EstimateStatus.InWork;
+
+    /// <summary>Расшифровка факта: сколько пришлось на материалы и на работы.</summary>
+    public string ActualBreakdownDisplay => SelectedEstimate is null || !SelectedEstimate.IsInWork
+        ? L.T("Факт не собирается: смета не в работе")
+        : $"{L.T("материалы")} {MaterialsActualCost:N2} · {L.T("работы")} {WorksActualCost:N2} BYN";
+
     /// <summary>Утверждённую смету можно перевести в работу.</summary>
     public bool CanStartWorkSelected => CanEdit && SelectedEstimate?.Status == EstimateStatus.Approved;
 
-    /// <summary>Фактические затраты по выбранной смете: сумма актов списания по ней.</summary>
+    /// <summary>
+    /// Фактические затраты по выбранной смете: материалы из актов списания плюс работы
+    /// из актов выполненных работ. Черновик, смета на проверке и утверждённая без
+    /// запуска факт не собирают — для них сумма остаётся нулевой.
+    /// </summary>
     [ObservableProperty]
     private decimal actualCost;
+
+    /// <summary>Факт по материалам: акты списания (включая списания из актов работ).</summary>
+    [ObservableProperty]
+    private decimal materialsActualCost;
+
+    /// <summary>Факт по работам: строки актов выполненных работ.</summary>
+    [ObservableProperty]
+    private decimal worksActualCost;
 
     /// <summary>Отклонение факта от плана: положительное значение — перерасход.</summary>
     public decimal DeviationAmount => ActualCost - ItemsTotal;
@@ -133,7 +162,7 @@ public sealed partial class EstimatesViewModel : ViewModelBase
     public string PlanFactHint => SelectedEstimate is null
         ? "Выберите смету из списка"
         : SelectedEstimate.IsInWork
-            ? "Смета в работе: план сравнивается с фактом по актам списания"
+            ? "Смета в работе: план сравнивается с фактом по актам работ и списаниям"
             : SelectedEstimate.IsArchived
                 ? "Смета в архиве: сравнение плана и факта доступно только для просмотра"
                 : "Переведите смету в работу, чтобы сравнивать план и факт";
@@ -179,10 +208,20 @@ public sealed partial class EstimatesViewModel : ViewModelBase
 
     partial void OnSelectedEstimateChanged(Estimate? value)
     {
-        // Факт по смете — сумма актов списания, привязанных к этой смете.
-        ActualCost = value is null
-            ? 0m
-            : _usageCache.Where(u => u.EstimateId == value.Id).Sum(u => u.Cost);
+        // Факт по смете — материалы из актов списания и работы из актов работ.
+        // Учитываются только сметы в работе: по остальным факт не собирается.
+        if (value is null || value.Status != EstimateStatus.InWork)
+        {
+            MaterialsActualCost = 0m;
+            WorksActualCost = 0m;
+        }
+        else
+        {
+            MaterialsActualCost = _usageCache.Where(u => u.EstimateId == value.Id).Sum(u => u.Cost);
+            WorksActualCost = _completionCache.Where(c => c.EstimateId == value.Id).Sum(c => c.WorksCost);
+        }
+
+        ActualCost = MaterialsActualCost + WorksActualCost;
 
         Items.Clear();
         if (value is not null)
@@ -222,6 +261,7 @@ public sealed partial class EstimatesViewModel : ViewModelBase
             // Факт по сметам собирается из актов списания — грузим их до выбора сметы,
             // чтобы блок «план / факт» сразу показывал актуальные суммы.
             _usageCache = await _usages.GetAllWithDetailsAsync();
+            _completionCache = await _completions.GetAllWithDetailsAsync();
 
             var previousId = SelectedEstimate?.Id;
 
@@ -754,6 +794,8 @@ public sealed partial class EstimatesViewModel : ViewModelBase
         OnPropertyChanged(nameof(CanStartWorkSelected));
         OnPropertyChanged(nameof(IsSelectedFixed));
         OnPropertyChanged(nameof(IsSelectedInWork));
+        OnPropertyChanged(nameof(IsSelectedNotInWork));
+        OnPropertyChanged(nameof(ActualBreakdownDisplay));
         OnPropertyChanged(nameof(StatusHint));
         OnPropertyChanged(nameof(PlanFactHint));
     }
@@ -765,6 +807,7 @@ public sealed partial class EstimatesViewModel : ViewModelBase
         OnPropertyChanged(nameof(ItemsTotalDisplay));
         OnPropertyChanged(nameof(ActualCost));
         OnPropertyChanged(nameof(ActualCostDisplay));
+        OnPropertyChanged(nameof(ActualBreakdownDisplay));
         OnPropertyChanged(nameof(DeviationAmount));
         OnPropertyChanged(nameof(DeviationDisplay));
         OnPropertyChanged(nameof(DeviationPercentDisplay));
