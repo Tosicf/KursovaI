@@ -130,9 +130,13 @@ public sealed class DialogService : IDialogService
         WorkCompletion? completion,
         IReadOnlyList<Estimate> estimates,
         IReadOnlyList<Material> materials,
-        int? currentUserId)
+        int? currentUserId,
+        int? estimateId = null,
+        int? estimateItemId = null)
     {
-        var vm = new WorkCompletionEditorViewModel(completion, estimates, materials, currentUserId);
+        var vm = new WorkCompletionEditorViewModel(
+            completion, estimates, materials, currentUserId, estimateId, estimateItemId);
+
         return ShowEditor(vm) ? vm.BuildEntity() : null;
     }
 

@@ -695,6 +695,17 @@
                 <TextBlock Text="{Binding EstimateHint}" Style="{StaticResource Caption}" TextWrapping="Wrap" />
             </Border>
 
+            <!-- Смета без работ: акт по работам оформить нельзя, подсказываем, что делать. -->
+            <Border Background="{DynamicResource WarningSoftBrush}" CornerRadius="10" Padding="12,9" Margin="0,8,0,0"
+                    Visibility="{Binding HasNoWorkOptions, Converter={StaticResource BoolToVisibility}}">
+                <StackPanel Orientation="Horizontal">
+                    <Path Data="{StaticResource IconAlert}" Stroke="{DynamicResource WarningBrush}" StrokeThickness="1.7"
+                          Width="15" Height="15" Stretch="Uniform" VerticalAlignment="Top" />
+                    <TextBlock Text="{Binding NoWorksHint}" Foreground="{DynamicResource WarningBrush}" TextWrapping="Wrap"
+                               FontSize="12" Margin="8,0,0,0" />
+                </StackPanel>
+            </Border>
+
             <Grid Margin="0,18,0,8">
                 <TextBlock Text="{loc:Tr 'Выполненные работы'}" Style="{StaticResource FieldLabel}" VerticalAlignment="Center" />
                 <Button HorizontalAlignment="Right" Style="{StaticResource GhostButton}" Height="30" Padding="10,0"

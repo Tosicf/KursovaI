@@ -261,7 +261,9 @@ public static class DemoDataSeeder
             await db.SaveChangesAsync(cancellationToken);
 
         var allProjects = projects.Concat(added).ToList();
-        var existing = await db.Estimates.ToListAsync(cancellationToken);
+        var existing = await db.Estimates
+            .Include(e => e.Items)
+            .ToListAsync(cancellationToken);
         var byNumber = existing.ToDictionary(e => e.Number, StringComparer.OrdinalIgnoreCase);
 
         foreach (var estimate in BuildEstimates(allProjects, materials, random, today))
@@ -281,6 +283,65 @@ public static class DemoDataSeeder
         }
 
         await db.SaveChangesAsync(cancellationToken);
+
+        // Сметы, созданные до появления позиций-работ, содержат только материалы: по ним
+        // нельзя оформить акт выполненных работ. Дополняем такие сметы типовыми работами
+        // (только демонстрационная база — «живые» данные сюда не попадают).
+        await RepairMissingWorksAsync(db, existing, cancellationToken);
+    }
+
+    /// <summary>
+    /// Добавляет типовые позиции-работы в демонстрационные сметы, где их нет совсем.
+    /// Если разделы сметы не описаны в наборе, ставится одна обобщённая работа, чтобы
+    /// акт выполненных работ можно было оформить и факт по работам учитывался.
+    /// </summary>
+    private static async Task RepairMissingWorksAsync(
+        AppDbContext db,
+        IReadOnlyList<Estimate> estimates,
+        CancellationToken cancellationToken)
+    {
+        var repaired = 0;
+
+        foreach (var estimate in estimates)
+        {
+            if (estimate.Items.Count == 0 || estimate.Items.Any(i => i.IsWork)) continue;
+
+            var sections = estimate.Items
+                .Select(i => string.IsNullOrWhiteSpace(i.Section) ? "Прочее" : i.Section.Trim())
+                .Distinct(StringComparer.CurrentCulture)
+                .ToList();
+
+            var works = WorksFor(sections);
+
+            if (works.Count == 0)
+            {
+                var materialsCost = estimate.Items
+                    .Where(i => !i.IsWork)
+                    .Sum(i => i.PlannedQuantity * i.PlannedUnitPrice);
+
+                works.Add(("Общестроительные работы по смете", "компл.", sections[0], 1m,
+                    Math.Round(materialsCost * 0.1m, 2)));
+            }
+
+            foreach (var work in works)
+            {
+                estimate.Items.Add(new EstimateItem
+                {
+                    EstimateId = estimate.Id,
+                    IsWork = true,
+                    WorkName = work.Name,
+                    WorkUnit = work.Unit,
+                    Section = work.Section,
+                    PlannedQuantity = work.Quantity,
+                    PlannedUnitPrice = work.Price
+                });
+            }
+
+            repaired++;
+        }
+
+        if (repaired > 0)
+            await db.SaveChangesAsync(cancellationToken);
     }
 
     private static List<User> BuildUsers()

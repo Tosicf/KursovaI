@@ -166,8 +166,12 @@ public sealed partial class WorkCompletionsViewModel : ViewModelBase
             _toasts.Error(Title, ErrorMessage);
     }
 
+    /// <param name="template">
+    /// Акт, из контекстного меню которого открывается форма: берётся его смета,
+    /// чтобы быстро оформить следующий документ по той же смете.
+    /// </param>
     [RelayCommand]
-    private async Task AddAsync()
+    private async Task AddAsync(WorkCompletion? template)
     {
         if (!CanEdit)
         {
@@ -181,7 +185,8 @@ public sealed partial class WorkCompletionsViewModel : ViewModelBase
             return;
         }
 
-        var entity = _dialogs.EditWorkCompletion(null, Estimates, Materials, _session.CurrentUser?.Id);
+        var entity = _dialogs.EditWorkCompletion(
+            null, Estimates, Materials, _session.CurrentUser?.Id, template?.EstimateId);
         if (entity is null) return;
 
         AttachReferences(entity);
@@ -191,6 +196,10 @@ public sealed partial class WorkCompletionsViewModel : ViewModelBase
             var created = await _service.CreateAsync(entity);
             await LoadAsync();
             SelectedCompletion = Items.FirstOrDefault(c => c.Id == created.Id) ?? Items.FirstOrDefault();
+
+            // Акт может быть оформлен задним числом: если выбранный период его не
+            // покрывает, документ «пропадал» бы из списка сразу после сохранения.
+            ShowDate(created.Date);
             _toasts.Success(L.T("Акт выполненных работ сохранён"),
                 $"{created.DocumentNumber} · {created.Total:N2} BYN");
 
@@ -217,6 +226,7 @@ public sealed partial class WorkCompletionsViewModel : ViewModelBase
             await _service.UpdateAsync(updated);
             await LoadAsync();
             SelectedCompletion = Items.FirstOrDefault(c => c.Id == target.Id) ?? Items.FirstOrDefault();
+            ShowDate(updated.Date);
             _toasts.Success(L.T("Акт изменён"), L.T("Остатки склада и факт пересчитаны"));
         }
         catch (Exception ex)
@@ -277,6 +287,18 @@ public sealed partial class WorkCompletionsViewModel : ViewModelBase
         {
             _toasts.Error(L.T("Не удалось открыть акт"), ex.Message);
         }
+    }
+
+    /// <summary>
+    /// Показывает документ в списке: если текущий период не содержит дату акта,
+    /// период сбрасывается на «всё время», иначе новый акт остался бы невидимым.
+    /// </summary>
+    private void ShowDate(DateTime date)
+    {
+        if (Period.Matches(date)) return;
+
+        Period.Reset();
+        ApplyFilter();
     }
 
     private void AttachReferences(WorkCompletion completion)
