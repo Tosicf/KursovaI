@@ -1,3 +1,4 @@
+using StroyControl.App.Localization;
 using System.Windows;
 using System.Windows.Controls;
 
@@ -10,7 +11,7 @@ public partial class LoadingOverlay : UserControl
         nameof(IsBusy), typeof(bool), typeof(LoadingOverlay), new PropertyMetadata(false));
 
     public static readonly DependencyProperty MessageProperty = DependencyProperty.Register(
-        nameof(Message), typeof(string), typeof(LoadingOverlay), new PropertyMetadata("Загрузка данных…"));
+        nameof(Message), typeof(string), typeof(LoadingOverlay), new PropertyMetadata(L.T("Загрузка данных…")));
 
     public LoadingOverlay()
     {

@@ -7,8 +7,9 @@ using StroyControl.Core.Entities;
 namespace StroyControl.App.Views.Reports;
 
 /// <summary>
-/// Собирает печатный «Товарный чек» по поступлению материалов (FlowDocument, A5):
-/// реквизиты продавца и покупателя, таблица позиций, итог и подписи.
+/// Собирает печатный «Счёт-фактура» по поступлению материалов (FlowDocument, A5):
+/// номер и дата документа, реквизиты продавца и покупателя, таблица позиций, итог,
+/// оговорка про НДС и подписи сторон.
 /// Тот же документ показывается в предпросмотре и уходит на печать.
 /// </summary>
 public static class PurchaseReceiptDocument
@@ -39,7 +40,11 @@ public static class PurchaseReceiptDocument
             ColumnWidth = double.PositiveInfinity
         };
 
-        doc.Blocks.Add(new Paragraph(new Run("ТОВАРНЫЙ ЧЕК"))
+        var documentNumber = string.IsNullOrWhiteSpace(delivery.InvoiceNumber)
+            ? delivery.Number
+            : delivery.InvoiceNumber.Trim();
+
+        doc.Blocks.Add(new Paragraph(new Run("СЧЁТ-ФАКТУРА"))
         {
             FontSize = 15,
             FontWeight = FontWeights.Bold,
@@ -47,7 +52,7 @@ public static class PurchaseReceiptDocument
             Margin = new Thickness(0, 0, 0, 2)
         });
 
-        doc.Blocks.Add(new Paragraph(new Run($"№ {delivery.Number} от {delivery.Date:dd.MM.yyyy}"))
+        doc.Blocks.Add(new Paragraph(new Run($"№ {documentNumber} от {delivery.Date:dd.MM.yyyy}"))
         {
             FontSize = 11.5,
             TextAlignment = TextAlignment.Center,
@@ -60,7 +65,7 @@ public static class PurchaseReceiptDocument
         if (!string.IsNullOrWhiteSpace(delivery.InvoiceNumber))
         {
             doc.Blocks.Add(BuildParty("Основание",
-                $"приходная накладная № {delivery.Number}, ТТН № {delivery.InvoiceNumber.Trim()}"));
+                $"приходная накладная № {delivery.Number} от {delivery.Date:dd.MM.yyyy}"));
         }
 
         doc.Blocks.Add(BuildTable(delivery));
@@ -73,7 +78,7 @@ public static class PurchaseReceiptDocument
         });
 
         doc.Blocks.Add(new Paragraph(new Run(
-                $"Сумма к оплате: {Money(delivery.Total)} BYN (НДС не облагается)"))
+                $"Всего к оплате: {Money(delivery.Total)} BYN"))
         {
             FontSize = 11.5,
             FontWeight = FontWeights.Bold,

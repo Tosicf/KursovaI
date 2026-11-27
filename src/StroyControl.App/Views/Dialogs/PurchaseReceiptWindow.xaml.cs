@@ -10,7 +10,7 @@ using StroyControl.Core.Services;
 namespace StroyControl.App.Views.Dialogs;
 
 /// <summary>
-/// Предпросмотр товарного чека по поступлению: тот же FlowDocument печатается
+/// Предпросмотр счёта-фактуры по поступлению: тот же FlowDocument печатается
 /// на принтере и сохраняется в PDF, Excel и CSV.
 /// </summary>
 public partial class PurchaseReceiptWindow : Window
@@ -45,7 +45,7 @@ public partial class PurchaseReceiptWindow : Window
 
     private void OnPdfClick(object sender, RoutedEventArgs e)
     {
-        var path = AskPath("Сохранить чек в PDF", "pdf", "Файл PDF (*.pdf)|*.pdf|Все файлы (*.*)|*.*");
+        var path = AskPath("Сохранить счёт-фактуру в PDF", "pdf", "Файл PDF (*.pdf)|*.pdf|Все файлы (*.*)|*.*");
         if (path is null) return;
 
         var document = PurchaseReceiptDocument.Build(_delivery, _organization);
@@ -56,20 +56,20 @@ public partial class PurchaseReceiptWindow : Window
             return;
         }
 
-        MessageBox.Show(this, error ?? "Не удалось выгрузить чек в PDF.", "PDF",
+        MessageBox.Show(this, error ?? "Не удалось выгрузить счёт-фактуру в PDF.", "PDF",
             MessageBoxButton.OK, MessageBoxImage.Warning);
     }
 
     private async void OnExcelClick(object sender, RoutedEventArgs e)
     {
-        var path = AskPath("Сохранить чек в Excel", "xlsx",
+        var path = AskPath("Сохранить счёт-фактуру в Excel", "xlsx",
             "Книга Excel (*.xlsx)|*.xlsx|Все файлы (*.*)|*.*");
         if (path is null) return;
 
         try
         {
             await _exporter.ExportXlsxAsync(_delivery, _organization, path);
-            MessageBox.Show(this, $"Чек сохранён:\n{path}", "Excel", MessageBoxButton.OK, MessageBoxImage.Information);
+            MessageBox.Show(this, $"Счёт-фактура сохранена:\n{path}", "Excel", MessageBoxButton.OK, MessageBoxImage.Information);
         }
         catch (Exception ex)
         {
@@ -80,13 +80,13 @@ public partial class PurchaseReceiptWindow : Window
 
     private async void OnCsvClick(object sender, RoutedEventArgs e)
     {
-        var path = AskPath("Сохранить чек в CSV", "csv", "Файлы CSV (*.csv)|*.csv|Все файлы (*.*)|*.*");
+        var path = AskPath("Сохранить счёт-фактуру в CSV", "csv", "Файлы CSV (*.csv)|*.csv|Все файлы (*.*)|*.*");
         if (path is null) return;
 
         try
         {
             await _exporter.ExportCsvAsync(_delivery, _organization, path);
-            MessageBox.Show(this, $"Чек сохранён:\n{path}", "CSV", MessageBoxButton.OK, MessageBoxImage.Information);
+            MessageBox.Show(this, $"Счёт-фактура сохранена:\n{path}", "CSV", MessageBoxButton.OK, MessageBoxImage.Information);
         }
         catch (Exception ex)
         {
@@ -125,11 +125,11 @@ public partial class PurchaseReceiptWindow : Window
             var paginator = ((IDocumentPaginatorSource)document).DocumentPaginator;
             paginator.PageSize = new Size(dialog.PrintableAreaWidth, dialog.PrintableAreaHeight);
 
-            dialog.PrintDocument(paginator, $"Товарный чек {_delivery.Number}");
+            dialog.PrintDocument(paginator, $"Счёт-фактура {_delivery.Number}");
         }
         catch (Exception ex)
         {
-            MessageBox.Show(this, $"Не удалось напечатать чек.\n\n{ex.Message}", "Печать",
+            MessageBox.Show(this, $"Не удалось напечатать счёт-фактуру.\n\n{ex.Message}", "Печать",
                 MessageBoxButton.OK, MessageBoxImage.Error);
         }
     }

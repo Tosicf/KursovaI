@@ -1,5 +1,6 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using StroyControl.App.Localization;
 using StroyControl.App.Services;
 using StroyControl.Core.Dtos;
 using StroyControl.Core.Interfaces;
@@ -44,7 +45,7 @@ public sealed partial class DashboardViewModel : ViewModelBase
         Period = new PeriodFilterViewModel(ReloadForPeriod);
     }
 
-    public override string Title => "Панель управления";
+    public override string Title => L.T("Панель управления");
 
     /// <summary>
     /// Период панели. Главная страница всегда показывает один месяц (или все месяцы),
@@ -161,7 +162,7 @@ public sealed partial class DashboardViewModel : ViewModelBase
             _toasts.Success("Поступление оформлено", $"{saved.Number} · {saved.ItemsCount} поз. · {saved.Total:N2} BYN");
             await LoadAsync();
 
-            // Товарный чек по сохранённой накладной: печать, PDF или закрыть.
+            // Счёт-фактура по сохранённой накладной: печать, PDF или закрыть.
             var full = await _deliveries.GetWithItemsAsync(saved.Id) ?? saved;
             _dialogs.ShowPurchaseReceipt(full);
         }

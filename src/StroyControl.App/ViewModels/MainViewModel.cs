@@ -4,6 +4,7 @@ using System.Windows.Media;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.DependencyInjection;
+using StroyControl.App.Localization;
 using StroyControl.App.Models;
 using StroyControl.App.Services;
 using StroyControl.App.Startup;
@@ -37,6 +38,9 @@ public sealed partial class MainViewModel : ObservableObject
         IsDarkTheme = ThemeManager.IsDark;
         BuildNavigation();
 
+        // Переключатель показывает текущий язык; смена языка перестраивает оболочку.
+        SelectedLanguage = Languages.First(l => l.Language == LocalizationService.Instance.Language);
+
         // Страница может попросить открыть другой раздел (например, «Объекты» —
         // анализ отклонений по конкретному объекту). Обработчик один: новое главное
         // окно после повторного входа заменяет прежний.
@@ -49,7 +53,15 @@ public sealed partial class MainViewModel : ObservableObject
 
     public ObservableCollection<NavigationItem> NavigationItems { get; } = new();
 
-    public string UserName => _session.CurrentUser?.DisplayName ?? "Гость";
+    public string UserName => _session.CurrentUser?.DisplayName ?? L.T("Гость");
+
+    /// <summary>Языки интерфейса для переключателя в шапке.</summary>
+    public IReadOnlyList<LanguageOption> Languages { get; } = new List<LanguageOption>
+    {
+        new(AppLanguage.Ru, LocalizationService.NativeName(AppLanguage.Ru)),
+        new(AppLanguage.En, LocalizationService.NativeName(AppLanguage.En)),
+        new(AppLanguage.By, LocalizationService.NativeName(AppLanguage.By))
+    };
 
     public string UserRole => _session.CurrentUser?.RoleDisplay ?? string.Empty;
 
@@ -65,9 +77,9 @@ public sealed partial class MainViewModel : ObservableObject
 
     public bool IsSettingsPage => CurrentViewModel is SettingsViewModel;
 
-    public string ThemeTooltip => IsDarkTheme ? "Светлая тема" : "Тёмная тема";
+    public string ThemeTooltip => IsDarkTheme ? L.T("Светлая тема") : L.T("Тёмная тема");
 
-    public string PageTitle => CurrentViewModel?.Title ?? "Панель управления";
+    public string PageTitle => CurrentViewModel?.Title ?? L.T("Панель управления");
 
     public double SidebarWidth => IsSidebarCollapsed ? 88 : 268;
 
@@ -83,6 +95,18 @@ public sealed partial class MainViewModel : ObservableObject
     /// <summary>Текущая тема: true — тёмная. Переключается кнопкой в шапке и запоминается.</summary>
     [ObservableProperty]
     private bool isDarkTheme;
+
+    /// <summary>Выбранный язык интерфейса: смена перестраивает оболочку приложения.</summary>
+    [ObservableProperty]
+    private LanguageOption? selectedLanguage;
+
+    partial void OnSelectedLanguageChanged(LanguageOption? value)
+    {
+        if (value is null || value.Language == LocalizationService.Instance.Language) return;
+
+        LocalizationService.Instance.SetLanguage(value.Language);
+        _controller.ReloadShell();
+    }
 
     public async Task InitializeAsync()
     {
@@ -120,7 +144,7 @@ public sealed partial class MainViewModel : ObservableObject
         if (CurrentViewModel is null) return;
 
         await CurrentViewModel.LoadAsync();
-        Toasts.Info("Данные обновлены", CurrentViewModel.Title);
+        Toasts.Info(L.T("Данные обновлены"), CurrentViewModel.Title);
     }
 
     [RelayCommand]
@@ -136,7 +160,7 @@ public sealed partial class MainViewModel : ObservableObject
     {
         if (!CanManageUsers)
         {
-            Toasts.Info("Недостаточно прав", "Раздел доступен только администратору.");
+            Toasts.Info(L.T("Недостаточно прав"), L.T("Раздел доступен только администратору."));
             return;
         }
 
@@ -158,7 +182,7 @@ public sealed partial class MainViewModel : ObservableObject
         }
         catch (Exception ex)
         {
-            Toasts.Error("Ошибка навигации", ex.Message);
+            Toasts.Error(L.T("Ошибка навигации"), ex.Message);
         }
     }
 
@@ -167,15 +191,15 @@ public sealed partial class MainViewModel : ObservableObject
 
     private void BuildNavigation()
     {
-        NavigationItems.Add(CreateItem<DashboardViewModel>("dashboard", "Панель управления", "IconDashboard"));
-        NavigationItems.Add(CreateItem<MaterialsViewModel>("materials", "Материалы", "IconMaterials"));
-        NavigationItems.Add(CreateItem<SuppliersViewModel>("suppliers", "Поставщики", "IconSuppliers"));
-        NavigationItems.Add(CreateItem<ProjectsViewModel>("projects", "Объекты", "IconProjects"));
-        NavigationItems.Add(CreateItem<EstimatesViewModel>("estimates", "Сметы", "IconEstimates"));
-        NavigationItems.Add(CreateItem<DeliveriesViewModel>("deliveries", "Поступления", "IconIncoming"));
-        NavigationItems.Add(CreateItem<UsagesViewModel>("usages", "Списания", "IconOutgoing"));
-        NavigationItems.Add(CreateItem<DeviationsViewModel>("deviations", "Анализ отклонений", "IconDeviations"));
-        NavigationItems.Add(CreateItem<ArchiveViewModel>("archive", "Архив смет", "IconArchive"));
+        NavigationItems.Add(CreateItem<DashboardViewModel>("dashboard", L.T("Панель управления"), "IconDashboard"));
+        NavigationItems.Add(CreateItem<MaterialsViewModel>("materials", L.T("Материалы"), "IconMaterials"));
+        NavigationItems.Add(CreateItem<SuppliersViewModel>("suppliers", L.T("Поставщики"), "IconSuppliers"));
+        NavigationItems.Add(CreateItem<ProjectsViewModel>("projects", L.T("Объекты"), "IconProjects"));
+        NavigationItems.Add(CreateItem<EstimatesViewModel>("estimates", L.T("Сметы"), "IconEstimates"));
+        NavigationItems.Add(CreateItem<DeliveriesViewModel>("deliveries", L.T("Поступления"), "IconIncoming"));
+        NavigationItems.Add(CreateItem<UsagesViewModel>("usages", L.T("Списания"), "IconOutgoing"));
+        NavigationItems.Add(CreateItem<DeviationsViewModel>("deviations", L.T("Анализ отклонений"), "IconDeviations"));
+        NavigationItems.Add(CreateItem<ArchiveViewModel>("archive", L.T("Архив смет"), "IconArchive"));
 
         // «Сотрудники» и «О программе» вынесены в верхнюю панель (см. разметку MainWindow).
     }
@@ -217,7 +241,10 @@ public sealed partial class MainViewModel : ObservableObject
         }
         catch (Exception ex)
         {
-            Toasts.Error("Ошибка навигации", ex.Message);
+            Toasts.Error(L.T("Ошибка навигации"), ex.Message);
         }
     }
 }
+
+/// <summary>Пункт переключателя языка: язык и его название на самом языке.</summary>
+public sealed record LanguageOption(AppLanguage Language, string Name);

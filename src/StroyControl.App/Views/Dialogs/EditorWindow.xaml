@@ -1,4 +1,5 @@
-<Window x:Class="StroyControl.App.Views.Dialogs.EditorWindow"
+<Window xmlns:loc="clr-namespace:StroyControl.App.Localization"
+        x:Class="StroyControl.App.Views.Dialogs.EditorWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
@@ -30,7 +31,7 @@
                 <ColumnDefinition Width="Auto" />
             </Grid.ColumnDefinitions>
             <TextBlock Text="{Binding Title}" FontSize="18" FontWeight="SemiBold" VerticalAlignment="Center" />
-            <Button Grid.Column="1" Style="{StaticResource IconButton}" Click="OnCloseClick" ToolTip="Закрыть">
+            <Button Grid.Column="1" Style="{StaticResource IconButton}" Click="OnCloseClick" ToolTip="{loc:Tr 'Закрыть'}">
                 <Path Data="{StaticResource IconClose}" Stroke="{DynamicResource TextSecondaryBrush}" StrokeThickness="1.8"
                       Width="14" Height="14" Stretch="Uniform" StrokeStartLineCap="Round" />
             </Button>
@@ -57,7 +58,7 @@
                            VerticalAlignment="Center" TextWrapping="Wrap" Margin="0,0,16,0"
                            Visibility="{Binding ErrorMessage, Converter={StaticResource NullToVisibility}}" />
 
-                <Button Grid.Column="1" Content="Отмена" Style="{StaticResource SecondaryButton}"
+                <Button Grid.Column="1" Content="{loc:Tr 'Отмена'}" Style="{StaticResource SecondaryButton}"
                         Command="{Binding CancelCommand}" Margin="0,0,10,0" MinWidth="110" />
                 <Button Grid.Column="2" Content="{Binding SaveText}" Style="{StaticResource PrimaryButton}"
                         Command="{Binding SaveCommand}" MinWidth="130" IsDefault="True" />

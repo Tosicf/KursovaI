@@ -3,6 +3,7 @@ using System.ComponentModel;
 using System.Windows.Data;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using StroyControl.App.Localization;
 using StroyControl.App.Services;
 using StroyControl.Core.Entities;
 using StroyControl.Core.Interfaces;
@@ -51,7 +52,7 @@ public sealed partial class DeliveriesViewModel : ViewModelBase
         Period = new PeriodFilterViewModel(ApplyFilter);
     }
 
-    public override string Title => "Поступления";
+    public override string Title => L.T("Поступления");
 
     public ObservableCollection<Delivery> Items { get; } = new();
 
@@ -278,7 +279,7 @@ public sealed partial class DeliveriesViewModel : ViewModelBase
     }
 
     /// <summary>
-    /// Печать товарного чека по выбранной накладной (или по переданной контекстным меню).
+    /// Печать счёта-фактуры по выбранной накладной (или по переданной контекстным меню).
     /// </summary>
     [RelayCommand]
     private void PrintReceipt(Delivery? delivery)

@@ -50,6 +50,9 @@ public class Estimate : EntityBase
     /// <summary>Смета подтверждена или отправлена в архив — правки запрещены.</summary>
     public bool IsFixed => Status != EstimateStatus.Draft;
 
+    /// <summary>Смета в работе: план утверждён и сравнивается с фактическими затратами.</summary>
+    public bool IsInWork => Status == EstimateStatus.InWork;
+
     /// <summary>Смета снята с учёта и показывается только во вкладке «Архив».</summary>
     public bool IsArchived => Status == EstimateStatus.Archived;
 
@@ -58,7 +61,8 @@ public class Estimate : EntityBase
     {
         EstimateStatus.Draft => "Черновик: состав и суммы можно изменять",
         EstimateStatus.OnReview => "Смета на проверке: изменения запрещены",
-        EstimateStatus.Approved => "Смета утверждена (подтверждена): изменения запрещены",
+        EstimateStatus.Approved => "Смета утверждена: нажмите «В работу», чтобы сравнивать план с фактом",
+        EstimateStatus.InWork => "Смета в работе: план зафиксирован, факт собирается по актам списания",
         EstimateStatus.Archived => "Смета в архиве: только просмотр и отчёты",
         _ => string.Empty
     };

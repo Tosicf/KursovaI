@@ -3,6 +3,7 @@ using System.ComponentModel;
 using System.Windows.Data;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using StroyControl.App.Localization;
 using StroyControl.App.Services;
 using StroyControl.Core.Dtos;
 using StroyControl.Core.Entities;
@@ -61,7 +62,7 @@ public sealed partial class MaterialsViewModel : ViewModelBase
         StockFilters.Add(InactiveFilter);
     }
 
-    public override string Title => "Материалы";
+    public override string Title => L.T("Материалы");
 
     public ObservableCollection<Material> Items { get; } = new();
 
@@ -201,7 +202,7 @@ public sealed partial class MaterialsViewModel : ViewModelBase
             _toasts.Success("Поступление оформлено", $"{saved.Number} · {saved.ItemsCount} поз. · {saved.Total:N2} BYN");
             await LoadAsync();
 
-            // Печатаем товарный чек по сохранённой накладной (с наименованиями и поставщиком).
+            // Печатаем счёт-фактуру по сохранённой накладной (с наименованиями и поставщиком).
             var full = await _deliveries.GetWithItemsAsync(saved.Id) ?? saved;
             _dialogs.ShowPurchaseReceipt(full);
         }

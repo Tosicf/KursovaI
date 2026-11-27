@@ -116,6 +116,16 @@ public sealed class DialogService : IDialogService
         window.ShowDialog();
     }
 
+    public void ShowUsageAct(MaterialUsage usage)
+    {
+        var window = new UsageActWindow(usage, _environment.Organization);
+        var owner = Application.Current?.MainWindow;
+        if (owner is not null && owner.IsVisible)
+            window.Owner = owner;
+
+        window.ShowDialog();
+    }
+
     public void ShowDeviationReport(DeviationReport report)
     {
         var window = new DeviationReportWindow(report);

@@ -1,4 +1,5 @@
-<UserControl x:Class="StroyControl.App.Views.ProjectsView"
+<UserControl xmlns:loc="clr-namespace:StroyControl.App.Localization"
+        x:Class="StroyControl.App.Views.ProjectsView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:controls="clr-namespace:StroyControl.App.Controls">
@@ -8,7 +9,7 @@
              из GridHeaderStyle выводит вместо текста имя типа (System.Windows.Controls.StackPanel). -->
         <Style x:Key="ProgressHeaderStyle" TargetType="DataGridColumnHeader" BasedOn="{StaticResource GridHeaderStyle}">
             <Setter Property="ToolTip"
-                    Value="Готовность — экспертная оценка физического выполнения работ (0–100 %), вводится вручную в карточке объекта. Не путайте её с исполнением бюджета: там процент считается как факт ÷ план × 100 %." />
+                    Value="{loc:Tr 'Готовность — экспертная оценка физического выполнения работ (0–100 %), вводится вручную в карточке объекта. Не путайте её с исполнением бюджета: там процент считается как факт ÷ план × 100 %.'}" />
         </Style>
     </UserControl.Resources>
 
@@ -26,12 +27,12 @@
             </Grid.ColumnDefinitions>
 
             <StackPanel>
-                <TextBlock Text="Строительные объекты организации" Style="{StaticResource Caption}" FontSize="12.5" />
+                <TextBlock Text="{loc:Tr 'Строительные объекты организации'}" Style="{StaticResource Caption}" FontSize="12.5" />
                 <StackPanel Orientation="Horizontal" Margin="0,3,0,0">
-                    <TextBlock Text="Договорная стоимость, сроки и готовность объектов" Style="{StaticResource Caption}"
+                    <TextBlock Text="{loc:Tr 'Договорная стоимость, сроки и готовность объектов'}" Style="{StaticResource Caption}"
                                FontSize="11" Foreground="{DynamicResource TextMutedBrush}" />
                     <TextBlock Style="{StaticResource InfoHint}" FontSize="11.5"
-                               ToolTip="Готовность — это экспертная оценка физического выполнения работ по объекту: она вводится вручную в карточке объекта (0–100 %) и не вычисляется из документов. Не путайте её с исполнением бюджета: там процент считается автоматически как фактические затраты ÷ сметная стоимость × 100 % и ограничен 100 %." />
+                               ToolTip="{loc:Tr 'Готовность — это экспертная оценка физического выполнения работ по объекту: она вводится вручную в карточке объекта (0–100 %) и не вычисляется из документов. Не путайте её с исполнением бюджета: там процент считается автоматически как фактические затраты ÷ сметная стоимость × 100 % и ограничен 100 %.'}" />
                 </StackPanel>
             </StackPanel>
 
@@ -40,14 +41,14 @@
                     <StackPanel Orientation="Horizontal">
                         <Path Data="{StaticResource IconRefresh}" Stroke="{DynamicResource TextSecondaryBrush}" StrokeThickness="1.7"
                               Width="15" Height="15" Stretch="Uniform" VerticalAlignment="Center" />
-                        <TextBlock Text="Обновить" Margin="8,0,0,0" VerticalAlignment="Center" />
+                        <TextBlock Text="{loc:Tr 'Обновить'}" Margin="8,0,0,0" VerticalAlignment="Center" />
                     </StackPanel>
                 </Button>
                 <Button Style="{StaticResource PrimaryButton}" Command="{Binding AddCommand}" IsEnabled="{Binding CanEdit}">
                     <StackPanel Orientation="Horizontal">
                         <Path Data="{StaticResource IconPlus}" Stroke="White" StrokeThickness="2"
                               Width="14" Height="14" Stretch="Uniform" VerticalAlignment="Center" />
-                        <TextBlock Text="Добавить объект" Foreground="White" Margin="8,0,0,0" VerticalAlignment="Center" />
+                        <TextBlock Text="{loc:Tr 'Добавить объект'}" Foreground="White" Margin="8,0,0,0" VerticalAlignment="Center" />
                     </StackPanel>
                 </Button>
             </StackPanel>
@@ -68,7 +69,7 @@
                     <Path Data="{StaticResource IconSearch}" Stroke="{DynamicResource TextMutedBrush}" StrokeThickness="1.7"
                           Width="16" Height="16" Stretch="Uniform" HorizontalAlignment="Left" Margin="13,0,0,0"
                           VerticalAlignment="Center" IsHitTestVisible="False" />
-                    <TextBlock Text="Поиск по объекту, заказчику, адресу" Foreground="{DynamicResource TextMutedBrush}"
+                    <TextBlock Text="{loc:Tr 'Поиск по объекту, заказчику, адресу'}" Foreground="{DynamicResource TextMutedBrush}"
                                FontSize="12.5" VerticalAlignment="Center" Margin="38,0,10,0" IsHitTestVisible="False"
                                Visibility="{Binding SearchText, Converter={StaticResource EmptyToVisibility}}" />
                 </Grid>
@@ -80,15 +81,15 @@
                 </StackPanel>
 
                 <StackPanel Grid.Column="2" Margin="24,0,0,0" VerticalAlignment="Center">
-                    <TextBlock Text="В работе" Style="{StaticResource Caption}" FontSize="11" />
+                    <TextBlock Text="{loc:Tr 'В работе'}" Style="{StaticResource Caption}" FontSize="11" />
                     <TextBlock Text="{Binding ActiveCount}" FontWeight="SemiBold" FontSize="15" Foreground="{DynamicResource SuccessBrush}" />
                 </StackPanel>
                 <StackPanel Grid.Column="3" Margin="24,0,0,0" VerticalAlignment="Center">
-                    <TextBlock Text="Смет" Style="{StaticResource Caption}" FontSize="11" />
+                    <TextBlock Text="{loc:Tr 'Смет'}" Style="{StaticResource Caption}" FontSize="11" />
                     <TextBlock Text="{Binding EstimatesCount}" FontWeight="SemiBold" FontSize="15" />
                 </StackPanel>
                 <StackPanel Grid.Column="4" Margin="24,0,0,0" VerticalAlignment="Center">
-                    <TextBlock Text="Портфель" Style="{StaticResource Caption}" FontSize="11" />
+                    <TextBlock Text="{loc:Tr 'Портфель'}" Style="{StaticResource Caption}" FontSize="11" />
                     <TextBlock Text="{Binding ContractSumDisplay}" FontWeight="SemiBold" FontSize="15" />
                 </StackPanel>
             </Grid>
@@ -101,34 +102,34 @@
                           PreviewMouseRightButtonDown="OnRowRightButtonDown">
                     <DataGrid.ContextMenu>
                         <ContextMenu>
-                            <MenuItem Header="Изменить…" InputGestureText="F2"
+                            <MenuItem Header="{loc:Tr 'Изменить…'}" InputGestureText="F2"
                                       Command="{Binding PlacementTarget.DataContext.EditCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
                                   CommandParameter="{Binding PlacementTarget.SelectedItem, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
                                   IsEnabled="{Binding PlacementTarget.DataContext.CanEdit, RelativeSource={RelativeSource AncestorType=ContextMenu}}" />
-                            <MenuItem Header="Удалить" InputGestureText="Del"
+                            <MenuItem Header="{loc:Tr 'Удалить'}" InputGestureText="Del"
                                       Command="{Binding PlacementTarget.DataContext.DeleteCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
                                   CommandParameter="{Binding PlacementTarget.SelectedItem, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
                                   IsEnabled="{Binding PlacementTarget.DataContext.CanEdit, RelativeSource={RelativeSource AncestorType=ContextMenu}}" />
                             <Separator />
-                            <MenuItem Header="Сметы объекта"
-                                      ToolTip="Открыть раздел «Сметы», отфильтрованный по этому объекту"
+                            <MenuItem Header="{loc:Tr 'Сметы объекта'}"
+                                      ToolTip="{loc:Tr 'Открыть раздел «Сметы», отфильтрованный по этому объекту'}"
                                       Command="{Binding PlacementTarget.DataContext.OpenEstimatesCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
                                       CommandParameter="{Binding PlacementTarget.SelectedItem, RelativeSource={RelativeSource AncestorType=ContextMenu}}" />
-                            <MenuItem Header="Анализ отклонений по объекту"
-                                      ToolTip="Открыть раздел «Анализ отклонений» с отчётом по этому объекту"
+                            <MenuItem Header="{loc:Tr 'Анализ отклонений по объекту'}"
+                                      ToolTip="{loc:Tr 'Открыть раздел «Анализ отклонений» с отчётом по этому объекту'}"
                                       Command="{Binding PlacementTarget.DataContext.OpenDeviationsCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
                                       CommandParameter="{Binding PlacementTarget.SelectedItem, RelativeSource={RelativeSource AncestorType=ContextMenu}}" />
                             <Separator />
-                            <MenuItem Header="Добавить"
+                            <MenuItem Header="{loc:Tr 'Добавить'}"
                                       Command="{Binding PlacementTarget.DataContext.AddCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
                                   IsEnabled="{Binding PlacementTarget.DataContext.CanEdit, RelativeSource={RelativeSource AncestorType=ContextMenu}}" />
-                            <MenuItem Header="Обновить" InputGestureText="Ctrl+R"
+                            <MenuItem Header="{loc:Tr 'Обновить'}" InputGestureText="Ctrl+R"
                                       Command="{Binding PlacementTarget.DataContext.RefreshCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}" />
                         </ContextMenu>
                     </DataGrid.ContextMenu>
 
                     <DataGrid.Columns>
-                        <DataGridTemplateColumn Header="Объект" Width="*" MinWidth="240">
+                        <DataGridTemplateColumn Header="{loc:Tr 'Объект'}" Width="*" MinWidth="240">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
                                     <StackPanel VerticalAlignment="Center">
@@ -143,13 +144,13 @@
                             </DataGridTemplateColumn.CellTemplate>
                         </DataGridTemplateColumn>
 
-                        <DataGridTextColumn Header="Заказчик" Binding="{Binding Customer, Mode=OneWay}" Width="190" />
-                        <DataGridTextColumn Header="Сроки" Binding="{Binding PeriodDisplay, Mode=OneWay}" Width="180" />
-                        <DataGridTextColumn Header="Месяц начала" Binding="{Binding MonthDisplay, Mode=OneWay}" Width="130" />
-                        <DataGridTextColumn Header="Договор, BYN" Binding="{Binding ContractSum, StringFormat='{}{0:N0}', Mode=OneWay}" Width="130"
+                        <DataGridTextColumn Header="{loc:Tr 'Заказчик'}" Binding="{Binding Customer, Mode=OneWay}" Width="190" />
+                        <DataGridTextColumn Header="{loc:Tr 'Сроки'}" Binding="{Binding PeriodDisplay, Mode=OneWay}" Width="180" />
+                        <DataGridTextColumn Header="{loc:Tr 'Месяц начала'}" Binding="{Binding MonthDisplay, Mode=OneWay}" Width="130" />
+                        <DataGridTextColumn Header="{loc:Tr 'Договор, BYN'}" Binding="{Binding ContractSum, StringFormat='{}{0:N0}', Mode=OneWay}" Width="130"
                                             ElementStyle="{StaticResource NumericCell}" />
 
-                        <DataGridTemplateColumn Header="Готовность, %" Width="150"
+                        <DataGridTemplateColumn Header="{loc:Tr 'Готовность, %'}" Width="150"
                                                 HeaderStyle="{StaticResource ProgressHeaderStyle}">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
@@ -171,7 +172,7 @@
                             </DataGridTemplateColumn.CellTemplate>
                         </DataGridTemplateColumn>
 
-                        <DataGridTemplateColumn Header="Статус" Width="140">
+                        <DataGridTemplateColumn Header="{loc:Tr 'Статус'}" Width="140">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
                                     <Border Style="{StaticResource Badge}"
@@ -187,14 +188,14 @@
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
                                     <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                                        <Button Style="{StaticResource IconButton}" Width="30" Height="30" ToolTip="Изменить"
+                                        <Button Style="{StaticResource IconButton}" Width="30" Height="30" ToolTip="{loc:Tr 'Изменить'}"
                                                 IsEnabled="{Binding DataContext.CanEdit, RelativeSource={RelativeSource AncestorType=DataGrid}}"
                                                 Command="{Binding DataContext.EditCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
                                                 CommandParameter="{Binding}">
                                             <Path Data="{StaticResource IconEdit}" Stroke="{DynamicResource TextSecondaryBrush}"
                                                   StrokeThickness="1.6" Width="14" Height="14" Stretch="Uniform" />
                                         </Button>
-                                        <Button Style="{StaticResource IconButton}" Width="30" Height="30" ToolTip="Удалить"
+                                        <Button Style="{StaticResource IconButton}" Width="30" Height="30" ToolTip="{loc:Tr 'Удалить'}"
                                                 IsEnabled="{Binding DataContext.CanEdit, RelativeSource={RelativeSource AncestorType=DataGrid}}"
                                                 Command="{Binding DataContext.DeleteCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
                                                 CommandParameter="{Binding}">
@@ -208,19 +209,19 @@
                     </DataGrid.Columns>
                 </DataGrid>
 
-                <controls:EmptyState Title="Объектов пока нет"
-                                     Description="Создайте строительный объект, чтобы привязать к нему сметы, поступления и списания."
-                                     Icon="{StaticResource IconProjects}" ActionText="Добавить объект"
+                <controls:EmptyState Title="{loc:Tr 'Объектов пока нет'}"
+                                     Description="{loc:Tr 'Создайте строительный объект, чтобы привязать к нему сметы, поступления и списания.'}"
+                                     Icon="{StaticResource IconProjects}" ActionText="{loc:Tr 'Добавить объект'}"
                                      ActionCommand="{Binding AddCommand}"
                                      Visibility="{Binding IsEmpty, Converter={StaticResource BoolToVisibility}}" />
 
-                <controls:EmptyState Title="Объекты не найдены"
-                                     Description="Измените фильтр по статусу или поисковый запрос."
-                                     Icon="{StaticResource IconSearch}" ActionText="Сбросить фильтры"
+                <controls:EmptyState Title="{loc:Tr 'Объекты не найдены'}"
+                                     Description="{loc:Tr 'Измените фильтр по статусу или поисковый запрос.'}"
+                                     Icon="{StaticResource IconSearch}" ActionText="{loc:Tr 'Сбросить фильтры'}"
                                      ActionCommand="{Binding RefreshCommand}"
                                      Visibility="{Binding IsFilteredEmpty, Converter={StaticResource BoolToVisibility}}" />
 
-                <controls:LoadingOverlay IsBusy="{Binding IsBusy}" Message="Загружаем объекты…" />
+                <controls:LoadingOverlay IsBusy="{Binding IsBusy}" Message="{loc:Tr 'Загружаем объекты…'}" />
             </Grid>
         </Border>
     </Grid>

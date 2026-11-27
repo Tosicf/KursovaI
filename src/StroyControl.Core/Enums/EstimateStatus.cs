@@ -14,6 +14,13 @@ public enum EstimateStatus
     [Description("Утверждена")]
     Approved = 2,
 
+    /// <summary>
+    /// Утверждённая смета передана в производство: план зафиксирован, по актам
+    /// списания собирается факт, и план сравнивается с фактом по затратам.
+    /// </summary>
+    [Description("В работе")]
+    InWork = 3,
+
     [Description("Архив")]
-    Archived = 3
+    Archived = 4
 }

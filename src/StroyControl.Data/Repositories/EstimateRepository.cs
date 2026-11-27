@@ -221,12 +221,12 @@ public sealed class EstimateRepository : RepositoryBase<Estimate>, IEstimateRepo
         var entity = await db.Estimates.FirstOrDefaultAsync(e => e.Id == estimateId, cancellationToken)
                      ?? throw new AppException("Смета не найдена или удалена другим пользователем.");
 
-        if (entity.Status != EstimateStatus.Approved)
+        if (entity.Status is not (EstimateStatus.Approved or EstimateStatus.InWork))
         {
             _log.Warning("Сметы", $"Отказ в архивировании {entity.Number}: текущее состояние «{entity.StatusDisplay}»");
             throw new AppException(entity.Status == EstimateStatus.Archived
                 ? "Смета уже находится в архиве."
-                : "В архив отправляется только подтверждённая смета. Сначала нажмите «Подтвердить».");
+                : "В архив отправляется только утверждённая смета. Сначала нажмите «Подтвердить».");
         }
 
         entity.Status = EstimateStatus.Archived;
@@ -234,6 +234,31 @@ public sealed class EstimateRepository : RepositoryBase<Estimate>, IEstimateRepo
 
         await SaveAsync(db, cancellationToken, "Не удалось отправить смету в архив.");
         _log.Info("Сметы", $"Смета {entity.Number} отправлена в архив");
+    }
+
+    public async Task StartWorkAsync(int estimateId, CancellationToken cancellationToken = default)
+    {
+        await using var db = await Factory.CreateDbContextAsync(cancellationToken);
+        var entity = await db.Estimates.FirstOrDefaultAsync(e => e.Id == estimateId, cancellationToken)
+                     ?? throw new AppException("Смета не найдена или удалена другим пользователем.");
+
+        if (entity.Status != EstimateStatus.Approved)
+        {
+            _log.Warning("Сметы", $"Отказ в переводе в работу {entity.Number}: текущее состояние «{entity.StatusDisplay}»");
+
+            throw new AppException(entity.Status switch
+            {
+                EstimateStatus.Archived => "Архивная смета в работу не возвращается.",
+                EstimateStatus.InWork => "Смета уже находится в работе.",
+                _ => "В работу отправляется только утверждённая смета. Сначала нажмите «Подтвердить»."
+            });
+        }
+
+        entity.Status = EstimateStatus.InWork;
+        entity.UpdatedAt = DateTime.Now;
+
+        await SaveAsync(db, cancellationToken, "Не удалось отправить смету в работу.");
+        _log.Info("Сметы", $"Смета {entity.Number} передана в работу: план зафиксирован, факт собирается по актам списания");
     }
 
     /// <summary>Проверка состояния документа до любой попытки изменения.</summary>

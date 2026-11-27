@@ -32,7 +32,7 @@ public readonly record struct XlsxCell(string? Text, decimal? Number, XlsxStyle 
 /// <summary>
 /// Минимальная книга Excel (.xlsx) без сторонних библиотек: собирается как набор
 /// OOXML-частей в zip-архиве. Одного листа и девяти стилей хватает на все отчёты
-/// приложения (смета, отклонения, товарный чек).
+/// приложения (смета, отклонения, счёт-фактура).
 /// </summary>
 public sealed class XlsxBuilder
 {

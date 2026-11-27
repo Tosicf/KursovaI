@@ -16,6 +16,7 @@ public sealed class EstimateLockTests
     [InlineData(EstimateStatus.Draft, true)]
     [InlineData(EstimateStatus.OnReview, false)]
     [InlineData(EstimateStatus.Approved, false)]
+    [InlineData(EstimateStatus.InWork, false)]
     [InlineData(EstimateStatus.Archived, false)]
     public void IsEditable_OnlyForDraft(EstimateStatus status, bool expected)
     {
@@ -33,10 +34,19 @@ public sealed class EstimateLockTests
         Assert.False(new Estimate { Status = EstimateStatus.Draft }.IsArchived);
     }
 
+    [Fact]
+    public void IsInWork_OnlyForWorkStatus()
+    {
+        Assert.True(new Estimate { Status = EstimateStatus.InWork }.IsInWork);
+        Assert.False(new Estimate { Status = EstimateStatus.Approved }.IsInWork);
+        Assert.False(new Estimate { Status = EstimateStatus.Archived }.IsInWork);
+    }
+
     [Theory]
     [InlineData(EstimateStatus.Draft)]
     [InlineData(EstimateStatus.OnReview)]
     [InlineData(EstimateStatus.Approved)]
+    [InlineData(EstimateStatus.InWork)]
     [InlineData(EstimateStatus.Archived)]
     public void LockDisplay_IsNeverEmpty(EstimateStatus status)
     {

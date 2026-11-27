@@ -3,6 +3,7 @@ using System.ComponentModel;
 using System.Windows.Data;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using StroyControl.App.Localization;
 using StroyControl.App.Services;
 using StroyControl.Core.Entities;
 using StroyControl.Core.Interfaces;
@@ -28,7 +29,7 @@ public sealed partial class SuppliersViewModel : ViewModelBase
         ItemsView.Filter = FilterItem;
     }
 
-    public override string Title => "Поставщики";
+    public override string Title => L.T("Поставщики");
 
     public ObservableCollection<Supplier> Items { get; } = new();
 

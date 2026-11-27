@@ -1,4 +1,5 @@
-<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+<ResourceDictionary xmlns:loc="clr-namespace:StroyControl.App.Localization"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                     xmlns:editors="clr-namespace:StroyControl.App.ViewModels.Editors"
                     xmlns:behaviors="clr-namespace:StroyControl.App.Behaviors"
@@ -13,18 +14,18 @@
                     <ColumnDefinition Width="*" />
                 </Grid.ColumnDefinitions>
                 <StackPanel Margin="0,0,12,0">
-                    <TextBlock Text="Артикул *" Style="{StaticResource FieldLabel}" />
+                    <TextBlock Text="{loc:Tr 'Артикул *'}" Style="{StaticResource FieldLabel}" />
                     <TextBox Text="{Binding Code, UpdateSourceTrigger=PropertyChanged}" />
                 </StackPanel>
                 <StackPanel Grid.Column="1">
-                    <TextBlock Text="Категория" Style="{StaticResource FieldLabel}" />
+                    <TextBlock Text="{loc:Tr 'Категория'}" Style="{StaticResource FieldLabel}" />
                     <ComboBox IsEditable="True" ItemsSource="{Binding Categories}"
                               Text="{Binding Category, UpdateSourceTrigger=PropertyChanged}" />
                 </StackPanel>
             </Grid>
 
             <StackPanel Margin="0,16,0,0">
-                <TextBlock Text="Наименование *" Style="{StaticResource FieldLabel}" />
+                <TextBlock Text="{loc:Tr 'Наименование *'}" Style="{StaticResource FieldLabel}" />
                 <TextBox Text="{Binding Name, UpdateSourceTrigger=PropertyChanged}" />
             </StackPanel>
 
@@ -34,11 +35,11 @@
                     <ColumnDefinition Width="*" />
                 </Grid.ColumnDefinitions>
                 <StackPanel Margin="0,0,12,0">
-                    <TextBlock Text="Единица измерения" Style="{StaticResource FieldLabel}" />
+                    <TextBlock Text="{loc:Tr 'Единица измерения'}" Style="{StaticResource FieldLabel}" />
                     <ComboBox ItemsSource="{Binding Units}" SelectedItem="{Binding SelectedUnit, Mode=TwoWay}" DisplayMemberPath="Display" />
                 </StackPanel>
                 <StackPanel Grid.Column="1">
-                    <TextBlock Text="Учётная цена, BYN" Style="{StaticResource FieldLabel}" />
+                    <TextBlock Text="{loc:Tr 'Учётная цена, BYN'}" Style="{StaticResource FieldLabel}" />
                     <TextBox Text="{Binding Price, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource NumericTextBox}" />
                 </StackPanel>
             </Grid>
@@ -49,14 +50,14 @@
                     <ColumnDefinition Width="*" />
                 </Grid.ColumnDefinitions>
                 <StackPanel Margin="0,0,12,0">
-                    <TextBlock Text="Остаток на складе" Style="{StaticResource FieldLabel}" />
+                    <TextBlock Text="{loc:Tr 'Остаток на складе'}" Style="{StaticResource FieldLabel}" />
                     <TextBox Text="{Binding StockQuantity, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource NumericTextBox}" />
                 </StackPanel>
                 <StackPanel Grid.Column="1">
                     <StackPanel Orientation="Horizontal">
-                        <TextBlock Text="Минимальный запас" Style="{StaticResource FieldLabel}" />
+                        <TextBlock Text="{loc:Tr 'Минимальный запас'}" Style="{StaticResource FieldLabel}" />
                         <TextBlock Style="{StaticResource InfoHint}"
-                                   ToolTip="Страховой порог: когда остаток опускается до него, материал попадает в дефицит. Можно пересчитать по сметам кнопкой «Мин. запас по сметам» на странице «Материалы»: минимум = потребность по сметам − остаток." />
+                                   ToolTip="{loc:Tr 'Страховой порог: когда остаток опускается до него, материал попадает в дефицит. Можно пересчитать по сметам кнопкой «Мин. запас по сметам» на странице «Материалы»: минимум = потребность по сметам − остаток.'}" />
                     </StackPanel>
                     <TextBox Text="{Binding MinStock, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource NumericTextBox}" />
                 </StackPanel>
@@ -68,16 +69,16 @@
                     <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
                 <StackPanel Margin="0,0,12,0">
-                    <TextBlock Text="Поставщик" Style="{StaticResource FieldLabel}" />
+                    <TextBlock Text="{loc:Tr 'Поставщик'}" Style="{StaticResource FieldLabel}" />
                     <ComboBox ItemsSource="{Binding Suppliers}" SelectedItem="{Binding SelectedSupplier, Mode=TwoWay}"
                               DisplayMemberPath="Name" />
                 </StackPanel>
-                <CheckBox Grid.Column="1" Content="Материал активен" IsChecked="{Binding IsActive}" VerticalAlignment="Bottom"
+                <CheckBox Grid.Column="1" Content="{loc:Tr 'Материал активен'}" IsChecked="{Binding IsActive}" VerticalAlignment="Bottom"
                           Margin="0,0,4,12" />
             </Grid>
 
             <StackPanel Margin="0,16,0,0">
-                <TextBlock Text="Примечание" Style="{StaticResource FieldLabel}" />
+                <TextBlock Text="{loc:Tr 'Примечание'}" Style="{StaticResource FieldLabel}" />
                 <TextBox Text="{Binding Note, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource MultilineTextBox}" />
             </StackPanel>
         </StackPanel>
@@ -92,11 +93,11 @@
                     <ColumnDefinition Width="1*" />
                 </Grid.ColumnDefinitions>
                 <StackPanel Margin="0,0,12,0">
-                    <TextBlock Text="Наименование *" Style="{StaticResource FieldLabel}" />
+                    <TextBlock Text="{loc:Tr 'Наименование *'}" Style="{StaticResource FieldLabel}" />
                     <TextBox Text="{Binding Name, UpdateSourceTrigger=PropertyChanged}" />
                 </StackPanel>
                 <StackPanel Grid.Column="1">
-                    <TextBlock Text="УНП" Style="{StaticResource FieldLabel}" />
+                    <TextBlock Text="{loc:Tr 'УНП'}" Style="{StaticResource FieldLabel}" />
                     <TextBox Text="{Binding Unp, UpdateSourceTrigger=PropertyChanged}" />
                 </StackPanel>
             </Grid>
@@ -107,11 +108,11 @@
                     <ColumnDefinition Width="*" />
                 </Grid.ColumnDefinitions>
                 <StackPanel Margin="0,0,12,0">
-                    <TextBlock Text="Контактное лицо" Style="{StaticResource FieldLabel}" />
+                    <TextBlock Text="{loc:Tr 'Контактное лицо'}" Style="{StaticResource FieldLabel}" />
                     <TextBox Text="{Binding ContactPerson, UpdateSourceTrigger=PropertyChanged}" />
                 </StackPanel>
                 <StackPanel Grid.Column="1">
-                    <TextBlock Text="Телефон" Style="{StaticResource FieldLabel}" />
+                    <TextBlock Text="{loc:Tr 'Телефон'}" Style="{StaticResource FieldLabel}" />
                     <TextBox Text="{Binding Phone, UpdateSourceTrigger=PropertyChanged}" />
                 </StackPanel>
             </Grid>
@@ -126,18 +127,18 @@
                     <TextBox Text="{Binding Email, UpdateSourceTrigger=PropertyChanged}" />
                 </StackPanel>
                 <StackPanel Grid.Column="1">
-                    <TextBlock Text="Надёжность (1–5)" Style="{StaticResource FieldLabel}" />
+                    <TextBlock Text="{loc:Tr 'Надёжность (1–5)'}" Style="{StaticResource FieldLabel}" />
                     <TextBox Text="{Binding Rating, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource NumericTextBox}" />
                 </StackPanel>
             </Grid>
 
             <StackPanel Margin="0,16,0,0">
-                <TextBlock Text="Адрес" Style="{StaticResource FieldLabel}" />
+                <TextBlock Text="{loc:Tr 'Адрес'}" Style="{StaticResource FieldLabel}" />
                 <TextBox Text="{Binding Address, UpdateSourceTrigger=PropertyChanged}" />
             </StackPanel>
 
             <StackPanel Margin="0,16,0,0">
-                <TextBlock Text="Примечание" Style="{StaticResource FieldLabel}" />
+                <TextBlock Text="{loc:Tr 'Примечание'}" Style="{StaticResource FieldLabel}" />
                 <TextBox Text="{Binding Note, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource MultilineTextBox}" />
             </StackPanel>
         </StackPanel>
@@ -152,17 +153,17 @@
                     <ColumnDefinition Width="2*" />
                 </Grid.ColumnDefinitions>
                 <StackPanel Margin="0,0,12,0">
-                    <TextBlock Text="Шифр объекта *" Style="{StaticResource FieldLabel}" />
+                    <TextBlock Text="{loc:Tr 'Шифр объекта *'}" Style="{StaticResource FieldLabel}" />
                     <TextBox Text="{Binding Code, UpdateSourceTrigger=PropertyChanged}" />
                 </StackPanel>
                 <StackPanel Grid.Column="1">
-                    <TextBlock Text="Наименование *" Style="{StaticResource FieldLabel}" />
+                    <TextBlock Text="{loc:Tr 'Наименование *'}" Style="{StaticResource FieldLabel}" />
                     <TextBox Text="{Binding Name, UpdateSourceTrigger=PropertyChanged}" />
                 </StackPanel>
             </Grid>
 
             <StackPanel Margin="0,16,0,0">
-                <TextBlock Text="Адрес" Style="{StaticResource FieldLabel}" />
+                <TextBlock Text="{loc:Tr 'Адрес'}" Style="{StaticResource FieldLabel}" />
                 <TextBox Text="{Binding Address, UpdateSourceTrigger=PropertyChanged}" />
             </StackPanel>
 
@@ -172,11 +173,11 @@
                     <ColumnDefinition Width="*" />
                 </Grid.ColumnDefinitions>
                 <StackPanel Margin="0,0,12,0">
-                    <TextBlock Text="Заказчик" Style="{StaticResource FieldLabel}" />
+                    <TextBlock Text="{loc:Tr 'Заказчик'}" Style="{StaticResource FieldLabel}" />
                     <TextBox Text="{Binding Customer, UpdateSourceTrigger=PropertyChanged}" />
                 </StackPanel>
                 <StackPanel Grid.Column="1">
-                    <TextBlock Text="Ответственный прораб" Style="{StaticResource FieldLabel}" />
+                    <TextBlock Text="{loc:Tr 'Ответственный прораб'}" Style="{StaticResource FieldLabel}" />
                     <TextBox Text="{Binding ManagerName, UpdateSourceTrigger=PropertyChanged}" />
                 </StackPanel>
             </Grid>
@@ -188,15 +189,15 @@
                     <ColumnDefinition Width="*" />
                 </Grid.ColumnDefinitions>
                 <StackPanel Margin="0,0,12,0">
-                    <TextBlock Text="Договорная стоимость, BYN" Style="{StaticResource FieldLabel}" />
+                    <TextBlock Text="{loc:Tr 'Договорная стоимость, BYN'}" Style="{StaticResource FieldLabel}" />
                     <TextBox Text="{Binding ContractSum, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource NumericTextBox}" />
                 </StackPanel>
                 <StackPanel Grid.Column="1" Margin="0,0,12,0">
-                    <TextBlock Text="Площадь строения, м²" Style="{StaticResource FieldLabel}" />
+                    <TextBlock Text="{loc:Tr 'Площадь строения, м²'}" Style="{StaticResource FieldLabel}" />
                     <TextBox Text="{Binding TotalArea, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource NumericTextBox}" />
                 </StackPanel>
                 <StackPanel Grid.Column="2">
-                    <TextBlock Text="Статус" Style="{StaticResource FieldLabel}" />
+                    <TextBlock Text="{loc:Tr 'Статус'}" Style="{StaticResource FieldLabel}" />
                     <ComboBox ItemsSource="{Binding Statuses}" SelectedItem="{Binding SelectedStatus, Mode=TwoWay}"
                               DisplayMemberPath="Display" />
                 </StackPanel>
@@ -209,25 +210,25 @@
                     <ColumnDefinition Width="*" />
                 </Grid.ColumnDefinitions>
                 <StackPanel Margin="0,0,12,0">
-                    <TextBlock Text="Дата начала" Style="{StaticResource FieldLabel}" />
+                    <TextBlock Text="{loc:Tr 'Дата начала'}" Style="{StaticResource FieldLabel}" />
                     <controls:DateField SelectedDate="{Binding StartDate, Mode=TwoWay}" />
                 </StackPanel>
                 <StackPanel Grid.Column="1" Margin="0,0,12,0">
-                    <TextBlock Text="Плановое окончание" Style="{StaticResource FieldLabel}" />
+                    <TextBlock Text="{loc:Tr 'Плановое окончание'}" Style="{StaticResource FieldLabel}" />
                     <controls:DateField SelectedDate="{Binding PlannedEndDate, Mode=TwoWay}" />
                 </StackPanel>
                 <StackPanel Grid.Column="2">
                     <StackPanel Orientation="Horizontal">
-                        <TextBlock Text="Готовность, %" Style="{StaticResource FieldLabel}" />
+                        <TextBlock Text="{loc:Tr 'Готовность, %'}" Style="{StaticResource FieldLabel}" />
                         <TextBlock Style="{StaticResource InfoHint}" FontSize="11" Margin="4,0,0,6"
-                                   ToolTip="Готовность — это экспертная оценка физического выполнения работ по объекту: она вводится вручную в карточке объекта (0–100 %) и не вычисляется из документов. Не путайте её с исполнением бюджета: там процент считается автоматически как фактические затраты ÷ сметная стоимость × 100 % и ограничен 100 %." />
+                                   ToolTip="{loc:Tr 'Готовность — это экспертная оценка физического выполнения работ по объекту: она вводится вручную в карточке объекта (0–100 %) и не вычисляется из документов. Не путайте её с исполнением бюджета: там процент считается автоматически как фактические затраты ÷ сметная стоимость × 100 % и ограничен 100 %.'}" />
                     </StackPanel>
                     <TextBox Text="{Binding ProgressPercent, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource NumericTextBox}" />
                 </StackPanel>
             </Grid>
 
             <StackPanel Margin="0,16,0,0">
-                <TextBlock Text="Примечание" Style="{StaticResource FieldLabel}" />
+                <TextBlock Text="{loc:Tr 'Примечание'}" Style="{StaticResource FieldLabel}" />
                 <TextBox Text="{Binding Note, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource MultilineTextBox}" />
             </StackPanel>
         </StackPanel>
@@ -242,11 +243,11 @@
                     <ColumnDefinition Width="2*" />
                 </Grid.ColumnDefinitions>
                 <StackPanel Margin="0,0,12,0">
-                    <TextBlock Text="Номер сметы *" Style="{StaticResource FieldLabel}" />
+                    <TextBlock Text="{loc:Tr 'Номер сметы *'}" Style="{StaticResource FieldLabel}" />
                     <TextBox Text="{Binding Number, UpdateSourceTrigger=PropertyChanged}" />
                 </StackPanel>
                 <StackPanel Grid.Column="1">
-                    <TextBlock Text="Наименование *" Style="{StaticResource FieldLabel}" />
+                    <TextBlock Text="{loc:Tr 'Наименование *'}" Style="{StaticResource FieldLabel}" />
                     <TextBox Text="{Binding Name, UpdateSourceTrigger=PropertyChanged}" />
                 </StackPanel>
             </Grid>
@@ -257,23 +258,23 @@
                     <ColumnDefinition Width="1*" />
                 </Grid.ColumnDefinitions>
                 <StackPanel Margin="0,0,12,0">
-                    <TextBlock Text="Строительный объект *" Style="{StaticResource FieldLabel}" />
+                    <TextBlock Text="{loc:Tr 'Строительный объект *'}" Style="{StaticResource FieldLabel}" />
                     <ComboBox ItemsSource="{Binding Projects}" SelectedItem="{Binding SelectedProject, Mode=TwoWay}"
                               DisplayMemberPath="Name" />
-                    <TextBlock Text="Статус меняется кнопками «Подтвердить» и «В архив» на странице смет."
+                    <TextBlock Text="{loc:Tr 'Статус меняется кнопками «Подтвердить» и «В архив» на странице смет.'}"
                                Style="{StaticResource Caption}" FontSize="11" TextWrapping="Wrap" Margin="2,6,0,0" />
                 </StackPanel>
                 <StackPanel Grid.Column="1">
-                    <TextBlock Text="Дата сметы *" Style="{StaticResource FieldLabel}" />
+                    <TextBlock Text="{loc:Tr 'Дата сметы *'}" Style="{StaticResource FieldLabel}" />
                     <controls:DateField SelectedDate="{Binding Date, Mode=TwoWay}" MaxDate="{Binding MaxDate}" />
-                    <TextBlock Text="Месяц даты определяет, в какой группе списков и на главной панели показывается смета."
+                    <TextBlock Text="{loc:Tr 'Месяц даты определяет, в какой группе списков и на главной панели показывается смета.'}"
                                Style="{StaticResource Caption}" FontSize="11" TextWrapping="Wrap" Margin="2,6,0,0" />
                 </StackPanel>
             </Grid>
 
             <Border Background="{DynamicResource SurfaceAltBrush}" CornerRadius="12" Padding="14" Margin="0,16,0,0">
                 <StackPanel>
-                    <TextBlock Text="Параметры расчёта отчёта" FontWeight="SemiBold" Margin="0,0,0,10" />
+                    <TextBlock Text="{loc:Tr 'Параметры расчёта отчёта'}" FontWeight="SemiBold" Margin="0,0,0,10" />
                     <Grid>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*" />
@@ -281,25 +282,25 @@
                             <ColumnDefinition Width="*" />
                         </Grid.ColumnDefinitions>
                         <StackPanel Margin="0,0,12,0">
-                            <TextBlock Text="Наценка, %" Style="{StaticResource FieldLabel}" />
+                            <TextBlock Text="{loc:Tr 'Наценка, %'}" Style="{StaticResource FieldLabel}" />
                             <TextBox Text="{Binding MarkupPercent, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource NumericTextBox}" />
                         </StackPanel>
                         <StackPanel Grid.Column="1" Margin="0,0,12,0">
-                            <TextBlock Text="Прибыль, %" Style="{StaticResource FieldLabel}" />
+                            <TextBlock Text="{loc:Tr 'Прибыль, %'}" Style="{StaticResource FieldLabel}" />
                             <TextBox Text="{Binding ProfitPercent, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource NumericTextBox}" />
                         </StackPanel>
                         <StackPanel Grid.Column="2">
-                            <TextBlock Text="Доля ЗП рабочих, %" Style="{StaticResource FieldLabel}" />
+                            <TextBlock Text="{loc:Tr 'Доля ЗП рабочих, %'}" Style="{StaticResource FieldLabel}" />
                             <TextBox Text="{Binding LaborSharePercent, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource NumericTextBox}" />
                         </StackPanel>
                     </Grid>
-                    <TextBlock Text="Применяются в отчёте по смете: цена с наценкой, прибыль и зарплата рабочих."
+                    <TextBlock Text="{loc:Tr 'Применяются в отчёте по смете: цена с наценкой, прибыль и зарплата рабочих.'}"
                                Style="{StaticResource Caption}" FontSize="11" Margin="2,8,0,0" TextWrapping="Wrap" />
                 </StackPanel>
             </Border>
 
             <StackPanel Margin="0,16,0,0">
-                <TextBlock Text="Примечание" Style="{StaticResource FieldLabel}" />
+                <TextBlock Text="{loc:Tr 'Примечание'}" Style="{StaticResource FieldLabel}" />
                 <TextBox Text="{Binding Note, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource MultilineTextBox}" />
             </StackPanel>
         </StackPanel>
@@ -308,12 +309,12 @@
     <!-- ==================== Позиция сметы ==================== -->
     <DataTemplate DataType="{x:Type editors:EstimateItemEditorViewModel}">
         <StackPanel>
-            <CheckBox Content="Это работа (выполняется рабочими, со склада не списывается)"
+            <CheckBox Content="{loc:Tr 'Это работа (выполняется рабочими, со склада не списывается)'}"
                       IsChecked="{Binding IsWork, Mode=TwoWay}" Margin="2,0,0,14" />
 
             <!-- Материал из справочника -->
             <StackPanel Visibility="{Binding IsWork, Converter={StaticResource BoolToVisibility}, ConverterParameter=invert}">
-                <TextBlock Text="Материал *" Style="{StaticResource FieldLabel}" />
+                <TextBlock Text="{loc:Tr 'Материал *'}" Style="{StaticResource FieldLabel}" />
                 <ComboBox ItemsSource="{Binding Materials}" SelectedItem="{Binding SelectedMaterial, Mode=TwoWay}"
                           DisplayMemberPath="Name" />
                 <TextBlock Text="{Binding StockHint}" Style="{StaticResource Caption}" FontSize="11" Margin="2,6,0,0" />
@@ -328,11 +329,11 @@
                         <ColumnDefinition Width="1*" />
                     </Grid.ColumnDefinitions>
                     <StackPanel Margin="0,0,12,0">
-                        <TextBlock Text="Наименование работы *" Style="{StaticResource FieldLabel}" />
+                        <TextBlock Text="{loc:Tr 'Наименование работы *'}" Style="{StaticResource FieldLabel}" />
                         <TextBox Text="{Binding WorkName, UpdateSourceTrigger=PropertyChanged}" />
                     </StackPanel>
                     <StackPanel Grid.Column="1">
-                        <TextBlock Text="Единица измерения *" Style="{StaticResource FieldLabel}" />
+                        <TextBlock Text="{loc:Tr 'Единица измерения *'}" Style="{StaticResource FieldLabel}" />
                         <TextBox Text="{Binding WorkUnit, UpdateSourceTrigger=PropertyChanged}" />
                     </StackPanel>
                 </Grid>
@@ -345,11 +346,11 @@
                     <ColumnDefinition Width="*" />
                 </Grid.ColumnDefinitions>
                 <StackPanel Margin="0,0,12,0">
-                    <TextBlock Text="Раздел сметы *" Style="{StaticResource FieldLabel}" />
+                    <TextBlock Text="{loc:Tr 'Раздел сметы *'}" Style="{StaticResource FieldLabel}" />
                     <TextBox Text="{Binding Section, UpdateSourceTrigger=PropertyChanged}" />
                 </StackPanel>
                 <StackPanel Grid.Column="1">
-                    <TextBlock Text="Плановое количество *" Style="{StaticResource FieldLabel}" />
+                    <TextBlock Text="{loc:Tr 'Плановое количество *'}" Style="{StaticResource FieldLabel}" />
                     <Grid>
                         <TextBox Text="{Binding PlannedQuantity, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource NumericTextBox}"
                                  Padding="12,0,44,0" />
@@ -365,11 +366,11 @@
                     <ColumnDefinition Width="*" />
                 </Grid.ColumnDefinitions>
                 <StackPanel Margin="0,0,12,0">
-                    <TextBlock Text="Плановая цена за единицу, BYN *" Style="{StaticResource FieldLabel}" />
+                    <TextBlock Text="{loc:Tr 'Плановая цена за единицу, BYN *'}" Style="{StaticResource FieldLabel}" />
                     <TextBox Text="{Binding PlannedUnitPrice, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource NumericTextBox}" />
                 </StackPanel>
                 <StackPanel Grid.Column="1">
-                    <TextBlock Text="Плановая стоимость" Style="{StaticResource FieldLabel}" />
+                    <TextBlock Text="{loc:Tr 'Плановая стоимость'}" Style="{StaticResource FieldLabel}" />
                     <Border Background="{DynamicResource SurfaceAltBrush}" CornerRadius="10" Height="40" Padding="12,0">
                         <TextBlock Text="{Binding PlannedCost, StringFormat={}{0:N2} BYN}" FontSize="13" FontWeight="SemiBold"
                                    VerticalAlignment="Center" HorizontalAlignment="Right" />
@@ -378,7 +379,7 @@
             </Grid>
 
             <StackPanel Margin="0,16,0,0">
-                <TextBlock Text="Примечание" Style="{StaticResource FieldLabel}" />
+                <TextBlock Text="{loc:Tr 'Примечание'}" Style="{StaticResource FieldLabel}" />
                 <TextBox Text="{Binding Note, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource MultilineTextBox}" />
             </StackPanel>
         </StackPanel>
@@ -393,11 +394,11 @@
                     <ColumnDefinition Width="1*" />
                 </Grid.ColumnDefinitions>
                 <StackPanel Margin="0,0,12,0">
-                    <TextBlock Text="Номер накладной *" Style="{StaticResource FieldLabel}" />
+                    <TextBlock Text="{loc:Tr 'Номер накладной *'}" Style="{StaticResource FieldLabel}" />
                     <TextBox Text="{Binding Number, UpdateSourceTrigger=PropertyChanged}" />
                 </StackPanel>
                 <StackPanel Grid.Column="1">
-                    <TextBlock Text="Дата поступления" Style="{StaticResource FieldLabel}" />
+                    <TextBlock Text="{loc:Tr 'Дата поступления'}" Style="{StaticResource FieldLabel}" />
                     <controls:DateField SelectedDate="{Binding Date, Mode=TwoWay}" MaxDate="{Binding MaxDate}" />
                 </StackPanel>
             </Grid>
@@ -408,30 +409,30 @@
                     <ColumnDefinition Width="*" />
                 </Grid.ColumnDefinitions>
                 <StackPanel Margin="0,0,12,0">
-                    <TextBlock Text="Поставщик *" Style="{StaticResource FieldLabel}" />
+                    <TextBlock Text="{loc:Tr 'Поставщик *'}" Style="{StaticResource FieldLabel}" />
                     <ComboBox ItemsSource="{Binding Suppliers}" SelectedItem="{Binding SelectedSupplier, Mode=TwoWay}"
                               DisplayMemberPath="Name" />
                 </StackPanel>
                 <StackPanel Grid.Column="1">
-                    <TextBlock Text="Объект (необязательно)" Style="{StaticResource FieldLabel}" />
+                    <TextBlock Text="{loc:Tr 'Объект (необязательно)'}" Style="{StaticResource FieldLabel}" />
                     <ComboBox ItemsSource="{Binding Projects}" SelectedItem="{Binding SelectedProject, Mode=TwoWay}"
                               DisplayMemberPath="Name" />
                 </StackPanel>
             </Grid>
 
             <StackPanel Margin="0,16,0,0">
-                <TextBlock Text="Номер ТТН" Style="{StaticResource FieldLabel}" />
+                <TextBlock Text="{loc:Tr 'Номер счёта-фактуры'}" Style="{StaticResource FieldLabel}" />
                 <TextBox Text="{Binding InvoiceNumber, UpdateSourceTrigger=PropertyChanged}" />
             </StackPanel>
 
             <Grid Margin="0,18,0,8">
-                <TextBlock Text="Строки поступления" Style="{StaticResource FieldLabel}" VerticalAlignment="Center" />
+                <TextBlock Text="{loc:Tr 'Строки поступления'}" Style="{StaticResource FieldLabel}" VerticalAlignment="Center" />
                 <Button HorizontalAlignment="Right" Style="{StaticResource GhostButton}" Height="30" Padding="10,0"
                         Command="{Binding AddItemCommand}">
                     <StackPanel Orientation="Horizontal">
                         <Path Data="{StaticResource IconPlus}" Stroke="{DynamicResource AccentBrush}" StrokeThickness="2"
                               Width="12" Height="12" Stretch="Uniform" VerticalAlignment="Center" />
-                        <TextBlock Text="Добавить строку" Foreground="{DynamicResource AccentBrush}" Margin="6,0,0,0"
+                        <TextBlock Text="{loc:Tr 'Добавить строку'}" Foreground="{DynamicResource AccentBrush}" Margin="6,0,0,0"
                                    FontSize="12" VerticalAlignment="Center" />
                     </StackPanel>
                 </Button>
@@ -457,7 +458,7 @@
                         </Style>
                     </DataGrid.CellStyle>
                     <DataGrid.Columns>
-                        <DataGridTemplateColumn Header="Материал" Width="*">
+                        <DataGridTemplateColumn Header="{loc:Tr 'Материал'}" Width="*">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
                                     <ComboBox ItemsSource="{Binding DataContext.Materials, RelativeSource={RelativeSource AncestorType=DataGrid}}"
@@ -467,7 +468,7 @@
                             </DataGridTemplateColumn.CellTemplate>
                         </DataGridTemplateColumn>
 
-                        <DataGridTemplateColumn Header="Количество" Width="130">
+                        <DataGridTemplateColumn Header="{loc:Tr 'Количество'}" Width="130">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
                                     <TextBox Text="{Binding Quantity, UpdateSourceTrigger=PropertyChanged}"
@@ -476,7 +477,7 @@
                             </DataGridTemplateColumn.CellTemplate>
                         </DataGridTemplateColumn>
 
-                        <DataGridTemplateColumn Header="Цена, BYN" Width="126">
+                        <DataGridTemplateColumn Header="{loc:Tr 'Цена, BYN'}" Width="126">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
                                     <TextBox Text="{Binding UnitPrice, UpdateSourceTrigger=PropertyChanged}"
@@ -485,7 +486,7 @@
                             </DataGridTemplateColumn.CellTemplate>
                         </DataGridTemplateColumn>
 
-                        <DataGridTemplateColumn Header="Сумма" Width="120">
+                        <DataGridTemplateColumn Header="{loc:Tr 'Сумма'}" Width="120">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
                                     <TextBlock Text="{Binding Cost, StringFormat={}{0:N2}}" HorizontalAlignment="Right"
@@ -497,7 +498,7 @@
                         <DataGridTemplateColumn Header="" Width="44">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
-                                    <Button Style="{StaticResource IconButton}" Width="28" Height="28" ToolTip="Удалить строку"
+                                    <Button Style="{StaticResource IconButton}" Width="28" Height="28" ToolTip="{loc:Tr 'Удалить строку'}"
                                             Command="{Binding DataContext.RemoveItemCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
                                             CommandParameter="{Binding}">
                                         <Path Data="{StaticResource IconTrash}" Stroke="{DynamicResource DangerBrush}"
@@ -517,7 +518,7 @@
             </Grid>
 
             <StackPanel Margin="0,14,0,0">
-                <TextBlock Text="Примечание" Style="{StaticResource FieldLabel}" />
+                <TextBlock Text="{loc:Tr 'Примечание'}" Style="{StaticResource FieldLabel}" />
                 <TextBox Text="{Binding Note, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource MultilineTextBox}" />
             </StackPanel>
         </StackPanel>
@@ -532,12 +533,12 @@
                     <ColumnDefinition Width="*" />
                 </Grid.ColumnDefinitions>
                 <StackPanel Margin="0,0,12,0">
-                    <TextBlock Text="Строительный объект *" Style="{StaticResource FieldLabel}" />
+                    <TextBlock Text="{loc:Tr 'Строительный объект *'}" Style="{StaticResource FieldLabel}" />
                     <ComboBox ItemsSource="{Binding Projects}" SelectedItem="{Binding SelectedProject, Mode=TwoWay}"
                               DisplayMemberPath="Name" />
                 </StackPanel>
                 <StackPanel Grid.Column="1">
-                    <TextBlock Text="Материал *" Style="{StaticResource FieldLabel}" />
+                    <TextBlock Text="{loc:Tr 'Материал *'}" Style="{StaticResource FieldLabel}" />
                     <ComboBox ItemsSource="{Binding Materials}" SelectedItem="{Binding SelectedMaterial, Mode=TwoWay}"
                               DisplayMemberPath="Name" />
                 </StackPanel>
@@ -563,7 +564,7 @@
                     <ColumnDefinition Width="*" />
                 </Grid.ColumnDefinitions>
                 <StackPanel Margin="0,0,12,0">
-                    <TextBlock Text="Количество *" Style="{StaticResource FieldLabel}" />
+                    <TextBlock Text="{loc:Tr 'Количество *'}" Style="{StaticResource FieldLabel}" />
                     <Grid>
                         <TextBox Text="{Binding Quantity, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource NumericTextBox}"
                                  Padding="12,0,44,0" />
@@ -572,7 +573,7 @@
                     </Grid>
                 </StackPanel>
                 <StackPanel Grid.Column="1">
-                    <TextBlock Text="Цена списания, BYN" Style="{StaticResource FieldLabel}" />
+                    <TextBlock Text="{loc:Tr 'Цена списания, BYN'}" Style="{StaticResource FieldLabel}" />
                     <TextBox Text="{Binding UnitPrice, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource NumericTextBox}" />
                 </StackPanel>
             </Grid>
@@ -583,28 +584,28 @@
                     <ColumnDefinition Width="*" />
                 </Grid.ColumnDefinitions>
                 <StackPanel Margin="0,0,12,0">
-                    <TextBlock Text="Дата списания" Style="{StaticResource FieldLabel}" />
+                    <TextBlock Text="{loc:Tr 'Дата списания'}" Style="{StaticResource FieldLabel}" />
                     <controls:DateField SelectedDate="{Binding Date, Mode=TwoWay}" MaxDate="{Binding MaxDate}" />
                 </StackPanel>
                 <StackPanel Grid.Column="1">
-                    <TextBlock Text="Номер акта *" Style="{StaticResource FieldLabel}" />
+                    <TextBlock Text="{loc:Tr 'Номер акта *'}" Style="{StaticResource FieldLabel}" />
                     <TextBox Text="{Binding DocumentNumber, UpdateSourceTrigger=PropertyChanged}" />
                 </StackPanel>
             </Grid>
 
             <StackPanel Margin="0,16,0,0">
-                <TextBlock Text="Смета (для связи расхода с планом)" Style="{StaticResource FieldLabel}" />
+                <TextBlock Text="{loc:Tr 'Смета (для связи расхода с планом)'}" Style="{StaticResource FieldLabel}" />
                 <ComboBox ItemsSource="{Binding FilteredEstimates}" SelectedItem="{Binding SelectedEstimate, Mode=TwoWay}"
                           DisplayMemberPath="Number" />
             </StackPanel>
 
             <StackPanel Margin="0,16,0,0">
-                <TextBlock Text="Примечание" Style="{StaticResource FieldLabel}" />
+                <TextBlock Text="{loc:Tr 'Примечание'}" Style="{StaticResource FieldLabel}" />
                 <TextBox Text="{Binding Note, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource MultilineTextBox}" />
             </StackPanel>
 
             <Grid Margin="0,12,0,0">
-                <TextBlock Text="Стоимость списания" Style="{StaticResource Caption}" VerticalAlignment="Center" />
+                <TextBlock Text="{loc:Tr 'Стоимость списания'}" Style="{StaticResource Caption}" VerticalAlignment="Center" />
                 <TextBlock HorizontalAlignment="Right" FontSize="14" FontWeight="SemiBold"
                            Text="{Binding Cost, StringFormat={}{0:N2} BYN}" />
             </Grid>
@@ -620,11 +621,11 @@
                     <ColumnDefinition Width="1*" />
                 </Grid.ColumnDefinitions>
                 <StackPanel Margin="0,0,12,0">
-                    <TextBlock Text="ФИО сотрудника *" Style="{StaticResource FieldLabel}" />
+                    <TextBlock Text="{loc:Tr 'ФИО сотрудника *'}" Style="{StaticResource FieldLabel}" />
                     <TextBox Text="{Binding DisplayName, UpdateSourceTrigger=PropertyChanged}" />
                 </StackPanel>
                 <StackPanel Grid.Column="1">
-                    <TextBlock Text="Логин *" Style="{StaticResource FieldLabel}" />
+                    <TextBlock Text="{loc:Tr 'Логин *'}" Style="{StaticResource FieldLabel}" />
                     <TextBox Text="{Binding Login, UpdateSourceTrigger=PropertyChanged}" />
                 </StackPanel>
             </Grid>
@@ -635,11 +636,11 @@
                     <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
                 <StackPanel Margin="0,0,12,0">
-                    <TextBlock Text="Роль" Style="{StaticResource FieldLabel}" />
+                    <TextBlock Text="{loc:Tr 'Роль'}" Style="{StaticResource FieldLabel}" />
                     <ComboBox ItemsSource="{Binding Roles}" SelectedItem="{Binding SelectedRole, Mode=TwoWay}"
                               DisplayMemberPath="Display" />
                 </StackPanel>
-                <CheckBox Grid.Column="1" Content="Доступ разрешён" IsChecked="{Binding IsActive}" VerticalAlignment="Bottom"
+                <CheckBox Grid.Column="1" Content="{loc:Tr 'Доступ разрешён'}" IsChecked="{Binding IsActive}" VerticalAlignment="Bottom"
                           Margin="0,0,4,12" />
             </Grid>
 
@@ -653,7 +654,7 @@
                     <TextBox Text="{Binding Email, UpdateSourceTrigger=PropertyChanged}" />
                 </StackPanel>
                 <StackPanel Grid.Column="1">
-                    <TextBlock Text="Телефон" Style="{StaticResource FieldLabel}" />
+                    <TextBlock Text="{loc:Tr 'Телефон'}" Style="{StaticResource FieldLabel}" />
                     <TextBox Text="{Binding Phone, UpdateSourceTrigger=PropertyChanged}" />
                 </StackPanel>
             </Grid>

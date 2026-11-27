@@ -1,9 +1,10 @@
-<Window x:Class="StroyControl.App.Views.LoginWindow"
+<Window xmlns:loc="clr-namespace:StroyControl.App.Localization"
+        x:Class="StroyControl.App.Views.LoginWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:behaviors="clr-namespace:StroyControl.App.Behaviors"
         xmlns:vm="clr-namespace:StroyControl.App.ViewModels"
-        Title="СтройКонтроль — вход в систему"
+        Title="{loc:Tr 'СтройКонтроль — вход в систему'}"
         Width="1000"
         Height="640"
         WindowStyle="None"
@@ -45,15 +46,15 @@
                                   Stretch="Uniform" StrokeStartLineCap="Round" StrokeLineJoin="Round" />
                         </Border>
                         <StackPanel Margin="14,0,0,0" VerticalAlignment="Center">
-                            <TextBlock Text="СтройКонтроль" FontSize="19" FontWeight="SemiBold" Foreground="White" />
-                            <TextBlock Text="сетевое управление материалами" FontSize="11.5" Foreground="#B3AAC4" />
+                            <TextBlock Text="{loc:Tr 'СтройКонтроль'}" FontSize="19" FontWeight="SemiBold" Foreground="White" />
+                            <TextBlock Text="{loc:Tr 'сетевое управление материалами'}" FontSize="11.5" Foreground="#B3AAC4" />
                         </StackPanel>
                     </StackPanel>
 
                     <StackPanel Grid.Row="1" VerticalAlignment="Center">
-                        <TextBlock Text="Материалы, сметы и отклонения — в одной системе"
+                        <TextBlock Text="{loc:Tr 'Материалы, сметы и отклонения — в одной системе'}"
                                    FontSize="27" FontWeight="Bold" Foreground="White" TextWrapping="Wrap" LineHeight="34" />
-                        <TextBlock Text="Клиент-серверное приложение для инженеров ПТО, снабженцев и прорабов строительной организации."
+                        <TextBlock Text="{loc:Tr 'Клиент-серверное приложение для инженеров ПТО, снабженцев и прорабов строительной организации.'}"
                                    Foreground="#C3BAD6" TextWrapping="Wrap" Margin="0,14,20,26" LineHeight="20" />
 
                         <StackPanel>
@@ -61,25 +62,25 @@
                                 <Border Width="22" Height="22" CornerRadius="11" Background="#37284F">
                                     <Path Data="{StaticResource IconCheck}" Stroke="#C4A6FF" StrokeThickness="2" Width="11" Height="11" Stretch="Uniform" />
                                 </Border>
-                                <TextBlock Text="Учёт материалов, поставщиков и поступлений" Foreground="#E1DAEE" Margin="12,0,0,0" VerticalAlignment="Center" />
+                                <TextBlock Text="{loc:Tr 'Учёт материалов, поставщиков и поступлений'}" Foreground="#E1DAEE" Margin="12,0,0,0" VerticalAlignment="Center" />
                             </StackPanel>
                             <StackPanel Orientation="Horizontal" Margin="0,0,0,14">
                                 <Border Width="22" Height="22" CornerRadius="11" Background="#37284F">
                                     <Path Data="{StaticResource IconCheck}" Stroke="#C4A6FF" StrokeThickness="2" Width="11" Height="11" Stretch="Uniform" />
                                 </Border>
-                                <TextBlock Text="Сметы и фактические списания по объектам" Foreground="#E1DAEE" Margin="12,0,0,0" VerticalAlignment="Center" />
+                                <TextBlock Text="{loc:Tr 'Сметы и фактические списания по объектам'}" Foreground="#E1DAEE" Margin="12,0,0,0" VerticalAlignment="Center" />
                             </StackPanel>
                             <StackPanel Orientation="Horizontal" Margin="0,0,0,14">
                                 <Border Width="22" Height="22" CornerRadius="11" Background="#37284F">
                                     <Path Data="{StaticResource IconCheck}" Stroke="#C4A6FF" StrokeThickness="2" Width="11" Height="11" Stretch="Uniform" />
                                 </Border>
-                                <TextBlock Text="Анализ отклонений от сметы в реальном времени" Foreground="#E1DAEE" Margin="12,0,0,0" VerticalAlignment="Center" />
+                                <TextBlock Text="{loc:Tr 'Анализ отклонений от сметы в реальном времени'}" Foreground="#E1DAEE" Margin="12,0,0,0" VerticalAlignment="Center" />
                             </StackPanel>
                             <StackPanel Orientation="Horizontal">
                                 <Border Width="22" Height="22" CornerRadius="11" Background="#37284F">
                                     <Path Data="{StaticResource IconCheck}" Stroke="#C4A6FF" StrokeThickness="2" Width="11" Height="11" Stretch="Uniform" />
                                 </Border>
-                                <TextBlock Text="Разграничение прав доступа по ролям" Foreground="#E1DAEE" Margin="12,0,0,0" VerticalAlignment="Center" />
+                                <TextBlock Text="{loc:Tr 'Разграничение прав доступа по ролям'}" Foreground="#E1DAEE" Margin="12,0,0,0" VerticalAlignment="Center" />
                             </StackPanel>
                         </StackPanel>
                     </StackPanel>
@@ -109,19 +110,19 @@
                     <RowDefinition Height="Auto" />
                 </Grid.RowDefinitions>
 
-                <Button Style="{StaticResource IconButton}" HorizontalAlignment="Right" VerticalAlignment="Top" Click="OnCloseClick" ToolTip="Закрыть">
+                <Button Style="{StaticResource IconButton}" HorizontalAlignment="Right" VerticalAlignment="Top" Click="OnCloseClick" ToolTip="{loc:Tr 'Закрыть'}">
                     <Path Data="{StaticResource IconClose}" Stroke="{DynamicResource TextSecondaryBrush}" StrokeThickness="1.8"
                           Width="14" Height="14" Stretch="Uniform" StrokeStartLineCap="Round" />
                 </Button>
 
                 <StackPanel Grid.Row="1" VerticalAlignment="Center">
-                    <TextBlock Text="Вход в систему" Style="{StaticResource PageTitle}" />
-                    <TextBlock Text="Введите учётные данные, выданные администратором." Style="{StaticResource Caption}" Margin="0,6,0,26" />
+                    <TextBlock Text="{loc:Tr 'Вход в систему'}" Style="{StaticResource PageTitle}" />
+                    <TextBlock Text="{loc:Tr 'Введите учётные данные, выданные администратором.'}" Style="{StaticResource Caption}" Margin="0,6,0,26" />
 
-                    <TextBlock Text="Логин" Style="{StaticResource FieldLabel}" />
+                    <TextBlock Text="{loc:Tr 'Логин'}" Style="{StaticResource FieldLabel}" />
                     <TextBox Text="{Binding Login, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,16" />
 
-                    <TextBlock Text="Пароль" Style="{StaticResource FieldLabel}" />
+                    <TextBlock Text="{loc:Tr 'Пароль'}" Style="{StaticResource FieldLabel}" />
                     <PasswordBox behaviors:PasswordBoxHelper.BindPassword="True"
                                  behaviors:PasswordBoxHelper.BoundPassword="{Binding Password, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
 
@@ -136,11 +137,11 @@
                         <StackPanel Orientation="Horizontal">
                             <Path Data="{StaticResource IconLock}" Stroke="White" StrokeThickness="1.7" Width="16" Height="16"
                                   Stretch="Uniform" VerticalAlignment="Center" />
-                            <TextBlock Text="Войти" Foreground="White" FontWeight="SemiBold" Margin="8,0,0,0" VerticalAlignment="Center" />
+                            <TextBlock Text="{loc:Tr 'Войти'}" Foreground="White" FontWeight="SemiBold" Margin="8,0,0,0" VerticalAlignment="Center" />
                         </StackPanel>
                     </Button>
 
-                    <TextBlock Text="Быстрый вход (демонстрационные роли)" Style="{StaticResource Caption}" Margin="0,26,0,10" />
+                    <TextBlock Text="{loc:Tr 'Быстрый вход (демонстрационные роли)'}" Style="{StaticResource Caption}" Margin="0,26,0,10" />
                     <ItemsControl ItemsSource="{Binding DemoAccounts}">
                         <ItemsControl.ItemsPanel>
                             <ItemsPanelTemplate>

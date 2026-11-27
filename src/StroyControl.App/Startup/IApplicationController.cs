@@ -8,4 +8,7 @@ public interface IApplicationController
     void Logout();
 
     void OnMainWindowClosed();
+
+    /// <summary>Перестраивает главное окно (например, после смены языка интерфейса).</summary>
+    void ReloadShell();
 }

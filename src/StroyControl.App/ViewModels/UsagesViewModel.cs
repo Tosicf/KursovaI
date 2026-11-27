@@ -3,6 +3,7 @@ using System.ComponentModel;
 using System.Windows.Data;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using StroyControl.App.Localization;
 using StroyControl.App.Services;
 using StroyControl.Core.Entities;
 using StroyControl.Core.Interfaces;
@@ -51,7 +52,7 @@ public sealed partial class UsagesViewModel : ViewModelBase
         Period = new PeriodFilterViewModel(ApplyFilter);
     }
 
-    public override string Title => "Списания";
+    public override string Title => L.T("Списания");
 
     public ObservableCollection<MaterialUsage> Items { get; } = new();
 
@@ -188,6 +189,10 @@ public sealed partial class UsagesViewModel : ViewModelBase
             Period.Rebuild(Items.Select(u => (DateTime?)u.Date));
             ApplyFilter();
             _toasts.Success("Списание оформлено", $"{created.MaterialName} · {created.Quantity:N2} {created.UnitDisplay}");
+
+            // Акт формируется в момент списания материала: сразу после сохранения
+            // остатки уже уменьшены, поэтому печатная форма открывается автоматически.
+            _dialogs.ShowUsageAct(created);
         }
         catch (Exception ex)
         {
@@ -258,6 +263,31 @@ public sealed partial class UsagesViewModel : ViewModelBase
 
             UpdateStatistics();
             _toasts.Error("Не удалось удалить списание", ex.Message);
+        }
+    }
+
+    /// <summary>
+    /// Печать акта списания: по выбранной в списке строке или по переданной
+    /// контекстным меню. Печатная форма собирается из сохранённых данных,
+    /// поэтому акт можно распечатать повторно в любой момент.
+    /// </summary>
+    [RelayCommand]
+    private void PrintAct(MaterialUsage? usage)
+    {
+        var target = usage ?? SelectedUsage;
+        if (target is null)
+        {
+            _toasts.Info("Акт списания", "Выберите списание в списке.");
+            return;
+        }
+
+        try
+        {
+            _dialogs.ShowUsageAct(target);
+        }
+        catch (Exception ex)
+        {
+            _toasts.Error("Не удалось открыть акт списания", ex.Message);
         }
     }
 
