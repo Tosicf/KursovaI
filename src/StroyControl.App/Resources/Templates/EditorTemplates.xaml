@@ -683,7 +683,8 @@
                 </StackPanel>
                 <StackPanel Grid.Column="1" Margin="0,0,12,0">
                     <TextBlock Text="{loc:Tr 'Номер акта *'}" Style="{StaticResource FieldLabel}" />
-                    <TextBox Text="{Binding DocumentNumber, UpdateSourceTrigger=PropertyChanged}" />
+                    <TextBox Text="{Binding DocumentNumber, UpdateSourceTrigger=PropertyChanged}"
+                             ToolTip="{loc:Tr 'Свободный номер подставляется автоматически (АВР-гг-NNNN), можно изменить вручную'}" />
                 </StackPanel>
                 <StackPanel Grid.Column="2">
                     <TextBlock Text="{loc:Tr 'Дата акта'}" Style="{StaticResource FieldLabel}" />
@@ -709,7 +710,8 @@
             <Grid Margin="0,18,0,8">
                 <TextBlock Text="{loc:Tr 'Выполненные работы'}" Style="{StaticResource FieldLabel}" VerticalAlignment="Center" />
                 <Button HorizontalAlignment="Right" Style="{StaticResource GhostButton}" Height="30" Padding="10,0"
-                        Command="{Binding AddWorkCommand}">
+                        Command="{Binding AddWorkCommand}" IsEnabled="{Binding CanAddWork}"
+                        ToolTip="{loc:Tr 'Каждая позиция сметы добавляется в акт один раз'}">
                     <StackPanel Orientation="Horizontal">
                         <Path Data="{StaticResource IconPlus}" Stroke="{DynamicResource AccentBrush}" StrokeThickness="2"
                               Width="12" Height="12" Stretch="Uniform" VerticalAlignment="Center" />
@@ -795,7 +797,8 @@
             <Grid Margin="0,16,0,8">
                 <TextBlock Text="{loc:Tr 'Материалы, списываемые со склада'}" Style="{StaticResource FieldLabel}" VerticalAlignment="Center" />
                 <Button HorizontalAlignment="Right" Style="{StaticResource GhostButton}" Height="30" Padding="10,0"
-                        Command="{Binding AddMaterialCommand}">
+                        Command="{Binding AddMaterialCommand}" IsEnabled="{Binding CanAddMaterial}"
+                        ToolTip="{loc:Tr 'Каждая позиция сметы добавляется в акт один раз'}">
                     <StackPanel Orientation="Horizontal">
                         <Path Data="{StaticResource IconPlus}" Stroke="{DynamicResource AccentBrush}" StrokeThickness="2"
                               Width="12" Height="12" Stretch="Uniform" VerticalAlignment="Center" />

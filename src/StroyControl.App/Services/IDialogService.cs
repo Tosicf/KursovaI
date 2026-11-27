@@ -60,7 +60,8 @@ public interface IDialogService
         IReadOnlyList<Material> materials,
         int? currentUserId,
         int? estimateId = null,
-        int? estimateItemId = null);
+        int? estimateItemId = null,
+        IReadOnlyList<string>? usedNumbers = null);
 
     void ShowWorkCompletionAct(WorkCompletion completion);
 

@@ -5,6 +5,7 @@ using CommunityToolkit.Mvvm.Input;
 using StroyControl.App.Localization;
 using StroyControl.Core.Entities;
 using StroyControl.Core.Enums;
+using StroyControl.Core.Services;
 
 namespace StroyControl.App.ViewModels.Editors;
 
@@ -17,6 +18,12 @@ public sealed partial class WorkCompletionEditorViewModel : EditorViewModelBase
 {
     private readonly WorkCompletion? _source;
 
+    /// <summary>Номера уже сохранённых актов — по ним подбирается свободный номер.</summary>
+    private readonly IReadOnlyList<string> _usedNumbers;
+
+    /// <summary>Номер, который форма подставила сама: если его не правили, при смене даты он пересчитывается.</summary>
+    private string _autoNumber;
+
     /// <summary>Пока идёт заполнение формы, смена сметы не должна пересобирать строки.</summary>
     private bool _loading = true;
 
@@ -28,9 +35,11 @@ public sealed partial class WorkCompletionEditorViewModel : EditorViewModelBase
         IReadOnlyList<Material> materials,
         int? currentUserId,
         int? estimateId = null,
-        int? estimateItemId = null)
+        int? estimateItemId = null,
+        IReadOnlyList<string>? usedNumbers = null)
     {
         _source = source;
+        _usedNumbers = usedNumbers ?? Array.Empty<string>();
         Materials = materials;
         CurrentUserId = currentUserId;
 
@@ -43,7 +52,11 @@ public sealed partial class WorkCompletionEditorViewModel : EditorViewModelBase
         SelectedEstimate = Estimates.FirstOrDefault(e => e.Id == (source?.EstimateId ?? estimateId))
                            ?? Estimates.FirstOrDefault();
         Date = source?.Date ?? DateTime.Today;
-        DocumentNumber = source?.DocumentNumber ?? $"АВР-{DateTime.Now:yy}-{DateTime.Now:MMdd}";
+
+        // Номер уникален в базе, поэтому берётся первый свободный по году акта, а не шаблон
+        // по дате: иначе второй акт за день падал с ошибкой «номер уже используется».
+        _autoNumber = source?.DocumentNumber ?? WorkCompletionNumbering.Next(_usedNumbers, Date);
+        DocumentNumber = _autoNumber;
         Note = source?.Note;
 
         FillRows(source);
@@ -135,6 +148,15 @@ public sealed partial class WorkCompletionEditorViewModel : EditorViewModelBase
 
     public bool IsEmpty => Works.Count == 0 && MaterialRows.Count == 0;
 
+    partial void OnDateChanged(DateTime value)
+    {
+        // Номер «привязан» к году: пока его не правили вручную, при смене даты он пересчитывается.
+        if (_source is not null || DocumentNumber != _autoNumber) return;
+
+        _autoNumber = WorkCompletionNumbering.Next(_usedNumbers, value);
+        DocumentNumber = _autoNumber;
+    }
+
     partial void OnSelectedEstimateChanged(Estimate? value)
     {
         // Смена сметы меняет доступные работы и материалы: строки другой сметы
@@ -148,17 +170,34 @@ public sealed partial class WorkCompletionEditorViewModel : EditorViewModelBase
         OnPropertyChanged(nameof(EstimateHint));
         OnPropertyChanged(nameof(HasWorkOptions));
         OnPropertyChanged(nameof(HasNoWorkOptions));
+        OnPropertyChanged(nameof(CanAddWork));
+        OnPropertyChanged(nameof(CanAddMaterial));
     }
+
+    /// <summary>Все позиции-работы сметы уже добавлены в акт — кнопка блокируется.</summary>
+    public bool CanAddWork => WorkOptions.Any(item => !UsedWorkIds.Contains(item.Id));
+
+    /// <summary>Все материалы сметы уже добавлены в акт — кнопка блокируется.</summary>
+    public bool CanAddMaterial => MaterialOptions.Any(item => !UsedMaterialIds.Contains(item.Id));
+
+    private HashSet<int> UsedWorkIds => Works.Where(w => w.EstimateItem is not null)
+        .Select(w => w.EstimateItem!.Id).ToHashSet();
+
+    private HashSet<int> UsedMaterialIds => MaterialRows.Where(m => m.MaterialItem is not null)
+        .Select(m => m.MaterialItem!.Id).ToHashSet();
 
     [RelayCommand]
     private void AddWork()
     {
-        var used = Works.Select(w => w.EstimateItem?.Id).ToHashSet();
-        var next = WorkOptions.FirstOrDefault(i => !used.Contains(i.Id)) ?? WorkOptions.FirstOrDefault();
+        var used = UsedWorkIds;
+        var next = WorkOptions.FirstOrDefault(i => !used.Contains(i.Id));
 
         if (next is null)
         {
-            ErrorMessage = L.T("В выбранной смете нет позиций-работ: добавьте их в смету.");
+            // Упор: одинаковые позиции в акт не добавляются повторно.
+            ErrorMessage = WorkOptions.Count == 0
+                ? L.T("В выбранной смете нет позиций-работ: добавьте их в смету.")
+                : L.T("Все позиции-работы сметы уже добавлены в акт.");
             return;
         }
 
@@ -175,12 +214,15 @@ public sealed partial class WorkCompletionEditorViewModel : EditorViewModelBase
     [RelayCommand]
     private void AddMaterial()
     {
-        var used = MaterialRows.Select(m => m.MaterialItem?.Id).ToHashSet();
-        var next = MaterialOptions.FirstOrDefault(i => !used.Contains(i.Id)) ?? MaterialOptions.FirstOrDefault();
+        var used = UsedMaterialIds;
+        var next = MaterialOptions.FirstOrDefault(i => !used.Contains(i.Id));
 
         if (next is null)
         {
-            ErrorMessage = L.T("В выбранной смете нет материалов: добавьте их в смету.");
+            // Упор: один и тот же материал не попадает в акт двумя строками.
+            ErrorMessage = MaterialOptions.Count == 0
+                ? L.T("В выбранной смете нет материалов: добавьте их в смету.")
+                : L.T("Все материалы сметы уже добавлены в акт.");
             return;
         }
 
@@ -205,11 +247,24 @@ public sealed partial class WorkCompletionEditorViewModel : EditorViewModelBase
         if (string.IsNullOrWhiteSpace(DocumentNumber))
             return L.T("Укажите номер акта выполненных работ.");
 
+        // Список номеров мог устареть, но самый частый случай — повтор номера — ловим сразу,
+        // не доводя до ошибки уникального индекса при сохранении.
+        if (_source is null && _usedNumbers.Any(n =>
+                !string.IsNullOrWhiteSpace(n)
+                && string.Equals(n.Trim(), DocumentNumber.Trim(), StringComparison.OrdinalIgnoreCase)))
+            return L.T("Номер акта уже используется. Измените номер и повторите сохранение.");
+
         if (Date.Date > MaxDate)
             return L.T("Дата акта не может быть в будущем.");
 
         if (Works.All(w => w.Quantity <= 0m) && MaterialRows.All(m => m.Quantity <= 0m))
             return L.T("В акте нет ни выполненных работ, ни израсходованных материалов.");
+
+        if (Works.Where(w => w.EstimateItem is not null).GroupBy(w => w.EstimateItem!.Id).Any(g => g.Count() > 1))
+            return L.T("Позиция сметы указана в акте дважды: оставьте одну строку.");
+
+        if (MaterialRows.Where(m => m.MaterialItem is not null).GroupBy(m => m.MaterialItem!.Id).Any(g => g.Count() > 1))
+            return L.T("Материал указан в акте дважды: оставьте одну строку.");
 
         if (Works.Any(w => w.Quantity > 0m && w.EstimateItem is null))
             return L.T("В строке работ не выбрана позиция сметы.");
@@ -366,5 +421,7 @@ public sealed partial class WorkCompletionEditorViewModel : EditorViewModelBase
         OnPropertyChanged(nameof(HasOverStock));
         OnPropertyChanged(nameof(OverStockWarning));
         OnPropertyChanged(nameof(IsEmpty));
+        OnPropertyChanged(nameof(CanAddWork));
+        OnPropertyChanged(nameof(CanAddMaterial));
     }
 }

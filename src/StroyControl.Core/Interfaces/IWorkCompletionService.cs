@@ -14,4 +14,10 @@ public interface IWorkCompletionService
     Task UpdateAsync(WorkCompletion completion, CancellationToken cancellationToken = default);
 
     Task DeleteAsync(int id, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Номера всех сохранённых актов: по ним форма подбирает следующий свободный номер,
+    /// поэтому у документов, оформленных в один день, номера не совпадают.
+    /// </summary>
+    Task<IReadOnlyList<string>> GetNumbersAsync(CancellationToken cancellationToken = default);
 }
